@@ -4,15 +4,19 @@ package com.limelight;
 import com.limelight.binding.PlatformBinding;
 import com.limelight.binding.audio.AndroidAudioRenderer;
 import com.limelight.binding.input.ControllerHandler;
+import com.limelight.binding.input.GameInputDevice;
 import com.limelight.binding.input.KeyboardTranslator;
 import com.limelight.binding.input.capture.InputCaptureManager;
 import com.limelight.binding.input.capture.InputCaptureProvider;
 import com.limelight.binding.input.touch.AbsoluteTouchContext;
+import com.limelight.binding.input.touch.AbsoluteTouchSwitchContext;
 import com.limelight.binding.input.touch.RelativeTouchContext;
 import com.limelight.binding.input.driver.UsbDriverService;
 import com.limelight.binding.input.evdev.EvdevListener;
 import com.limelight.binding.input.touch.TouchContext;
 import com.limelight.binding.input.virtual_controller.VirtualController;
+import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardController;
+import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardLayoutController;
 import com.limelight.binding.video.CrashListener;
 import com.limelight.binding.video.MediaCodecDecoderRenderer;
 import com.limelight.binding.video.MediaCodecHelper;
@@ -23,7 +27,6 @@ import com.limelight.nvstream.StreamConfiguration;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
-import com.limelight.nvstream.input.ControllerPacket;
 import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.nvstream.input.MouseButtonPacket;
 import com.limelight.nvstream.jni.MoonBridge;
@@ -36,10 +39,10 @@ import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
-
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
 import android.app.Service;
 import android.content.ComponentName;
@@ -50,8 +53,10 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Outline;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
@@ -60,8 +65,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Rational;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -72,6 +79,9 @@ import android.view.View;
 import android.view.View.OnGenericMotionListener;
 import android.view.View.OnSystemUiVisibilityChangeListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -85,13 +95,18 @@ import java.lang.reflect.Method;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 
 public class Game extends Activity implements SurfaceHolder.Callback,
         OnGenericMotionListener, OnTouchListener, NvConnectionListener, EvdevListener,
         OnSystemUiVisibilityChangeListener, GameGestures, StreamView.InputCallbacks,
-        PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener {
+        PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener{
+    public static Game instance;
+
     private int lastButtonState = 0;
 
     // Only 2 touches are supported
@@ -113,6 +128,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private KeyboardTranslator keyboardTranslator;
     private VirtualController virtualController;
 
+    private KeyBoardController keyBoardController;
+
+    private KeyBoardLayoutController keyBoardLayoutController;
+
     private PreferenceConfiguration prefConfig;
     private SharedPreferences tombstonePrefs;
 
@@ -120,7 +139,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private SpinnerDialog spinner;
     private boolean displayedFailureDialog = false;
     private boolean connecting = false;
-    private boolean connected = false;
+    public boolean connected = false;
     private boolean autoEnterPip = false;
     private boolean surfaceCreated = false;
     private boolean attemptedConnection = false;
@@ -145,7 +164,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private boolean isHidingOverlays;
     private TextView notificationOverlayView;
     private int requestedNotificationOverlayVisibility = View.GONE;
-    private TextView performanceOverlayView;
+    private View performanceOverlayView;
+
+    private TextView performanceOverlayLite;
+
+    private TextView performanceOverlayBig;
 
     private MediaCodecDecoderRenderer decoderRenderer;
     private boolean reportedCrash;
@@ -181,9 +204,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_APP_HDR = "HDR";
     public static final String EXTRA_SERVER_CERT = "ServerCert";
 
+    private ViewParent rootView;
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        instance=this;
 
         UiHelper.setLocale(this);
 
@@ -234,19 +262,28 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             }
         }
-
         // Listen for non-touch events on the game surface
         streamView = findViewById(R.id.surfaceView);
         streamView.setOnGenericMotionListener(this);
         streamView.setOnKeyListener(this);
         streamView.setInputCallbacks(this);
 
+        //光标是否显示
+        cursorVisible=prefConfig.enableMouseLocalCursor;
+
+        //串流画面 顶部居中显示
+        if(prefConfig.enableDisplayTopCenter){
+            FrameLayout.LayoutParams params= (FrameLayout.LayoutParams) streamView.getLayoutParams();
+            params.gravity= Gravity.CENTER_HORIZONTAL|Gravity.TOP;
+        }
         // Listen for touch events on the background touch view to enable trackpad mode
         // to work on areas outside of the StreamView itself. We use a separate View
         // for this rather than just handling it at the Activity level, because that
         // allows proper touch splitting, which the OSC relies upon.
         View backgroundTouchView = findViewById(R.id.backgroundTouchView);
         backgroundTouchView.setOnTouchListener(this);
+
+        rootView=streamView.getParent();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Request unbuffered input event dispatching for all input classes we handle here.
@@ -272,12 +309,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         performanceOverlayView = findViewById(R.id.performanceOverlay);
 
+        performanceOverlayLite = findViewById(R.id.performanceOverlayLite);
+
+        performanceOverlayBig = findViewById(R.id.performanceOverlayBig);
+
         inputCaptureProvider = InputCaptureManager.getInputCaptureProvider(this, this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             streamView.setOnCapturedPointerListener(new View.OnCapturedPointerListener() {
                 @Override
                 public boolean onCapturedPointer(View view, MotionEvent motionEvent) {
+//                    LimeLog.info("onCapturedPointer="+motionEvent.toString());
+//                    LimeLog.info("onCapturedPointer-Device="+motionEvent.getDevice().toString());
                     return handleMotionEvent(view, motionEvent);
                 }
             });
@@ -371,6 +414,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         // Check if the user has enabled performance stats overlay
         if (prefConfig.enablePerfOverlay) {
             performanceOverlayView.setVisibility(View.VISIBLE);
+            if(prefConfig.enablePerfOverlayLite){
+                performanceOverlayLite.setVisibility(View.VISIBLE);
+                if(prefConfig.enablePerfOverlayLiteDialog){
+                    performanceOverlayLite.setOnClickListener(v -> showGameMenu(null));
+                }
+            }else{
+                performanceOverlayBig.setVisibility(View.VISIBLE);
+            }
         }
 
         decoderRenderer = new MediaCodecDecoderRenderer(
@@ -493,24 +544,28 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
 
         // Initialize touch contexts
-        for (int i = 0; i < touchContextMap.length; i++) {
-            if (!prefConfig.touchscreenTrackpad) {
-                touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView);
-            }
-            else {
-                touchContextMap[i] = new RelativeTouchContext(conn, i,
-                        REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
-                        streamView, prefConfig);
-            }
-        }
+//        for (int i = 0; i < touchContextMap.length; i++) {
+//            if (!prefConfig.touchscreenTrackpad) {
+//                touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView);
+//            }
+//            else {
+//                touchContextMap[i] = new RelativeTouchContext(conn, i,
+//                        REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
+//                        streamView, prefConfig);
+//            }
+//        }
+        //鼠标触控模式
+        String mouseModel=PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_model_list_axi", "0");
+        switchMouseModel(Integer.parseInt(mouseModel));
 
         if (prefConfig.onscreenController) {
             // create virtual onscreen controller
-            virtualController = new VirtualController(controllerHandler,
-                    (FrameLayout)streamView.getParent(),
-                    this);
-            virtualController.refreshLayout();
-            virtualController.show();
+            initVirtualController();
+        }
+
+        //特殊按键屏幕布局
+        if(prefConfig.enableKeyboard){
+            initKeyboardController();
         }
 
         if (prefConfig.usbDriver) {
@@ -533,6 +588,58 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // The connection will be started when the surface gets created
         streamView.getHolder().addCallback(this);
+
+        //外接显示器模式
+        if(prefConfig.enableExDisplay){
+            showSecondScreen();
+        }
+
+    }
+
+    private void initKeyboardController(){
+        keyBoardController=new KeyBoardController(controllerHandler,(FrameLayout)rootView, this);
+        keyBoardController.refreshLayout();
+        keyBoardController.show();
+    }
+
+
+    private void initVirtualController(){
+        virtualController = new VirtualController(controllerHandler, (FrameLayout)rootView, this);
+        virtualController.refreshLayout();
+        virtualController.show();
+    }
+
+    private void initkeyBoardLayoutController(){
+        keyBoardLayoutController=new KeyBoardLayoutController(controllerHandler,(FrameLayout)rootView, this);
+        keyBoardLayoutController.refreshLayout();
+        keyBoardLayoutController.show();
+    }
+
+    //显示隐藏虚拟特殊按键
+    public void showHideKeyboardController(){
+        if(keyBoardController==null){
+            initKeyboardController();
+            return;
+        }
+        keyBoardController.switchShowHide();
+    }
+
+    public void showHidekeyBoardLayoutController(){
+        if(keyBoardLayoutController==null){
+            initkeyBoardLayoutController();
+            return;
+        }
+        keyBoardLayoutController.switchShowHide();
+    }
+
+    //显示隐藏虚拟手柄控制器
+    public void showHideVirtualController(){
+        if(virtualController==null){
+            initVirtualController();
+            prefConfig.onscreenController=true;
+            return;
+        }
+        prefConfig.onscreenController= virtualController.switchShowHide() != 0;
     }
 
     private void setPreferredOrientationForCurrentDisplay() {
@@ -569,6 +676,17 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         }
         else {
+            //强制竖屏模式
+            if(prefConfig.enablePortrait){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
+                }
+                else {
+                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                }
+                return;
+            }
+
             // For regular displays, we always request landscape
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
         }
@@ -586,6 +704,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             virtualController.refreshLayout();
         }
 
+        if(keyBoardController !=null){
+            keyBoardController.refreshLayout();
+        }
+
+        if(keyBoardLayoutController!=null){
+            keyBoardLayoutController.refreshLayout();
+        }
+
         // Hide on-screen overlays in PiP mode
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (isInPictureInPictureMode()) {
@@ -593,6 +719,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                 if (virtualController != null) {
                     virtualController.hide();
+                }
+
+                if (keyBoardController != null) {
+                    keyBoardController.hide();
+                }
+
+                if(keyBoardLayoutController!=null){
+                    keyBoardLayoutController.hide();
                 }
 
                 performanceOverlayView.setVisibility(View.GONE);
@@ -611,6 +745,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                 if (virtualController != null) {
                     virtualController.show();
+                }
+
+                if (keyBoardController != null) {
+                    keyBoardController.show();
+                }
+
+                if(keyBoardLayoutController!=null){
+                    keyBoardLayoutController.show();
                 }
 
                 if (prefConfig.enablePerfOverlay) {
@@ -950,6 +1092,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         else {
             // Set the surface to scale based on the aspect ratio of the stream
             streamView.setDesiredAspectRatio((double)prefConfig.width / (double)prefConfig.height);
+            LimeLog.info("surfaceChanged-->"+(double)prefConfig.width / (double)prefConfig.height);
         }
 
         // Set the desired refresh rate that will get passed into setFrameRate() later
@@ -1029,6 +1172,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     protected void onDestroy() {
         super.onDestroy();
 
+        instance = null;
+
+        if(presentation!=null){
+            presentation.dismiss();
+        }
+
         if (controllerHandler != null) {
             controllerHandler.destroy();
         }
@@ -1077,6 +1226,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         if (virtualController != null) {
             virtualController.hide();
+        }
+        if (keyBoardController != null) {
+            keyBoardController.hide();
+        }
+
+        if(keyBoardLayoutController!=null){
+            keyBoardLayoutController.hide();
         }
 
         if (conn != null) {
@@ -1526,10 +1682,65 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
+    //灵敏度保存到集合 适配多个手指
+    private Map<String,SensitivityBean> sensitivityMap=new HashMap<>();
+
+    //修改移动的触控灵敏度（通过修改移动的距离实现） 默认使用右半边屏幕的时候开启
+    private float[] getStreamViewRelativeSensitivityXY(MotionEvent event,float normalizedX,float normalizedY,int pointerIndex){
+        float[] normalized=new float[2];
+        normalized[0]=normalizedX;
+        normalized[1]=normalizedY;
+
+        //如果不是全局模式 并且 坐标 不在右边 则返回
+        if(!prefConfig.touchSensitivityGlobal&&normalizedX<getResources().getDisplayMetrics().widthPixels/2){
+            return normalized;
+        }
+        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+            SensitivityBean bean=sensitivityMap.get(String.valueOf(event.getPointerId(pointerIndex)));
+            if(bean==null){
+                bean=new SensitivityBean();
+            }
+            if(bean.getLastAbsoluteX() !=-1){
+                float dx=normalizedX- bean.getLastAbsoluteX();
+                float dy=normalizedY- bean.getLastAbsoluteY();
+                dx*=0.01f*prefConfig.touchSensitivityX;//灵敏度
+                dy*=0.01f*prefConfig.touchSensitivityY;
+                normalizedX= bean.getLastRelativelyX() +dx;
+                normalizedY= bean.getLastRelativelyY() +dy;
+            }
+            if(prefConfig.touchSensitivityRotationAuto){
+                if(normalizedX>=streamView.getWidth()){
+                    normalizedX=streamView.getWidth()/2.0f;
+                }
+                if(normalizedY>=streamView.getHeight()){
+                    normalizedY=streamView.getHeight()/2.0f;
+                }
+            }
+            bean.setLastAbsoluteX(event.getX(pointerIndex));
+            bean.setLastAbsoluteY(event.getY(pointerIndex));
+            bean.setLastRelativelyX(normalizedX);
+            bean.setLastRelativelyY(normalizedY);
+            sensitivityMap.put(String.valueOf(event.getPointerId(pointerIndex)),bean);
+        }
+        //抬起的时候，恢复初始化状态
+        if (event.getActionMasked() == MotionEvent.ACTION_UP||event.getActionMasked() == MotionEvent.ACTION_POINTER_UP) {
+            sensitivityMap.remove(String.valueOf(event.getPointerId(pointerIndex)));
+        }
+        normalized[0]=normalizedX;
+        normalized[1]=normalizedY;
+        return normalized;
+    }
+
+
     private float[] getStreamViewRelativeNormalizedXY(View view, MotionEvent event, int pointerIndex) {
         float normalizedX = event.getX(pointerIndex);
         float normalizedY = event.getY(pointerIndex);
-
+        //开启自定义修改触控灵敏度 并且 数值不为100
+        if(prefConfig.enableTouchSensitivity&&(prefConfig.touchSensitivityX !=100||prefConfig.touchSensitivityY!=100)){
+            float[] normalized=getStreamViewRelativeSensitivityXY(event,normalizedX,normalizedY,pointerIndex);
+            normalizedX=normalized[0];
+            normalizedY=normalized[1];
+        }
         // For the containing background view, we must subtract the origin
         // of the StreamView to get video-relative coordinates.
         if (view != streamView) {
@@ -1976,8 +2187,21 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             {
                 if (virtualController != null &&
                         (virtualController.getControllerMode() == VirtualController.ControllerMode.MoveButtons ||
-                         virtualController.getControllerMode() == VirtualController.ControllerMode.ResizeButtons)) {
+                         virtualController.getControllerMode() == VirtualController.ControllerMode.ResizeButtons||
+                         virtualController.getControllerMode() == VirtualController.ControllerMode.DisableEnableButtons)) {
                     // Ignore presses when the virtual controller is being configured
+                    return true;
+                }
+
+                if (keyBoardController != null &&
+                        (keyBoardController.getControllerMode() == KeyBoardController.ControllerMode.MoveButtons ||
+                                keyBoardController.getControllerMode() == KeyBoardController.ControllerMode.ResizeButtons||
+                                keyBoardController.getControllerMode() == KeyBoardController.ControllerMode.DisableEnableButtons)) {
+                    // Ignore presses when the virtual controller is being configured
+                    return true;
+                }
+                //禁用鼠标
+                if(disableMouseModel){
                     return true;
                 }
 
@@ -1991,6 +2215,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 else {
                     xOffset = 0.f;
                     yOffset = 0.f;
+                }
+
+                // TODO: Re-enable native touch when have a better solution for handling
+                // cancelled touches from Android gestures and 3 finger taps to activate the software keyboard.
+                if(prefConfig.enableMultiTouchScreen){
+                    if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
+                        // If this host supports touch events and absolute touch is enabled,
+                        // send it directly as a touch event.
+                        return true;
+                    }
                 }
 
                 int actionIndex = event.getActionIndex();
@@ -2013,15 +2247,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     return true;
                 }
 
-                // TODO: Re-enable native touch when have a better solution for handling
-                // cancelled touches from Android gestures and 3 finger taps to activate
-                // the software keyboard.
-                /*if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
-                    // If this host supports touch events and absolute touch is enabled,
-                    // send it directly as a touch event.
-                    return true;
-                }*/
-
                 TouchContext context = getTouchContext(actionIndex);
                 if (context == null) {
                     return false;
@@ -2038,16 +2263,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     break;
                 case MotionEvent.ACTION_POINTER_UP:
                 case MotionEvent.ACTION_UP:
-                    if (event.getPointerCount() == 1 &&
-                            (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || (event.getFlags() & MotionEvent.FLAG_CANCELED) == 0)) {
-                        // All fingers up
-                        if (event.getEventTime() - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
-                            // This is a 3 finger tap to bring up the keyboard
-                            toggleKeyboard();
-                            return true;
+                    //是触控板模式 三点呼出软键盘
+                    if(prefConfig.touchscreenTrackpad){
+                        if (event.getPointerCount() == 1 &&
+                                (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || (event.getFlags() & MotionEvent.FLAG_CANCELED) == 0)) {
+                            // All fingers up
+                            if (event.getEventTime() - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
+                                // This is a 3 finger tap to bring up the keyboard
+                                toggleKeyboard();
+                                return true;
+                            }
                         }
                     }
-
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && (event.getFlags() & MotionEvent.FLAG_CANCELED) != 0) {
                         context.cancelTouch();
                     }
@@ -2489,13 +2716,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             throw new IllegalStateException("Surface changed before creation!");
         }
 
+        LimeLog.info("surfaceChanged-->"+width+" x "+height + "----"+prefConfig.width+" x "+prefConfig.height);
         if (!attemptedConnection) {
             attemptedConnection = true;
 
             // Update GameManager state to indicate we're "loading" while connecting
             UiHelper.notifyStreamConnecting(Game.this);
 
-            decoderRenderer.setRenderTarget(holder);
+            decoderRenderer.setRenderTarget(holder.getSurface());
             conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
                     decoderRenderer, Game.this);
         }
@@ -2641,7 +2869,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                performanceOverlayView.setText(text);
+                if(prefConfig.enablePerfOverlayLite){
+                    performanceOverlayLite.setText(text);
+                }else{
+                    performanceOverlayBig.setText(text);
+                }
             }
         });
     }
@@ -2672,5 +2904,163 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             default:
                 return false;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(prefConfig.enableQtDialog){
+            showGameMenu(null);
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    //禁用鼠标
+    private boolean disableMouseModel;
+
+    public void switchMouseModel(){
+        String[] strings=getResources().getStringArray(R.array.mouse_model_names_axi);
+        String[] items =Arrays.copyOf(strings,strings.length+1);
+        items[items.length-1]="切换本地鼠标(需外接物理鼠标)";
+//        {"多点触控模式","普通鼠标模式","触控板模式","禁用鼠标/触控","普通鼠标模式（左右键互换）","切换本地鼠标(需外接物理鼠标)"}
+        new AlertDialog.Builder(this).setItems(items, (dialog, which) -> {
+            dialog.dismiss();
+            //切换本地鼠标
+            if(which==5){
+                switchMouseLocalCursor();
+                return;
+            }
+            switchMouseModel(which);
+        }).setTitle("请选择鼠标模式").create().show();
+    }
+
+    //本地鼠标光标切换
+    private void switchMouseLocalCursor(){
+        if (!grabbedInput) {
+            inputCaptureProvider.enableCapture();
+            grabbedInput = true;
+        }
+        cursorVisible = !cursorVisible;
+        if (cursorVisible) {
+            inputCaptureProvider.showCursor();
+        } else {
+            inputCaptureProvider.hideCursor();
+        }
+    }
+
+    private void switchMouseModel(int which){
+        disableMouseModel=false;
+        //多点触控
+        if(which==0){
+            prefConfig.enableMultiTouchScreen=true;
+            prefConfig.touchscreenTrackpad=false;
+        }
+        //普通鼠标模式
+        if(which==1){
+            prefConfig.enableMultiTouchScreen=false;
+            prefConfig.touchscreenTrackpad=false;
+        }
+        //触控板模式
+        if(which==2){
+            prefConfig.enableMultiTouchScreen=false;
+            prefConfig.touchscreenTrackpad=true;
+        }
+        //禁用鼠标
+        if(which==3){
+            disableMouseModel=true;
+            return;
+        }
+        //普通鼠标 左右键互换
+        if(which==4){
+            prefConfig.enableMultiTouchScreen=false;
+            prefConfig.touchscreenTrackpad=false;
+        }
+        for (int i = 0; i < touchContextMap.length; i++) {
+            if (!prefConfig.touchscreenTrackpad) {
+                if(which==4){
+                    touchContextMap[i] = new AbsoluteTouchSwitchContext(conn, i, streamView);
+                }else{
+                    touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView);
+                }
+            }
+            else {
+                touchContextMap[i] = new RelativeTouchContext(conn, i,
+                        REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
+                        streamView, prefConfig);
+            }
+        }
+    }
+
+    public void showHUD(){
+        prefConfig.enablePerfOverlay=!prefConfig.enablePerfOverlay;
+        if(prefConfig.enablePerfOverlay){
+            performanceOverlayView.setVisibility(View.VISIBLE);
+            if(prefConfig.enablePerfOverlayLite){
+                performanceOverlayLite.setVisibility(View.VISIBLE);
+            }else{
+                performanceOverlayBig.setVisibility(View.VISIBLE);
+            }
+            return;
+        }
+        performanceOverlayView.setVisibility(View.GONE);
+    }
+
+    //切换触控灵敏度开关
+    public void switchTouchSensitivity(){
+        prefConfig.enableTouchSensitivity=!prefConfig.enableTouchSensitivity;
+    }
+
+
+    public void disconnect() {
+        finish();
+    }
+
+    @Override
+    public void showGameMenu(GameInputDevice device) {
+        new GameMenu(this,conn,device);
+    }
+
+
+    private SecondaryDisplayPresentation presentation;
+    public void showSecondScreen(){
+        DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+        Display[] displays = displayManager.getDisplays();
+        int mainDisplayId = Display.DEFAULT_DISPLAY;
+        int secondaryDisplayId = -1;
+        for (Display display : displays) {
+//            LimeLog.info(display.toString());
+            if (display.getDisplayId() != mainDisplayId) {
+                secondaryDisplayId = display.getDisplayId();
+                break;
+            }
+        }
+        if (secondaryDisplayId != -1) {
+            Display secondaryDisplay = displayManager.getDisplay(secondaryDisplayId);
+            presentation = new SecondaryDisplayPresentation(this, secondaryDisplay);
+            presentation.show();
+            if(rootView!= null) {
+                ((ViewGroup)rootView).removeView(streamView); // <- fix
+                presentation.addView(streamView);
+            }
+
+        }
+    }
+
+
+    // 设置surfaceView的圆角 setSurfaceviewCorner(UiHelper.dpToPx(this,24));
+    private void setSurfaceviewCorner(final float radius) {
+
+        streamView.setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, Outline outline) {
+                Rect rect = new Rect();
+                view.getGlobalVisibleRect(rect);
+                int leftMargin = 0;
+                int topMargin = 0;
+                Rect selfRect = new Rect(leftMargin, topMargin, rect.right - rect.left - leftMargin, rect.bottom - rect.top - topMargin);
+                outline.setRoundRect(selfRect, radius);
+            }
+        });
+        streamView.setClipToOutline(true);
     }
 }

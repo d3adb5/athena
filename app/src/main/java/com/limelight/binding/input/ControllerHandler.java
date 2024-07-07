@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.widget.Toast;
 
+import com.limelight.GameMenu;
 import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.binding.input.driver.AbstractController;
@@ -51,6 +52,8 @@ import org.cgutman.shieldcontrollerextensions.SceConnectionType;
 import org.cgutman.shieldcontrollerextensions.SceManager;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class ControllerHandler implements InputManager.InputDeviceListener, UsbDriverListener {
@@ -729,33 +732,36 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         context.hasPaddles = MoonBridge.guessControllerHasPaddles(context.vendorId, context.productId);
         context.hasShare = MoonBridge.guessControllerHasShareButton(context.vendorId, context.productId);
 
-        // Try to use the InputDevice's associated vibrators first
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasQuadAmplitudeControlledRumbleVibrators(dev.getVibratorManager())) {
-            context.vibratorManager = dev.getVibratorManager();
-            context.quadVibrators = true;
-        }
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasDualAmplitudeControlledRumbleVibrators(dev.getVibratorManager())) {
-            context.vibratorManager = dev.getVibratorManager();
-            context.quadVibrators = false;
-        }
-        else if (dev.getVibrator().hasVibrator()) {
-            context.vibrator = dev.getVibrator();
-        }
-        else if (!context.external) {
-            // If this is an internal controller, try to use the device's vibrator
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasQuadAmplitudeControlledRumbleVibrators(deviceVibratorManager)) {
-                context.vibratorManager = deviceVibratorManager;
+        if(prefConfig.enableDeviceRumble){
+            context.vibrator = deviceVibrator;
+        }else{
+            // Try to use the InputDevice's associated vibrators first
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasQuadAmplitudeControlledRumbleVibrators(dev.getVibratorManager())) {
+                context.vibratorManager = dev.getVibratorManager();
                 context.quadVibrators = true;
             }
-            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasDualAmplitudeControlledRumbleVibrators(deviceVibratorManager)) {
-                context.vibratorManager = deviceVibratorManager;
+            else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasDualAmplitudeControlledRumbleVibrators(dev.getVibratorManager())) {
+                context.vibratorManager = dev.getVibratorManager();
                 context.quadVibrators = false;
             }
-            else if (deviceVibrator.hasVibrator()) {
-                context.vibrator = deviceVibrator;
+            else if (dev.getVibrator().hasVibrator()) {
+                context.vibrator = dev.getVibrator();
+            }
+            else if (!context.external) {
+                // If this is an internal controller, try to use the device's vibrator
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasQuadAmplitudeControlledRumbleVibrators(deviceVibratorManager)) {
+                    context.vibratorManager = deviceVibratorManager;
+                    context.quadVibrators = true;
+                }
+                else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasDualAmplitudeControlledRumbleVibrators(deviceVibratorManager)) {
+                    context.vibratorManager = deviceVibratorManager;
+                    context.quadVibrators = false;
+                }
+                else if (deviceVibrator.hasVibrator()) {
+                    context.vibrator = deviceVibrator;
+                }
             }
         }
-
         // On Android 12, we can try to use the InputDevice's sensors. This may not work if the
         // Linux kernel version doesn't have motion sensor support, which is common for third-party
         // gamepads.
@@ -1349,7 +1355,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         if ((context.vendorId == 0x057e && context.productId == 0x2009 && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) || // Switch Pro controller
                 (context.vendorId == 0x0f0d && context.productId == 0x00c1)) { // HORIPAD for Switch
             switch (event.getScanCode()) {
-                case 0x130:
+                case 0x130://304
                     return KeyEvent.KEYCODE_BUTTON_A;
                 case 0x131:
                     return KeyEvent.KEYCODE_BUTTON_B;
@@ -1377,6 +1383,57 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
                     return KeyEvent.KEYCODE_BUTTON_MODE;
             }
         }
+
+
+        //fix joycon-left 十字键
+        if(prefConfig.enableJoyConFix&&context.vendorId == 0x057e && context.productId == 0x2006){
+            switch (event.getScanCode())
+            {
+                case 546://十字键
+                    return KeyEvent.KEYCODE_DPAD_LEFT;
+                case 547:
+                    return KeyEvent.KEYCODE_DPAD_RIGHT;
+                case 544:
+                    return KeyEvent.KEYCODE_DPAD_UP;
+                case 545:
+                    return KeyEvent.KEYCODE_DPAD_DOWN;
+                case 309://截图键
+                    return KeyEvent.KEYCODE_BUTTON_MODE;
+                case 310:
+                    return KeyEvent.KEYCODE_BUTTON_L1;
+                case 312:
+                    return KeyEvent.KEYCODE_BUTTON_L2;
+                case 314:
+                    return KeyEvent.KEYCODE_BUTTON_SELECT;
+                case 317:
+                    return KeyEvent.KEYCODE_BUTTON_THUMBL;
+            }
+        }
+        //fix JoyCon-right xy互换
+        if(prefConfig.enableJoyConFix&&context.vendorId == 0x057e && context.productId == 0x2007){
+            switch (event.getScanCode())
+            {
+                case 307://XY相反
+                    return KeyEvent.KEYCODE_BUTTON_Y;
+                case 308:
+                    return KeyEvent.KEYCODE_BUTTON_X;
+                case 304:
+                    return KeyEvent.KEYCODE_BUTTON_A;
+                case 305:
+                    return KeyEvent.KEYCODE_BUTTON_B;
+                case 311:
+                    return KeyEvent.KEYCODE_BUTTON_R1;
+                case 313:
+                    return KeyEvent.KEYCODE_BUTTON_R2;
+                case 315:
+                    return KeyEvent.KEYCODE_BUTTON_START;
+                case 316:
+                    return KeyEvent.KEYCODE_BUTTON_MODE;
+                case 318:
+                    return KeyEvent.KEYCODE_BUTTON_THUMBR;
+            }
+        }
+
 
         if (context.usesLinuxGamepadStandardFaceButtons) {
             // Android's Generic.kl swaps BTN_NORTH and BTN_WEST
@@ -2371,7 +2428,12 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             if ((context.inputMap & ControllerPacket.PLAY_FLAG) != 0 &&
                     event.getEventTime() - context.startDownTime > ControllerHandler.START_DOWN_TIME_MOUSE_MODE_MS &&
                     prefConfig.mouseEmulation) {
-                context.toggleMouseEmulation();
+                if(prefConfig.enableQtDialog){
+                    //todo 展示快捷菜单
+                    gestures.showGameMenu(context);
+                }else{
+                    context.toggleMouseEmulation();
+                }
             }
             context.inputMap &= ~ControllerPacket.PLAY_FLAG;
             break;
@@ -2864,7 +2926,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         usbDeviceContexts.put(controller.getControllerId(), context);
     }
 
-    class GenericControllerContext {
+    class GenericControllerContext implements GameInputDevice{
         public int id;
         public boolean external;
 
@@ -2917,6 +2979,16 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             }
         };
 
+        @Override
+        public List<GameMenu.MenuOption> getGameMenuOptions() {
+            List<GameMenu.MenuOption> options = new ArrayList<>();
+            options.add(new GameMenu.MenuOption(activityContext.getString(mouseEmulationActive ?
+                    R.string.game_menu_toggle_mouse_off : R.string.game_menu_toggle_mouse_on),
+                    true, () -> toggleMouseEmulation()));
+
+            return options;
+        }
+
         public void toggleMouseEmulation() {
             mainThreadHandler.removeCallbacks(mouseEmulationRunnable);
             mouseEmulationActive = !mouseEmulationActive;
@@ -2933,6 +3005,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         }
 
         public void sendControllerArrival() {}
+
     }
 
     class InputDeviceContext extends GenericControllerContext {

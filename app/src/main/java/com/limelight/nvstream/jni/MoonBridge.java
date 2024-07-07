@@ -215,6 +215,7 @@ public class MoonBridge {
         }
     }
 
+    //todo 不显示画面
     public static int bridgeDrSubmitDecodeUnit(byte[] decodeUnitData, int decodeUnitLength, int decodeUnitType,
                                                int frameNumber, int frameType, char frameHostProcessingLatency,
                                                long receiveTimeMs, long enqueueTimeMs) {
@@ -254,6 +255,7 @@ public class MoonBridge {
         }
     }
 
+    //静音 todo
     public static void bridgeArPlaySample(short[] pcmData) {
         if (audioRenderer != null) {
             audioRenderer.playDecodedAudio(pcmData);

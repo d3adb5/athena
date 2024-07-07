@@ -6,18 +6,26 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.media.MediaCodecInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.support.v4.content.FileProvider;
+import android.text.InputFilter;
+import android.text.InputType;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.method.NumberKeyListener;
 import android.util.DisplayMetrics;
 import android.util.Range;
 import android.view.Display;
@@ -26,16 +34,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-
+import android.widget.EditText;
+import android.widget.Toast;
+import com.google.gson.Gson;
+import com.limelight.AxiTestActivity;
+import com.limelight.BuildConfig;
+import com.limelight.GameMenu;
 import com.limelight.LimeLog;
 import com.limelight.PcView;
 import com.limelight.R;
+import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardControllerConfigurationLoader;
 import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.utils.Dialog;
+import com.limelight.utils.FileUriUtils;
 import com.limelight.utils.UiHelper;
-
-import java.lang.reflect.Method;
+import org.json.JSONObject;
+import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 public class StreamSettings extends Activity {
     private PreferenceConfiguration previousPrefs;
@@ -270,6 +288,7 @@ public class StreamSettings extends Activity {
             return view;
         }
 
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -349,6 +368,18 @@ public class StreamSettings extends Activity {
                     !((Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE)).hasAmplitudeControl() ) {
                 // Remove the vibration strength selector of the device doesn't have amplitude control
                 category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
+            }
+
+            String diy=PreferenceManager.getDefaultSharedPreferences(this.getActivity()).getString("edit_diy_w_h","");
+            if(!TextUtils.isEmpty(diy)){
+                String[] diys=diy.split("x");
+                if(diys.length==2){
+                    try{
+                        addNativeResolutionEntries(Integer.parseInt(diys[0]), Integer.parseInt(diys[1]), false);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
             }
 
             Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -667,6 +698,191 @@ public class StreamSettings extends Activity {
                     return true;
                 }
             });
+
+            findPreference("import_keyboard_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("text/plain");
+                    startActivityForResult(intent, READ_REQUEST_CODE);
+                    return false;
+                }
+            });
+            findPreference("import_special_button_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("application/json");
+                    startActivityForResult(intent, READ_REQUEST_SPECIAL_CODE);
+                    return false;
+                }
+            });
+
+
+            findPreference("export_keyboard_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    File file = new File(getActivity().getExternalCacheDir(),"export_settings");
+                    if(!file.exists()){
+                        file.mkdir();
+                    }
+                    File file1= getJsonContent(getActivity(),file);
+                    if(file1==null){
+                        Toast.makeText(getActivity(),"出错啦~",Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                    Uri uri;
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    String authority= BuildConfig.APPLICATION_ID+".fileprovider";
+                    uri= FileProvider.getUriForFile(getActivity(),authority,file1);
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                    intent.setType("text/plain");
+                    startActivity(Intent.createChooser(intent,"保存配置文件"));
+                    return false;
+                }
+            });
+
+
+            findPreference("pref_axi_test").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent=new Intent(getActivity(), AxiTestActivity.class);
+                    getActivity().startActivity(intent);
+                    return false;
+                }
+            });
+
+            EditTextPreference bitrateEditPre= (EditTextPreference) findPreference("edit_diy_bitrate");
+            EditText editText=bitrateEditPre.getEditText();
+
+            editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+//            editText.setKeyListener(new NumberKeyListener() {
+//                @Override
+//                public int getInputType() {
+//                    return InputType.TYPE_MASK_VARIATION;
+//                }
+//                @Override
+//                protected char[] getAcceptedChars() {/*这里实现字符串过滤，把你允许输入的字母添加到下面的数组即可！*/
+//                    return new char[]{'0', '1', '2', '3', '4', '5','6','7', '8', '9', '.'};
+//                }
+//            });
+            editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)/*这里限制输入的长度为5个字母*/});
+
+            bitrateEditPre.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    String value= (String) newValue;
+                    if(TextUtils.isEmpty(value)){
+                        Toast.makeText(getActivity(),"请输入0-9999的数值。",Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                    float bitrateValue=Float.valueOf(value)*1000;
+                    LimeLog.info("axi-bitrateValue:"+bitrateValue);
+                    int bitrate= (int) bitrateValue;
+                    LimeLog.info("axi-bitrate:"+bitrate);
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
+                    prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING,bitrate).apply();
+                    Toast.makeText(getActivity(),"设置成功！",Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+
+
+//            findPreference("checkbox_multi_touch_screen").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+//                @Override
+//                public boolean onPreferenceChange(Preference preference, Object newValue) {
+//
+//                    if(((Boolean) newValue)){
+//                        CheckBoxPreference checkBoxPreference= (CheckBoxPreference) findPreference(PreferenceConfiguration.TOUCHSCREEN_TRACKPAD_PREF_STRING);
+//                        checkBoxPreference.setChecked(false);
+//                    }
+//
+//                    return true;
+//                }
+//            });
+        }
+        int READ_REQUEST_CODE=1001;
+        int READ_REQUEST_SPECIAL_CODE=1002;
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            super.onActivityResult(requestCode, resultCode, data);
+            if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK &&data.getData()!=null) {
+                try {
+                    Uri uri = data.getData();
+                    String json=FileUriUtils.openUriForRead(getActivity(),uri);
+                    if(TextUtils.isEmpty(json)){
+                        Toast.makeText(getActivity(),"空文件~",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String name = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
+                    SharedPreferences.Editor prefEditor = getActivity().getSharedPreferences(name, Activity.MODE_PRIVATE).edit();
+                    JSONObject object=new JSONObject(json);
+                    Iterator it = object.keys();
+                    prefEditor.clear();
+                    while(it.hasNext()) {
+                        String key = (String) it.next();// 获得key
+                        String value = object.getString(key);// 获得value
+                        prefEditor.putString(key,value);
+                    }
+                    prefEditor.apply();
+                    Toast.makeText(getActivity(),"导入成功！",Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(),"出错啦~"+e.getMessage(),Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            if (requestCode == READ_REQUEST_SPECIAL_CODE && resultCode == Activity.RESULT_OK &&data.getData()!=null) {
+                try {
+                    Uri uri = data.getData();
+                    String json=FileUriUtils.openUriForRead(getActivity(),uri);
+                    if(TextUtils.isEmpty(json)){
+                        Toast.makeText(getActivity(),"空文件~",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    SharedPreferences.Editor prefEditor = getActivity().getSharedPreferences(GameMenu.PREF_NAME, Activity.MODE_PRIVATE).edit();
+                    prefEditor.putString(GameMenu.KEY_NAME,json);
+                    prefEditor.apply();
+                    Toast.makeText(getActivity(),"导入成功！",Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getActivity(),"出错啦~"+e.getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+
+        private File getJsonContent(Context context,File file){
+            String name = PreferenceManager.getDefaultSharedPreferences(context).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
+            SharedPreferences pref = context.getSharedPreferences(name, Activity.MODE_PRIVATE);
+            Map<String,?> map = pref.getAll();
+            File file1= new File(file,name+".txt");
+            String jsonStr=new Gson().toJson(map);
+            if(!FileUriUtils.writerFileString(file1,jsonStr)){
+                return null;
+            }
+            return file1;
+        }
+
+        //获取所有设置项配置文件
+        private File getAllJsonData(Context context,File file){
+            SharedPreferences pref=PreferenceManager.getDefaultSharedPreferences(context);
+            Map<String,?> map = pref.getAll();
+            //获取适配电脑的数据库信息
+//            List<ComputerDetails> map= new ComputerDatabaseManager(context).getAllComputers();
+            File file1= new File(file,"allJSON.txt");
+            String jsonStr=new Gson().toJson(map);
+            if(!FileUriUtils.writerFileString(file1,jsonStr)){
+                return null;
+            }
+            return file1;
         }
     }
+
+
 }

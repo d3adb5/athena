@@ -293,9 +293,60 @@
     <string name="pacing_balanced_alt">Balanced with FPS limit</string>
     <string name="pacing_smoothness">Prefer smoothest video (may significantly increase latency)</string>
 
+
+    <string name="keyboard_service_label">Moonlight物理键盘</string>
+    <string name="accessibility_description_text">此功能仅用于外接实体键盘时，某些系统存在特定的键盘快捷键，此情况会影响串流过程中，无法将相关按键指令传输给目标PC。
+        \n\nMoonlight不会观察您输入的文本，也不会收集您的密码、信用卡号或任何其他信息。
+        \n\n请关注：B站-阿西西的日常</string>
+
+
+    <!-- In Game menu -->
+    <string name="game_menu_toggle_keyboard">弹出软键盘</string>
+    <string name="game_menu_hud">(显示/隐藏)性能信息</string>
+    <string name="game_menu_switch_mouse_model">鼠标模式切换</string>
+    <string name="game_menu_switch_keyboard_model">(显示/隐藏)特殊按键</string>
+    <string name="game_menu_switch_virtual_model">(显示/隐藏)虚拟手柄</string>
+    <string name="game_menu_switch_virtual_keyboard_model">(显示/隐藏)虚拟全键盘</string>
+    <string name="game_menu_switch_touch_sensitivity_model">触控灵敏度切换</string>
+
+
+    <string name="game_menu_toggle_mouse_on">Enable Controller Mouse Emulation</string>
+    <string name="game_menu_toggle_mouse_off">Disable Controller Mouse Emulation</string>
+    <string name="game_menu_disconnect">断开连接</string>
+    <string name="game_menu_cancel">取消</string>
+    <string name="game_menu_send_keys">发送特殊按键</string>
+    <string name="game_menu_send_keys_esc">Send ESC</string>
+    <string name="game_menu_send_keys_f11">Send F11</string>
+    <string name="game_menu_send_keys_alt_f4">Send Alt + F4</string>
+    <string name="game_menu_send_keys_ctrl_v">Send Ctrl + V (粘贴剪切板)</string>
+    <string name="game_menu_send_keys_win">Send Win (打开Windows开始菜单)</string>
+    <string name="game_menu_send_keys_win_d">Send Win + D (返回桌面)</string>
+    <string name="game_menu_send_keys_alt_b">Send ALT + B (切换HDR)</string>
+    <string name="game_menu_send_keys_win_x_u_s">Send Win + X ~ U + S (睡眠)</string>
+    <string name="game_menu_send_keys_win_x_u_r">Send Win + X ~ U + R (重启)</string>
+    <string name="game_menu_send_keys_win_x_u_u">Send Win + X ~ U + U (关机)</string>
+    <string name="game_menu_send_keys_win_x_u_i">Send Win + X ~ U + I (注销)</string>
+    <string name="game_menu_send_keys_win_g">Send Win + G (打开Xbox Game Bar)</string>
+    <string name="game_menu_send_keys_shift_tab">Send Shift + Tab (打开Steam Overlay)</string>
+    <string name="game_menu_send_keys_alt_enter">Send Alt + Enter</string>
+    <string name="game_menu_send_keys_win_shift_left">Send Win + shift + left (切换桌面)</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_q">Send Ctrl+Alt+Shift+Q (PC退出串流)</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_f1">Send Ctrl+Alt+Shift+F1 (切换显示器)</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_f12">Send Ctrl+Alt+Shift+F12 (切换显示器)</string>
+
+
+
     <string name="title_analog_scrolling">Use an analog stick to scroll</string>
     <string name="summary_analog_scrolling">Select an analog stick to scroll when in mouse emulation mode</string>
     <string name="analogscroll_none">None (both sticks move the mouse)</string>
     <string name="analogscroll_right">Right analog stick</string>
     <string name="analogscroll_left">Left analog stick</string>
+
+    <string name="perf_overlay_lite_net">%1$dms</string>
+    <string name="perf_overlay_lite_dectime">%1$.2fms</string>
+    <string name="perf_overlay_lite_netdrops">%1$.2f%%</string>
+    <string name="perf_overlay_lite_streamdetails">%1$s</string>
+    <string name="perf_overlay_lite_fps">%1$.2f</string>
+    <string name="perf_overlay_lite_decoder">解码器： %1$s</string>
+
 </resources>

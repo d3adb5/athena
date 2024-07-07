@@ -57,7 +57,7 @@ public class PreferenceConfiguration {
     private static final String VIBRATE_FALLBACK_PREF_STRING = "checkbox_vibrate_fallback";
     private static final String VIBRATE_FALLBACK_STRENGTH_PREF_STRING = "seekbar_vibrate_fallback_strength";
     private static final String FLIP_FACE_BUTTONS_PREF_STRING = "checkbox_flip_face_buttons";
-    private static final String TOUCHSCREEN_TRACKPAD_PREF_STRING = "checkbox_touchscreen_trackpad";
+//    static final String TOUCHSCREEN_TRACKPAD_PREF_STRING = "checkbox_touchscreen_trackpad";
     private static final String LATENCY_TOAST_PREF_STRING = "checkbox_enable_post_stream_toast";
     private static final String FRAME_PACING_PREF_STRING = "frame_pacing";
     private static final String ABSOLUTE_MOUSE_MODE_PREF_STRING = "checkbox_absolute_mouse_mode";
@@ -67,6 +67,25 @@ public class PreferenceConfiguration {
     private static final String GAMEPAD_TOUCHPAD_AS_MOUSE_PREF_STRING = "checkbox_gamepad_touchpad_as_mouse";
     private static final String GAMEPAD_MOTION_SENSORS_PREF_STRING = "checkbox_gamepad_motion_sensors";
     private static final String GAMEPAD_MOTION_FALLBACK_PREF_STRING = "checkbox_gamepad_motion_fallback";
+
+    //是否弹出软键盘
+    private static final String CHECKBOX_ENABLE_QUIT_DIALOG = "checkbox_enable_quit_dialog";
+
+    //VR模式
+    private static final String CHECKBOX_ENABLE_SBS = "checkbox_enable_sbs";
+    //竖屏模式
+    private static final String CHECKBOX_ENABLE_PORTRAIT = "checkbox_enable_portrait";
+    //屏幕特殊按键
+    private static final String CHECKBOX_ENABLE_KEYBOARD = "checkbox_enable_keyboard";
+
+    //屏幕特殊按键 震动
+    private static final String CHECKBOX_ENABLE_KEYBOARD_VIBRATE = "checkbox_vibrate_keyboard";
+
+    //自动摇杆
+    private static final String CHECKBOX_CHECKBOX_ENABLE_ANALOG_STICK_NEW="checkbox_enable_analog_stick_new";
+
+    //触控屏幕灵敏度
+    private static final String TOUCH_SENSITIVITY="seekbar_touch_sensitivity_opacity_x";
 
     static final String DEFAULT_RESOLUTION = "1280x720";
     static final String DEFAULT_FPS = "60";
@@ -125,6 +144,8 @@ public class PreferenceConfiguration {
     public FormatOption videoFormat;
     public int deadzonePercentage;
     public int oscOpacity;
+    public int oscKeyboardOpacity;
+    public int oscKeyboardHeight;
     public boolean stretchVideo, enableSops, playHostAudio, disableWarnings;
     public String language;
     public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
@@ -133,7 +154,70 @@ public class PreferenceConfiguration {
     public boolean enableHdr;
     public boolean enablePip;
     public boolean enablePerfOverlay;
+    //简化版性能信息
+    public boolean enablePerfOverlayLite;
+
+    public boolean enablePerfOverlayLiteDialog;
+
     public boolean enableLatencyToast;
+    //软键盘
+    public boolean enableQtDialog;
+    //竖屏模式
+    public boolean enablePortrait;
+    //虚拟屏幕键盘按键
+    public boolean enableKeyboard;
+    //修复JoyCon十字键
+    public boolean enableJoyConFix;
+
+    //自由摇杆啊
+    public boolean enableNewAnalogStick;
+
+    public boolean enableExDisplay;
+
+    //串流画面顶部居中显示
+    public boolean enableDisplayTopCenter;
+
+    //触控屏幕灵敏度
+    public int touchSensitivityX;
+    public int touchSensitivityY;
+    //超出边界自动回中心点
+    public boolean touchSensitivityRotationAuto;
+
+    //触控灵敏度调节范围
+    public boolean touchSensitivityGlobal;
+
+    //多点触控灵敏度调节
+    public boolean enableTouchSensitivity;
+
+    //触控板模式灵敏度
+    public int touchPadSensitivity;
+
+    public int touchPadYSensitity;
+
+    //多点触控模式
+    public boolean enableMultiTouchScreen;
+
+    //物理光标捕获
+    public boolean enableMouseLocalCursor;
+
+    //禁用内置的特殊指令
+    public boolean enableClearDefaultSpecial;
+
+    //强制使用设备自身的震动马达
+    public boolean enableDeviceRumble;
+
+    public boolean enableKeyboardVibrate;
+
+    public boolean enableKeyboardSquare;
+
+    //官方虚拟按钮风格
+    public boolean enableOnScreenStyleOfficial;
+
+    //自由摇杆背景透明度
+    public int senableNewAnalogStickOpacity;
+
+    //VR模式
+    public boolean enableSbs;
     public boolean bindAllUsb;
     public boolean mouseEmulation;
     public AnalogStickForScrolling analogStickForScrolling;
@@ -580,6 +664,7 @@ public class PreferenceConfiguration {
         config.enableHdr = prefs.getBoolean(ENABLE_HDR_PREF_STRING, DEFAULT_ENABLE_HDR) && !isShieldAtvFirmwareWithBrokenHdr();
         config.enablePip = prefs.getBoolean(ENABLE_PIP_PREF_STRING, DEFAULT_ENABLE_PIP);
         config.enablePerfOverlay = prefs.getBoolean(ENABLE_PERF_OVERLAY_STRING, DEFAULT_ENABLE_PERF_OVERLAY);
+        config.enablePerfOverlayLite=prefs.getBoolean("checkbox_enable_perf_overlay_lite",DEFAULT_ENABLE_PERF_OVERLAY);
         config.bindAllUsb = prefs.getBoolean(BIND_ALL_USB_STRING, DEFAULT_BIND_ALL_USB);
         config.mouseEmulation = prefs.getBoolean(MOUSE_EMULATION_STRING, DEFAULT_MOUSE_EMULATION);
         config.mouseNavButtons = prefs.getBoolean(MOUSE_NAV_BUTTONS_STRING, DEFAULT_MOUSE_NAV_BUTTONS);
@@ -588,8 +673,57 @@ public class PreferenceConfiguration {
         config.vibrateFallbackToDevice = prefs.getBoolean(VIBRATE_FALLBACK_PREF_STRING, DEFAULT_VIBRATE_FALLBACK);
         config.vibrateFallbackToDeviceStrength = prefs.getInt(VIBRATE_FALLBACK_STRENGTH_PREF_STRING, DEFAULT_VIBRATE_FALLBACK_STRENGTH);
         config.flipFaceButtons = prefs.getBoolean(FLIP_FACE_BUTTONS_PREF_STRING, DEFAULT_FLIP_FACE_BUTTONS);
-        config.touchscreenTrackpad = prefs.getBoolean(TOUCHSCREEN_TRACKPAD_PREF_STRING, DEFAULT_TOUCHSCREEN_TRACKPAD);
+//        config.touchscreenTrackpad = prefs.getBoolean(TOUCHSCREEN_TRACKPAD_PREF_STRING, DEFAULT_TOUCHSCREEN_TRACKPAD);
         config.enableLatencyToast = prefs.getBoolean(LATENCY_TOAST_PREF_STRING, DEFAULT_LATENCY_TOAST);
+        //软键盘
+        config.enableQtDialog = prefs.getBoolean(CHECKBOX_ENABLE_QUIT_DIALOG,false);
+        config.enableSbs = prefs.getBoolean(CHECKBOX_ENABLE_SBS,false);
+        config.enablePortrait = prefs.getBoolean(CHECKBOX_ENABLE_PORTRAIT,false);
+
+        config.enableKeyboard = prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD,false);
+
+        config.enableKeyboardVibrate=prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD_VIBRATE,false);
+        //兼容joycon手柄
+        config.enableJoyConFix=prefs.getBoolean("checkbox_enable_joyconfix",false);
+        //全键盘透明度
+        config.oscKeyboardOpacity=prefs.getInt("seekbar_keyboard_axi_opacity",DEFAULT_OPACITY);
+
+        config.enableOnScreenStyleOfficial=prefs.getBoolean("checkbox_onscreen_style_official",false);
+
+        config.senableNewAnalogStickOpacity=prefs.getInt("seekbar_osc_free_analog_stick_opacity",20);
+
+        config.oscKeyboardHeight=prefs.getInt("seekbar_keyboard_axi_height",200);
+
+        config.enableNewAnalogStick=prefs.getBoolean(CHECKBOX_CHECKBOX_ENABLE_ANALOG_STICK_NEW,false);
+
+        config.enableExDisplay=prefs.getBoolean("checkbox_enable_exdisplay",false);
+
+        config.enableDisplayTopCenter=prefs.getBoolean("checkbox_enable_view_top_center",false);
+
+        config.touchSensitivityX =prefs.getInt(TOUCH_SENSITIVITY,100);
+
+        config.touchSensitivityY=prefs.getInt("seekbar_touch_sensitivity_opacity_y",100);
+
+        config.touchSensitivityRotationAuto=prefs.getBoolean("checkbox_enable_touch_sensitivity_rotation_auto",true);
+
+        config.touchSensitivityGlobal=prefs.getBoolean("checkbox_enable_global_touch_sensitivity",false);
+
+        config.enableTouchSensitivity=prefs.getBoolean("checkbox_enable_touch_sensitivity",false);
+
+        config.enableMouseLocalCursor=prefs.getBoolean("checkbox_mouse_local_cursor",false);
+
+        config.enablePerfOverlayLiteDialog=prefs.getBoolean("checkbox_enable_perf_overlay_lite_dialog",false);
+
+        config.enableClearDefaultSpecial=prefs.getBoolean("checkbox_enable_clear_default_special_button", false);
+
+        config.enableDeviceRumble=prefs.getBoolean("checkbox_enable_device_rumble", false);
+
+        config.enableKeyboardSquare=prefs.getBoolean("checkbox_enable_keyboard_square",false);
+
+        config.touchPadSensitivity=prefs.getInt("seekbar_touchpad_sensitivity_opacity",100);
+
+        config.touchPadYSensitity=prefs.getInt("seekbar_touchpad_sensitivity_y_opacity",100);
+
         config.absoluteMouseMode = prefs.getBoolean(ABSOLUTE_MOUSE_MODE_PREF_STRING, DEFAULT_ABSOLUTE_MOUSE_MODE);
         config.enableAudioFx = prefs.getBoolean(ENABLE_AUDIO_FX_PREF_STRING, DEFAULT_ENABLE_AUDIO_FX);
         config.reduceRefreshRate = prefs.getBoolean(REDUCE_REFRESH_RATE_PREF_STRING, DEFAULT_REDUCE_REFRESH_RATE);

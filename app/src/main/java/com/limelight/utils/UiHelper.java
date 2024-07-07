@@ -13,6 +13,7 @@ import android.content.res.Configuration;
 import android.graphics.Insets;
 import android.os.Build;
 import android.os.LocaleList;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -257,5 +258,9 @@ public class UiHelper {
                 .setPositiveButton(parent.getResources().getString(R.string.yes), dialogClickListener)
                 .setNegativeButton(parent.getResources().getString(R.string.no), dialogClickListener)
                 .show();
+    }
+
+    public static float dpToPx(Context context, float dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
 }

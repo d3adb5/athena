@@ -34,6 +34,8 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
     public static final int VK_EQUALS = 61;
     public static final int VK_ESCAPE = 27;
     public static final int VK_F1 = 112;
+    public static final int VK_F12 = 123;
+
     public static final int VK_END = 35;
     public static final int VK_HOME = 36;
     public static final int VK_NUM_LOCK = 144;
@@ -54,6 +56,37 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
     public static final int VK_BACK_QUOTE = 192;
     public static final int VK_QUOTE = 222;
     public static final int VK_PAUSE = 19;
+
+    public static final int VK_B = 66;
+
+    public static final int VK_C = 67;
+    public static final int VK_D = 68;
+    public static final int VK_G = 71;
+    public static final int VK_V = 86;
+    public static final int VK_Q = 81;
+
+    public static final int VK_S = 83;
+
+    public static final int VK_U = 85;
+
+    public static final int VK_X = 88;
+    public static final int VK_R = 82;
+
+    public static final int VK_I = 73;
+
+    public static final int VK_F11 = 122;
+    public static final int VK_LWIN = 91;
+    public static final int VK_LSHIFT = 160;
+    public static final int VK_LCONTROL = 162;
+
+    //Left ALT key
+    public static final int VK_LMENU = 164;
+    //ENTER key
+    public static final int VK_RETURN = 13;
+
+    public static final int VK_F4 = 115;
+
+
 
     private static class KeyboardMapping {
         private final InputDevice device;

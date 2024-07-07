@@ -7,6 +7,7 @@ package com.limelight.binding.input.virtual_controller;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
@@ -16,13 +17,15 @@ import android.widget.Toast;
 import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.binding.input.ControllerHandler;
+import com.limelight.preferences.PreferenceConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class VirtualController {
     public static class ControllerInputContext {
-        public short inputMap = 0x0000;
+//        public short inputMap = 0x0000;
+        public int inputMap = 0;
         public byte leftTrigger = 0x00;
         public byte rightTrigger = 0x00;
         public short rightStickX = 0x0000;
@@ -34,7 +37,8 @@ public class VirtualController {
     public enum ControllerMode {
         Active,
         MoveButtons,
-        ResizeButtons
+        ResizeButtons,
+        DisableEnableButtons
     }
 
     private static final boolean _PRINT_DEBUG_INFORMATION = false;
@@ -59,11 +63,15 @@ public class VirtualController {
 
     private List<VirtualControllerElement> elements = new ArrayList<>();
 
+    private Vibrator vibrator;
+
     public VirtualController(final ControllerHandler controllerHandler, FrameLayout layout, final Context context) {
         this.controllerHandler = controllerHandler;
         this.frame_layout = layout;
         this.context = context;
         this.handler = new Handler(Looper.getMainLooper());
+
+        this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         buttonConfigure = new Button(context);
         buttonConfigure.setAlpha(0.25f);
@@ -74,8 +82,13 @@ public class VirtualController {
             public void onClick(View v) {
                 String message;
 
-                if (currentMode == ControllerMode.Active){
+                if (currentMode == ControllerMode.Active) {
+                    currentMode = ControllerMode.DisableEnableButtons;
+                    showElements();
+                    message = "Entering configuration mode (Disable/Enable buttons)";
+                } else if (currentMode == ControllerMode.DisableEnableButtons){
                     currentMode = ControllerMode.MoveButtons;
+                    showEnabledElements();
                     message = "Entering configuration mode (Move buttons)";
                 } else if (currentMode == ControllerMode.MoveButtons) {
                     currentMode = ControllerMode.ResizeButtons;
@@ -104,18 +117,38 @@ public class VirtualController {
 
     public void hide() {
         for (VirtualControllerElement element : elements) {
-            element.setVisibility(View.INVISIBLE);
+            element.setVisibility(View.GONE);
         }
 
-        buttonConfigure.setVisibility(View.INVISIBLE);
+        buttonConfigure.setVisibility(View.GONE);
     }
 
     public void show() {
-        for (VirtualControllerElement element : elements) {
-            element.setVisibility(View.VISIBLE);
-        }
+        showEnabledElements();
 
         buttonConfigure.setVisibility(View.VISIBLE);
+    }
+
+    public int switchShowHide() {
+        if (buttonConfigure.getVisibility() == View.VISIBLE) {
+            hide();
+            return 0;
+        } else {
+            show();
+            return 1;
+        }
+    }
+
+    public void showElements(){
+        for(VirtualControllerElement element : elements){
+            element.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void showEnabledElements(){
+        for(VirtualControllerElement element: elements){
+            element.setVisibility( element.enabled ? View.VISIBLE : View.GONE );
+        }
     }
 
     public void removeElements() {
@@ -198,12 +231,14 @@ public class VirtualController {
         }
     }
 
-    void sendControllerInputContext() {
+    public void sendControllerInputContext() {
         // Cancel retransmissions of prior gamepad inputs
         handler.removeCallbacks(delayedRetransmitRunnable);
 
         sendControllerInputContextInternal();
-
+        if (PreferenceConfiguration.readPreferences(context).enableKeyboardVibrate && vibrator.hasVibrator()) {
+            vibrator.vibrate(10);
+        }
         // HACK: GFE sometimes discards gamepad packets when they are received
         // very shortly after another. This can be critical if an axis zeroing packet
         // is lost and causes an analog stick to get stuck. To avoid this, we retransmit
