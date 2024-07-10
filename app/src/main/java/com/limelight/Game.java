@@ -14,6 +14,7 @@ import com.limelight.binding.input.touch.RelativeTouchContext;
 import com.limelight.binding.input.driver.UsbDriverService;
 import com.limelight.binding.input.evdev.EvdevListener;
 import com.limelight.binding.input.touch.TouchContext;
+import com.limelight.binding.input.touch.TrackpadContext;
 import com.limelight.binding.input.virtual_controller.VirtualController;
 import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardController;
 import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardLayoutController;
@@ -111,6 +112,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     // Only 2 touches are supported
     private final TouchContext[] touchContextMap = new TouchContext[2];
+    private final TouchContext[] trackpadContextMap = new TouchContext[2];
     private long threeFingerDownTime = 0;
 
     private static final int REFERENCE_HORIZ_RES = 1280;
@@ -291,17 +293,17 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             // artificially increasing input latency while streaming.
             streamView.requestUnbufferedDispatch(
                     InputDevice.SOURCE_CLASS_BUTTON | // Keyboards
-                    InputDevice.SOURCE_CLASS_JOYSTICK | // Gamepads
-                    InputDevice.SOURCE_CLASS_POINTER | // Touchscreens and mice (w/o pointer capture)
-                    InputDevice.SOURCE_CLASS_POSITION | // Touchpads
-                    InputDevice.SOURCE_CLASS_TRACKBALL // Mice (pointer capture)
+                            InputDevice.SOURCE_CLASS_JOYSTICK | // Gamepads
+                            InputDevice.SOURCE_CLASS_POINTER | // Touchscreens and mice (w/o pointer capture)
+                            InputDevice.SOURCE_CLASS_POSITION | // Touchpads
+                            InputDevice.SOURCE_CLASS_TRACKBALL // Mice (pointer capture)
             );
             backgroundTouchView.requestUnbufferedDispatch(
                     InputDevice.SOURCE_CLASS_BUTTON | // Keyboards
-                    InputDevice.SOURCE_CLASS_JOYSTICK | // Gamepads
-                    InputDevice.SOURCE_CLASS_POINTER | // Touchscreens and mice (w/o pointer capture)
-                    InputDevice.SOURCE_CLASS_POSITION | // Touchpads
-                    InputDevice.SOURCE_CLASS_TRACKBALL // Mice (pointer capture)
+                            InputDevice.SOURCE_CLASS_JOYSTICK | // Gamepads
+                            InputDevice.SOURCE_CLASS_POINTER | // Touchscreens and mice (w/o pointer capture)
+                            InputDevice.SOURCE_CLASS_POSITION | // Touchpads
+                            InputDevice.SOURCE_CLASS_TRACKBALL // Mice (pointer capture)
             );
         }
 
@@ -1114,28 +1116,28 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @SuppressLint("InlinedApi")
     private final Runnable hideSystemUi = new Runnable() {
-            @Override
-            public void run() {
-                // TODO: Do we want to use WindowInsetsController here on R+ instead of
-                // SYSTEM_UI_FLAG_IMMERSIVE_STICKY? They seem to do the same thing as of S...
+        @Override
+        public void run() {
+            // TODO: Do we want to use WindowInsetsController here on R+ instead of
+            // SYSTEM_UI_FLAG_IMMERSIVE_STICKY? They seem to do the same thing as of S...
 
-                // In multi-window mode on N+, we need to drop our layout flags or we'll
-                // be drawing underneath the system UI.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
-                    Game.this.getWindow().getDecorView().setSystemUiVisibility(
-                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-                }
-                else {
-                    // Use immersive mode
-                    Game.this.getWindow().getDecorView().setSystemUiVisibility(
-                            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                            View.SYSTEM_UI_FLAG_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-                }
+            // In multi-window mode on N+, we need to drop our layout flags or we'll
+            // be drawing underneath the system UI.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode()) {
+                Game.this.getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             }
+            else {
+                // Use immersive mode
+                Game.this.getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            }
+        }
     };
 
     private void hideSystemUi(int delay) {
@@ -1330,15 +1332,15 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         int nonModifierKeyCode = KeyEvent.KEYCODE_UNKNOWN;
 
         if (androidKeyCode == KeyEvent.KEYCODE_CTRL_LEFT ||
-            androidKeyCode == KeyEvent.KEYCODE_CTRL_RIGHT) {
+                androidKeyCode == KeyEvent.KEYCODE_CTRL_RIGHT) {
             modifierMask = KeyboardPacket.MODIFIER_CTRL;
         }
         else if (androidKeyCode == KeyEvent.KEYCODE_SHIFT_LEFT ||
-                 androidKeyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
+                androidKeyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
             modifierMask = KeyboardPacket.MODIFIER_SHIFT;
         }
         else if (androidKeyCode == KeyEvent.KEYCODE_ALT_LEFT ||
-                 androidKeyCode == KeyEvent.KEYCODE_ALT_RIGHT) {
+                androidKeyCode == KeyEvent.KEYCODE_ALT_RIGHT) {
             modifierMask = KeyboardPacket.MODIFIER_ALT;
         }
         else if (androidKeyCode == KeyEvent.KEYCODE_META_LEFT ||
@@ -1624,10 +1626,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return true;
     }
 
-    private TouchContext getTouchContext(int actionIndex)
+    private TouchContext getTouchContext(int actionIndex, TouchContext[] inputContextMap)
     {
-        if (actionIndex < touchContextMap.length) {
-            return touchContextMap[actionIndex];
+        if (actionIndex < inputContextMap.length) {
+            return inputContextMap[actionIndex];
         }
         else {
             return null;
@@ -1678,7 +1680,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return MoonBridge.LI_TOUCH_EVENT_BUTTON_ONLY;
 
             default:
-               return -1;
+                return -1;
         }
     }
 
@@ -1991,19 +1993,20 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             return true;
         }
         else if ((eventSource & InputDevice.SOURCE_CLASS_POINTER) != 0 ||
-                 (eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 ||
-                 eventSource == InputDevice.SOURCE_MOUSE_RELATIVE)
+                (eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 ||
+                eventSource == InputDevice.SOURCE_MOUSE_RELATIVE)
         {
             // This case is for mice and non-finger touch devices
-            if (eventSource == InputDevice.SOURCE_MOUSE ||
-                    (eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 || // SOURCE_TOUCHPAD
-                    eventSource == InputDevice.SOURCE_MOUSE_RELATIVE ||
-                    (event.getPointerCount() >= 1 &&
-                            (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE ||
-                                    event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS ||
-                                    event.getToolType(0) == MotionEvent.TOOL_TYPE_ERASER)) ||
-                    eventSource == 12290) // 12290 = Samsung DeX mode desktop mouse
-            {
+            if (
+                    eventSource == InputDevice.SOURCE_MOUSE ||
+                            ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 && event.getActionButton() != 0) || // SOURCE_TOUCHPAD
+                            (eventSource == InputDevice.SOURCE_MOUSE_RELATIVE ||
+                                    (event.getPointerCount() >= 1 &&
+                                            (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE ||
+                                                    event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS ||
+                                                    event.getToolType(0) == MotionEvent.TOOL_TYPE_ERASER)) ||
+                                    eventSource == 12290) // 12290 = Samsung DeX mode desktop mouse
+            ) {
                 int buttonState = event.getButtonState();
                 int changedButtons = buttonState ^ lastButtonState;
 
@@ -2014,7 +2017,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                         buttonState |= MotionEvent.BUTTON_PRIMARY;
                     }
-                    else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
                         buttonState &= ~MotionEvent.BUTTON_PRIMARY;
                     }
                     else {
@@ -2022,6 +2025,21 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         // so be sure to add that bit back into the button state.
                         buttonState |= (lastButtonState & MotionEvent.BUTTON_PRIMARY);
                     }
+
+                    changedButtons = buttonState ^ lastButtonState;
+                }
+                // Two finger click
+                else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 && event.getPointerCount() == 2 && event.getActionButton() == MotionEvent.BUTTON_PRIMARY) {
+                    if (event.getActionMasked() == MotionEvent.ACTION_BUTTON_PRESS) {
+                        buttonState |= MotionEvent.BUTTON_SECONDARY;
+                    }
+                    else if (event.getActionMasked() == MotionEvent.ACTION_BUTTON_RELEASE) {
+                        buttonState &= ~MotionEvent.BUTTON_SECONDARY;
+                    }
+                    // We may not pressing the primary button down from a previous event,
+                    // so be sure to clear that bit out the button state.
+                    buttonState &= ~MotionEvent.BUTTON_PRIMARY;
+                    buttonState |= (lastButtonState & MotionEvent.BUTTON_PRIMARY);
 
                     changedButtons = buttonState ^ lastButtonState;
                 }
@@ -2073,7 +2091,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                             // Touchpads must be smaller than (65535, 65535)
                             if (xMax <= Short.MAX_VALUE && yMax <= Short.MAX_VALUE) {
                                 conn.sendMousePosition((short)event.getX(), (short)event.getY(),
-                                                       (short)xMax, (short)yMax);
+                                        (short)xMax, (short)yMax);
                             }
                         }
                     }
@@ -2183,152 +2201,55 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 lastButtonState = buttonState;
             }
             // This case is for fingers
-            else
-            {
-                if (virtualController != null &&
-                        (virtualController.getControllerMode() == VirtualController.ControllerMode.MoveButtons ||
-                         virtualController.getControllerMode() == VirtualController.ControllerMode.ResizeButtons||
-                         virtualController.getControllerMode() == VirtualController.ControllerMode.DisableEnableButtons)) {
-                    // Ignore presses when the virtual controller is being configured
-                    return true;
-                }
-
-                if (keyBoardController != null &&
-                        (keyBoardController.getControllerMode() == KeyBoardController.ControllerMode.MoveButtons ||
-                                keyBoardController.getControllerMode() == KeyBoardController.ControllerMode.ResizeButtons||
-                                keyBoardController.getControllerMode() == KeyBoardController.ControllerMode.DisableEnableButtons)) {
-                    // Ignore presses when the virtual controller is being configured
-                    return true;
-                }
-                //禁用鼠标
-                if(disableMouseModel){
-                    return true;
-                }
-
-                // If this is the parent view, we'll offset our coordinates to appear as if they
-                // are relative to the StreamView like our StreamView touch events are.
-                float xOffset, yOffset;
-                if (view != streamView && !prefConfig.touchscreenTrackpad) {
-                    xOffset = -streamView.getX();
-                    yOffset = -streamView.getY();
-                }
-                else {
-                    xOffset = 0.f;
-                    yOffset = 0.f;
-                }
-
-                // TODO: Re-enable native touch when have a better solution for handling
-                // cancelled touches from Android gestures and 3 finger taps to activate the software keyboard.
-                if(prefConfig.enableMultiTouchScreen){
-                    if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
-                        // If this host supports touch events and absolute touch is enabled,
-                        // send it directly as a touch event.
+            else {
+                if (eventSource == InputDevice.SOURCE_TOUCHPAD) {
+                    return handleTouchInput(event, 0.f, 0.f, trackpadContextMap);
+                } else {
+                    if (virtualController != null &&
+                            (virtualController.getControllerMode() == VirtualController.ControllerMode.MoveButtons ||
+                                    virtualController.getControllerMode() == VirtualController.ControllerMode.ResizeButtons)) {
+                        // Ignore presses when the virtual controller is being configured
                         return true;
                     }
-                }
 
-                int actionIndex = event.getActionIndex();
-
-                int eventX = (int)(event.getX(actionIndex) + xOffset);
-                int eventY = (int)(event.getY(actionIndex) + yOffset);
-
-                // Special handling for 3 finger gesture
-                if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN &&
-                        event.getPointerCount() == 3) {
-                    // Three fingers down
-                    threeFingerDownTime = event.getEventTime();
-
-                    // Cancel the first and second touches to avoid
-                    // erroneous events
-                    for (TouchContext aTouchContext : touchContextMap) {
-                        aTouchContext.cancelTouch();
+                    // If this is the parent view, we'll offset our coordinates to appear as if they
+                    // are relative to the StreamView like our StreamView touch events are.
+                    float xOffset, yOffset;
+                    if (view != streamView && !prefConfig.touchscreenTrackpad) {
+                        xOffset = -streamView.getX();
+                        yOffset = -streamView.getY();
+                    } else {
+                        xOffset = 0.f;
+                        yOffset = 0.f;
                     }
 
-                    return true;
-                }
+                    // Special handling for 3 finger gesture
+                    if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN &&
+                            event.getPointerCount() == 3) {
+                        // Three fingers down
+                        threeFingerDownTime = event.getEventTime();
 
-                TouchContext context = getTouchContext(actionIndex);
-                if (context == null) {
-                    return false;
-                }
-
-                switch (event.getActionMasked())
-                {
-                case MotionEvent.ACTION_POINTER_DOWN:
-                case MotionEvent.ACTION_DOWN:
-                    for (TouchContext touchContext : touchContextMap) {
-                        touchContext.setPointerCount(event.getPointerCount());
-                    }
-                    context.touchDownEvent(eventX, eventY, event.getEventTime(), true);
-                    break;
-                case MotionEvent.ACTION_POINTER_UP:
-                case MotionEvent.ACTION_UP:
-                    //是触控板模式 三点呼出软键盘
-                    if(prefConfig.touchscreenTrackpad){
-                        if (event.getPointerCount() == 1 &&
-                                (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || (event.getFlags() & MotionEvent.FLAG_CANCELED) == 0)) {
-                            // All fingers up
-                            if (event.getEventTime() - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
-                                // This is a 3 finger tap to bring up the keyboard
-                                toggleKeyboard();
-                                return true;
-                            }
+                        // Cancel the first and second touches to avoid
+                        // erroneous events
+                        for (TouchContext aTouchContext : touchContextMap) {
+                            aTouchContext.cancelTouch();
                         }
-                    }
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && (event.getFlags() & MotionEvent.FLAG_CANCELED) != 0) {
-                        context.cancelTouch();
-                    }
-                    else {
-                        context.touchUpEvent(eventX, eventY, event.getEventTime());
+
+                        return true;
                     }
 
-                    for (TouchContext touchContext : touchContextMap) {
-                        touchContext.setPointerCount(event.getPointerCount() - 1);
-                    }
-                    if (actionIndex == 0 && event.getPointerCount() > 1 && !context.isCancelled()) {
-                        // The original secondary touch now becomes primary
-                        context.touchDownEvent(
-                                (int)(event.getX(1) + xOffset),
-                                (int)(event.getY(1) + yOffset),
-                                event.getEventTime(), false);
-                    }
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    // ACTION_MOVE is special because it always has actionIndex == 0
-                    // We'll call the move handlers for all indexes manually
-
-                    // First process the historical events
-                    for (int i = 0; i < event.getHistorySize(); i++) {
-                        for (TouchContext aTouchContextMap : touchContextMap) {
-                            if (aTouchContextMap.getActionIndex() < event.getPointerCount())
-                            {
-                                aTouchContextMap.touchMoveEvent(
-                                        (int)(event.getHistoricalX(aTouchContextMap.getActionIndex(), i) + xOffset),
-                                        (int)(event.getHistoricalY(aTouchContextMap.getActionIndex(), i) + yOffset),
-                                        event.getHistoricalEventTime(i));
-                            }
+                    // TODO: Re-enable native touch when have a better solution for handling
+                    // cancelled touches from Android gestures and 3 finger taps to activate
+                    // the software keyboard.
+                    if(prefConfig.enableMultiTouchScreen) {
+                        if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
+                            // If this host supports touch events and absolute touch is enabled,
+                            // send it directly as a touch event.
+                            return true;
                         }
                     }
 
-                    // Now process the current values
-                    for (TouchContext aTouchContextMap : touchContextMap) {
-                        if (aTouchContextMap.getActionIndex() < event.getPointerCount())
-                        {
-                            aTouchContextMap.touchMoveEvent(
-                                    (int)(event.getX(aTouchContextMap.getActionIndex()) + xOffset),
-                                    (int)(event.getY(aTouchContextMap.getActionIndex()) + yOffset),
-                                    event.getEventTime());
-                        }
-                    }
-                    break;
-                case MotionEvent.ACTION_CANCEL:
-                    for (TouchContext aTouchContext : touchContextMap) {
-                        aTouchContext.cancelTouch();
-                        aTouchContext.setPointerCount(0);
-                    }
-                    break;
-                default:
-                    return false;
+                    return handleTouchInput(event, xOffset, yOffset, touchContextMap);
                 }
             }
 
@@ -2338,6 +2259,99 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // Unknown class
         return false;
+    }
+
+    private boolean handleTouchInput(MotionEvent event, float xOffset, float yOffset, TouchContext[] inputContextMap) {
+        int actionIndex = event.getActionIndex();
+
+        int eventX = (int)(event.getX(actionIndex) + xOffset);
+        int eventY = (int)(event.getY(actionIndex) + yOffset);
+
+        TouchContext context = getTouchContext(actionIndex, inputContextMap);
+        if (context == null) {
+            return false;
+        }
+
+        switch (event.getActionMasked())
+        {
+            case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_DOWN:
+                for (TouchContext touchContext : inputContextMap) {
+                    touchContext.setPointerCount(event.getPointerCount());
+                }
+                context.touchDownEvent(eventX, eventY, event.getEventTime(), true);
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_UP:
+                //是触控板模式 三点呼出软键盘
+                if(prefConfig.touchscreenTrackpad){
+                    if (event.getPointerCount() == 1 &&
+                            (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || (event.getFlags() & MotionEvent.FLAG_CANCELED) == 0)) {
+                        // All fingers up
+                        if (event.getEventTime() - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
+                            // This is a 3 finger tap to bring up the keyboard
+                            toggleKeyboard();
+                            return true;
+                        }
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && (event.getFlags() & MotionEvent.FLAG_CANCELED) != 0) {
+                    context.cancelTouch();
+                }
+                else {
+                    context.touchUpEvent(eventX, eventY, event.getEventTime());
+                }
+
+                for (TouchContext touchContext : inputContextMap) {
+                    touchContext.setPointerCount(event.getPointerCount() - 1);
+                }
+                if (actionIndex == 0 && event.getPointerCount() > 1 && !context.isCancelled()) {
+                    // The original secondary touch now becomes primary
+                    context.touchDownEvent(
+                            (int)(event.getX(1) + xOffset),
+                            (int)(event.getY(1) + yOffset),
+                            event.getEventTime(), false);
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                // ACTION_MOVE is special because it always has actionIndex == 0
+                // We'll call the move handlers for all indexes manually
+
+                // First process the historical events
+                for (int i = 0; i < event.getHistorySize(); i++) {
+                    for (TouchContext aTouchContextMap : inputContextMap) {
+                        if (aTouchContextMap.getActionIndex() < event.getPointerCount())
+                        {
+                            aTouchContextMap.touchMoveEvent(
+                                    (int)(event.getHistoricalX(aTouchContextMap.getActionIndex(), i) + xOffset),
+                                    (int)(event.getHistoricalY(aTouchContextMap.getActionIndex(), i) + yOffset),
+                                    event.getHistoricalEventTime(i));
+                        }
+                    }
+                }
+
+                // Now process the current values
+                for (TouchContext aTouchContextMap : inputContextMap) {
+                    if (aTouchContextMap.getActionIndex() < event.getPointerCount())
+                    {
+                        aTouchContextMap.touchMoveEvent(
+                                (int)(event.getX(aTouchContextMap.getActionIndex()) + xOffset),
+                                (int)(event.getY(aTouchContextMap.getActionIndex()) + yOffset),
+                                event.getEventTime());
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                for (TouchContext aTouchContext : inputContextMap) {
+                    aTouchContext.cancelTouch();
+                    aTouchContext.setPointerCount(0);
+                }
+                break;
+            default:
+                return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -2364,7 +2378,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         if (event.getPointerCount() == 1 && event.getActionIndex() == 0 &&
                 (event.getToolType(0) == MotionEvent.TOOL_TYPE_ERASER ||
-                event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS))
+                        event.getToolType(0) == MotionEvent.TOOL_TYPE_STYLUS))
         {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
@@ -2792,24 +2806,24 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         switch (buttonId)
         {
-        case EvdevListener.BUTTON_LEFT:
-            buttonIndex = MouseButtonPacket.BUTTON_LEFT;
-            break;
-        case EvdevListener.BUTTON_MIDDLE:
-            buttonIndex = MouseButtonPacket.BUTTON_MIDDLE;
-            break;
-        case EvdevListener.BUTTON_RIGHT:
-            buttonIndex = MouseButtonPacket.BUTTON_RIGHT;
-            break;
-        case EvdevListener.BUTTON_X1:
-            buttonIndex = MouseButtonPacket.BUTTON_X1;
-            break;
-        case EvdevListener.BUTTON_X2:
-            buttonIndex = MouseButtonPacket.BUTTON_X2;
-            break;
-        default:
-            LimeLog.warning("Unhandled button: "+buttonId);
-            return;
+            case EvdevListener.BUTTON_LEFT:
+                buttonIndex = MouseButtonPacket.BUTTON_LEFT;
+                break;
+            case EvdevListener.BUTTON_MIDDLE:
+                buttonIndex = MouseButtonPacket.BUTTON_MIDDLE;
+                break;
+            case EvdevListener.BUTTON_RIGHT:
+                buttonIndex = MouseButtonPacket.BUTTON_RIGHT;
+                break;
+            case EvdevListener.BUTTON_X1:
+                buttonIndex = MouseButtonPacket.BUTTON_X1;
+                break;
+            case EvdevListener.BUTTON_X2:
+                buttonIndex = MouseButtonPacket.BUTTON_X2;
+                break;
+            default:
+                LimeLog.warning("Unhandled button: "+buttonId);
+                return;
         }
 
         if (down) {
@@ -2975,6 +2989,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             prefConfig.enableMultiTouchScreen=false;
             prefConfig.touchscreenTrackpad=false;
         }
+        // Initialize trackpad contexts
+        for (int i = 0; i < trackpadContextMap.length; i++) {
+            trackpadContextMap[i] = new TrackpadContext(conn, i);
+        }
+        // Initialize touch contexts
         for (int i = 0; i < touchContextMap.length; i++) {
             if (!prefConfig.touchscreenTrackpad) {
                 if(which==4){
