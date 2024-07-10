@@ -119,8 +119,8 @@ android {
             // is to please change the applicationId before you publish.
             //
             // TL;DR: Leave the following line alone!
-            applicationIdSuffix ".unofficialA"
-            resValue "string", "app_label", "月光·阿西西"
+            applicationIdSuffix ".unofficialBLACK"
+            resValue "string", "app_label", "黑月光"
             resValue "string", "app_label_root", "Moonlight (Root)"
 
             minifyEnabled true

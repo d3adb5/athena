@@ -498,11 +498,11 @@
 
         <com.limelight.preferences.WebLauncherPreference
             android:title="软件版本更新"
-            android:summary="跳转到github获取releases"
-            url="https://github.com/Axixi2233/moonlight-android/releases"/>
+            android:summary="ClassicOldSong 黑月光修改版 - 跳转到github获取releases"
+            url="https://github.com/ClassicOldSong/moonlight-android/releases"/>
 
         <com.limelight.preferences.WebLauncherPreference
-            android:title="关于作者"
+            android:title="关于原Fork"
             android:summary="跳转到B站阿西西的日常个人首页"
             url="https://space.bilibili.com/16893379"/>
 
