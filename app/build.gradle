@@ -11,7 +11,7 @@ android {
         minSdk 21
         targetSdk 34
 
-        versionName "12.1-240707-axi"
+        versionName "12.1-240712-nior"
         versionCode = 314
 
         // Generate native debug symbols to allow Google Play to symbolicate our native crashes
@@ -81,9 +81,9 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix ".debug"
-            resValue "string", "app_label", "Moonlight (Debug)"
-            resValue "string", "app_label_root", "Moonlight (Root Debug)"
+            applicationIdSuffix ".niordebug"
+            resValue "string", "app_label", "Moonlight Nior (Debug)"
+            resValue "string", "app_label_root", "Moonlight Nior (Root Debug)"
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -119,9 +119,9 @@ android {
             // is to please change the applicationId before you publish.
             //
             // TL;DR: Leave the following line alone!
-            applicationIdSuffix ".unofficialBLACK"
-            resValue "string", "app_label", "黑月光"
-            resValue "string", "app_label_root", "Moonlight (Root)"
+            applicationIdSuffix ".nior"
+            resValue "string", "app_label", "Moonlight Nior"
+            resValue "string", "app_label_root", "Moonlight Nior (Root)"
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

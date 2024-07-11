@@ -294,47 +294,43 @@
     <string name="pacing_smoothness">Prefer smoothest video (may significantly increase latency)</string>
 
 
-    <string name="keyboard_service_label">Moonlight物理键盘</string>
-    <string name="accessibility_description_text">此功能仅用于外接实体键盘时，某些系统存在特定的键盘快捷键，此情况会影响串流过程中，无法将相关按键指令传输给目标PC。
-        \n\nMoonlight不会观察您输入的文本，也不会收集您的密码、信用卡号或任何其他信息。
-        \n\n请关注：B站-阿西西的日常</string>
+    <string name="keyboard_service_label">Moonlight Physical keyboard</string>
+    <string name="accessibility_description_text">Only used when physical keyboard shortcut were intercepted by system. In some systems, several keyboard shortcut are defind and used by the Android system, causing them not being able to be passed through to the host PC. Moonlight will not look through your input, nor collecting your password, credit card number or any other private information.</string>
 
 
     <!-- In Game menu -->
-    <string name="game_menu_toggle_keyboard">弹出软键盘</string>
-    <string name="game_menu_hud">(显示/隐藏)性能信息</string>
-    <string name="game_menu_switch_mouse_model">鼠标模式切换</string>
-    <string name="game_menu_switch_keyboard_model">(显示/隐藏)特殊按键</string>
-    <string name="game_menu_switch_virtual_model">(显示/隐藏)虚拟手柄</string>
-    <string name="game_menu_switch_virtual_keyboard_model">(显示/隐藏)虚拟全键盘</string>
-    <string name="game_menu_switch_touch_sensitivity_model">触控灵敏度切换</string>
+    <string name="game_menu_toggle_keyboard">Show soft keyboard</string>
+    <string name="game_menu_hud">(Show/Hide) Preformance monitor</string>
+    <string name="game_menu_switch_mouse_model">Switch mouse mode</string>
+    <string name="game_menu_switch_keyboard_model">(Show/Hide) Special keys</string>
+    <string name="game_menu_switch_virtual_model">(Show/Hide) On-screen controller</string>
+    <string name="game_menu_switch_virtual_keyboard_model">(Show/Hide) On-screen full keyboard</string>
+    <string name="game_menu_switch_touch_sensitivity_model">Switch touch sensitivity</string>
 
 
     <string name="game_menu_toggle_mouse_on">Enable Controller Mouse Emulation</string>
     <string name="game_menu_toggle_mouse_off">Disable Controller Mouse Emulation</string>
-    <string name="game_menu_disconnect">断开连接</string>
-    <string name="game_menu_cancel">取消</string>
-    <string name="game_menu_send_keys">发送特殊按键</string>
+    <string name="game_menu_disconnect">Disconnect</string>
+    <string name="game_menu_cancel">Cancel</string>
+    <string name="game_menu_send_keys">Send special keys</string>
     <string name="game_menu_send_keys_esc">Send ESC</string>
     <string name="game_menu_send_keys_f11">Send F11</string>
     <string name="game_menu_send_keys_alt_f4">Send Alt + F4</string>
-    <string name="game_menu_send_keys_ctrl_v">Send Ctrl + V (粘贴剪切板)</string>
-    <string name="game_menu_send_keys_win">Send Win (打开Windows开始菜单)</string>
-    <string name="game_menu_send_keys_win_d">Send Win + D (返回桌面)</string>
-    <string name="game_menu_send_keys_alt_b">Send ALT + B (切换HDR)</string>
-    <string name="game_menu_send_keys_win_x_u_s">Send Win + X ~ U + S (睡眠)</string>
-    <string name="game_menu_send_keys_win_x_u_r">Send Win + X ~ U + R (重启)</string>
-    <string name="game_menu_send_keys_win_x_u_u">Send Win + X ~ U + U (关机)</string>
-    <string name="game_menu_send_keys_win_x_u_i">Send Win + X ~ U + I (注销)</string>
-    <string name="game_menu_send_keys_win_g">Send Win + G (打开Xbox Game Bar)</string>
-    <string name="game_menu_send_keys_shift_tab">Send Shift + Tab (打开Steam Overlay)</string>
+    <string name="game_menu_send_keys_ctrl_v">Send Ctrl + V</string>
+    <string name="game_menu_send_keys_win">Send Win (Meta)</string>
+    <string name="game_menu_send_keys_win_d">Send Win + D</string>
+    <string name="game_menu_send_keys_alt_b">Send ALT + B</string>
+    <string name="game_menu_send_keys_win_x_u_s">Send Win + X ~ U + S (Sleep)</string>
+    <string name="game_menu_send_keys_win_x_u_r">Send Win + X ~ U + R (Reboot)</string>
+    <string name="game_menu_send_keys_win_x_u_u">Send Win + X ~ U + U (Power Off)</string>
+    <string name="game_menu_send_keys_win_x_u_i">Send Win + X ~ U + I (Log Out)</string>
+    <string name="game_menu_send_keys_win_g">Send Win + G (Xbox Game Bar)</string>
+    <string name="game_menu_send_keys_shift_tab">Send Shift + Tab (Steam Overlay)</string>
     <string name="game_menu_send_keys_alt_enter">Send Alt + Enter</string>
-    <string name="game_menu_send_keys_win_shift_left">Send Win + shift + left (切换桌面)</string>
-    <string name="game_menu_send_keys_ctrl_alt_shift_q">Send Ctrl+Alt+Shift+Q (PC退出串流)</string>
-    <string name="game_menu_send_keys_ctrl_alt_shift_f1">Send Ctrl+Alt+Shift+F1 (切换显示器)</string>
-    <string name="game_menu_send_keys_ctrl_alt_shift_f12">Send Ctrl+Alt+Shift+F12 (切换显示器)</string>
-
-
+    <string name="game_menu_send_keys_win_shift_left">Send Win + shift + left (Switch Desktop)</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_q">Send Ctrl+Alt+Shift+Q (PC Exit Streaming)</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_f1">Send Ctrl+Alt+Shift+F1 (Switch Monitor)</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_f12">Send Ctrl+Alt+Shift+F12 (Switch Monitor)</string>
 
     <string name="title_analog_scrolling">Use an analog stick to scroll</string>
     <string name="summary_analog_scrolling">Select an analog stick to scroll when in mouse emulation mode</string>
@@ -347,6 +343,85 @@
     <string name="perf_overlay_lite_netdrops">%1$.2f%%</string>
     <string name="perf_overlay_lite_streamdetails">%1$s</string>
     <string name="perf_overlay_lite_fps">%1$.2f</string>
-    <string name="perf_overlay_lite_decoder">解码器： %1$s</string>
+    <string name="perf_overlay_lite_decoder">Decoder: %1$s</string>
+    <string name="title_import_keyboard_layout">Import keyboard layout</string>
+    <string name="title_export_keyboard_layout">Export keyboard layout</string>
+    <string name="summary_import_keyboard_layout">This will overwrite the current layout.</string>
+    <string name="summary_export_keyboard_layout">Export the current keyboard layout</string>
+    <string name="title_manual_enter_bitrate">Enter bitrate manually</string>
+    <string name="summary_manual_enter_bitrate">Enter bitrate manually.\nCan exceed the maximum range of the seekbar.</string>
+    <string name="dialog_manual_enter_bitrate">Enter bitrate in Mbps. Round to 0.5.</string>
+    <string name="title_touchscreen_mode">Touchscreen Mode</string>
+    <string name="summary_touchscreen_mode">Select between MultiTouch/SingleTouch/Trackpad/Disabled mode</string>
+
+    <!-- New Strings -->
+    <string name="title_checkbox_mouse_local_cursor">Use local mouse cursor</string>
+    <string name="summary_checkbox_mouse_local_cursor">Default external physical mouse cursor will be captured, this option can display Android system cursor</string>
+    <string name="title_checkbox_onscreen_style_official">Official Virtual Gamepad Skin</string>
+    <string name="summary_checkbox_onscreen_style_official">If you still like the old style of official virtual gamepad buttons, you can select this option.\nButton shapes can be square if you selected the bottom virtual button [Normal buttons are square buttons]</string>
+    <string name="title_checkbox_enable_perf_overlay_lite">Enable Lite mode</string>
+    <string name="summary_checkbox_enable_perf_overlay_lite">Display simplified performance information: Network Speed / Latency / Decode / Packet Loss Rate / FPS</string>
+    <string name="title_checkbox_enable_perf_overlay_lite_dialog">Lite mode click to pop up quick options</string>
+    <string name="summary_checkbox_enable_perf_overlay_lite_dialog">Replace the back button logic, pop up the game quick menu.</string>
+    <string name="title_axixi_settings">Axixi\'s Daily Settings</string>
+    <string name="title_quit_dialog">Quick Options</string>
+    <string name="summary_quit_dialog">When enabled, clicking the physical back button on the streaming interface will show related options!\nSoft keyboard, performance information, touch mode switching, send special keys</string>
+    <string name="title_sbs_mode">Side-By-Side Mode</string>
+    <string name="summary_sbs_mode">Left-right format 3D mode, for entertainment only! External handle required!</string>
+    <string name="dialog_custom_resolution">Set the resolution and exit the settings page to take effect!</string>
+    <string name="summary_custom_resolution">Add a custom resolution, separated by x, strange resolutions may not work.\nFor example: 1920x1080\nIf it is a non-native resolution, it may not fill the notch area by default. If the aspect ratio is the same, you can manually set to stretch the screen to fill the full screen</string>
+    <string name="title_custom_resolution">Custom Resolution</string>
+    <string name="title_portrait_mode">Portrait Display Mode</string>
+    <string name="summary_portrait_mode">Use with custom resolution, make sure your streaming terminal supports it and the PC resolution is vertical</string>
+    <string name="title_import_special_button">Import custom special button configuration file</string>
+    <string name="summary_import_special_button">Each import will overwrite the previous one, please backup accordingly.</string>
+    <string name="title_software_update">Software Version Update</string>
+    <string name="summary_software_update">Moonlight Nior Version by ClassicOldSong - Jump to GitHub to get releases</string>
+    <string name="title_about_fork">About Original Fork</string>
+    <string name="summary_about_fork">Jump to Axixi\'s Daily personal homepage on Bilibili</string>
+    <string name="title_special_key_layout">Special Key Layout - Axixi\'s Daily</string>
+    <string name="title_show_virtual_key">Display virtual keys on screen</string>
+    <string name="summary_show_virtual_key">Display a layer of virtual special keys on the touchscreen.\nKey opacity is shared with the virtual gamepad above.</string>
+    <string name="title_default_layout_scheme">Default layout scheme</string>
+    <string name="summary_default_layout_scheme">Each layout scheme is initially the same (generated based on the keyboards.json file), you can delete and adjust it yourself</string>
+    <string name="summary_vibrate_keyboard">When you click the screen button, it will trigger the phone motor vibration. This option can also be used for virtual gamepad buttons.</string>
+    <string name="title_square_buttons">Normal buttons are square buttons</string>
+    <string name="summary_square_buttons">Virtual button shapes are square buttons, by default they are round.</string>
+    <string name="title_reset_keyboard_layout">Reset virtual keyboard layout</string>
+    <string name="summary_reset_keyboard_layout">Initialize the special key layout (reset the default selected layout scheme)</string>
+    <string name="title_joyconfix">Compatible with Switch JoyCon Handle</string>
+    <string name="summary_joyconfix">If your JoyCon cannot be used or has key recognition issues, you can try to enable this feature. Adapted for Android 10 and above</string>
+    <string name="title_keyboard_opacity">Virtual Full Keyboard Opacity</string>
+    <string name="title_keyboard_height">Virtual Full Keyboard Height</string>
+    <string name="summary_keyboard_height">Adjust the height of the virtual full keyboard</string>
+    <string name="title_free_analog_stick">Free Analog Stick</string>
+    <string name="summary_free_analog_stick">Virtual gamepad left and right stick center point positions are not fixed, can be freely adjusted within a certain range of movement.</string>
+    <string name="summary_free_analog_stick_opacity">By default, only when the stick moves, the background is displayed. If you don\'t like it, you can adjust the opacity effect.</string>
+    <string name="title_free_analog_stick_opacity">Free Analog Stick Background Opacity</string>
+    <string name="title_exdisplay_mode">External Display Mode (Beta)</string>
+    <string name="summary_exdisplay_mode">Stream display on the monitor, virtual buttons and performance information and other controls on the phone screen.</string>
+    <string name="title_top_center_display">Top Center Display</string>
+    <string name="summary_top_center_display">May help with foldable phones, set the resolution to the top half screen resolution, select this option, the picture will be displayed on the top half of the screen instead of centered display.</string>
+    <string name="title_touch_sensitivity">Touch Screen Sensitivity</string>
+    <string name="summary_touch_sensitivity">When enabled, you can manually adjust the touch sensitivity.</string>
+    <string name="title_global_touch_sensitivity">Touch Screen Sensitivity Global Effect</string>
+    <string name="summary_global_touch_sensitivity">By default not selected, only effective on the right half of the screen (suitable for playing Genshin Impact), selected to be effective within the full screen range.</string>
+    <string name="title_auto_touch_sensitivity">Automatically return to screen center when touch coordinates exceed boundary</string>
+    <string name="summary_auto_touch_sensitivity">Normally high sensitivity, small sliding distance will exceed the boundary, resulting in unable to move, you can select this option.</string>
+    <string name="title_touch_sensitivity_x">Screen Sensitivity Adjustment X Axis</string>
+    <string name="summary_touch_sensitivity_x">Multi-touch mode, when playing games, some games may not meet the sensitivity adjustment needs, you can use this option to modify the sensitivity of the field of view.</string>
+    <string name="title_touch_sensitivity_y">Screen Sensitivity Adjustment Y Axis</string>
+    <string name="summary_touch_sensitivity_y">Multi-touch mode, when playing games, some games may not meet the sensitivity adjustment needs, you can use this option to modify the sensitivity of the field of view.</string>
+    <string name="title_axi_test">Axixi\'s Test Page</string>
+    <string name="summary_axi_test">Test handle vibration and other content.</string>
+    <string name="title_touchpad_sensitivity_x">Touchpad Sensitivity X Axis</string>
+    <string name="summary_touchpad_sensitivity_x">For mouse touchpad mode and virtual special button touchpad control;\nBoth share a sensitivity value, but the sensitivity performance may be different.\nDoes anyone use both together?</string>
+    <string name="title_touchpad_sensitivity_y">Touchpad Sensitivity Y Axis</string>
+    <string name="summary_touchpad_sensitivity_y">For mouse touchpad mode and virtual special button touchpad control;\nBoth share a sensitivity value, but the sensitivity performance may be different.\nDoes anyone use both together?</string>
+    <string name="title_device_rumble">Force use of device\'s own vibration motor</string>
+    <string name="summary_device_rumble">If you are not satisfied with the vibration effect of the connected handle itself, you can enable this option! [Invalid for forced use of Moonlight\'s built-in USB driver]</string>
+    <string name="title_clear_default_special_button">Disable default special button commands</string>
+    <string name="summary_clear_default_special_button">If you feel the built-in commands are useless to you, you can disable them and use your imported ones.</string>
 
 </resources>
+
