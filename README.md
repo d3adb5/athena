@@ -1,29 +1,31 @@
-# Moonlight Android阿西西修改版
-## 此项目实现对官方Moonlight安卓端功能修改<br>
-### 如果你特别喜欢某些功能，可以自行提取相关代码，提交到官方库合并请求，无需备注来源于此项目<br>
-### 最后切勿将此项目代码用于商业软件中。<br>
-### 如果喜欢数码和游戏，可以关注我B站账号(https://space.bilibili.com/16893379)
+# Moonlight Android Nior
 
-此项目版本主要实现如下功能：<br>
-1、自定义虚拟按键 支持导入导出<br>
-2、自定义分辨率<br>
-3、自定义码率<br>
-4、多种鼠标模式切换（普通鼠标、多点触控、触控板、禁用触屏操作、本地鼠标模式）<br>
-5、虚拟手柄皮肤优化、自由摇杆<br>
-6、外接显示器模式<br>
-7、适配joycon十字键<br>
-8、精简的性能信息显示<br>
-9、游戏快捷菜单选项<br>
-10、自定义快捷指令<br>
-11、方便切换软键盘<br>
-12、竖屏模式<br>
-13、SBS娱乐模式<br>
-14、画面置顶显示 折叠屏有点用<br>
-15、虚拟触控板空间及灵敏度调节，游玩右键转视角游戏。例如魔兽<br>
-16、强制使用设备本身的震动马达（可能你的手柄震动效果不佳）<br>
-17、阿西西手柄调试页面 查看手柄震动及陀螺仪信息、安卓内核版本信息<br>
+Based on https://github.com/Axixi2233/moonlight-android
 
+- This project implements modifications to the official Moonlight Android app.
+- If you particularly like certain features, you can extract the relevant code and submit a merge request to the official repository without mentioning that it comes from this project.
+- Finally, do not use this project's code in commercial software.
+- If you like digital gadgets and games, you can follow my Bilibili account (https://space.bilibili.com/16893379).
 
+This project version mainly implements the following features:
+1. Custom virtual buttons with import and export support.
+2. Custom resolutions.
+3. Custom bitrates.
+4. Multiple mouse mode switching (normal mouse, multi-touch, touchpad, disable touch operations, local mouse mode).
+5. Optimized virtual gamepad skins and free joystick.
+6. External monitor mode.
+7. Joycon D-pad support.
+8. Simplified performance information display.
+9. Game shortcut menu options.
+10. Custom shortcut commands.
+11. Easy soft keyboard switching.
+12. Portrait mode.
+13. SBS entertainment mode.
+14. Topmost display for the screen, useful for foldable screens.
+15. Virtual touchpad space and sensitivity adjustment for playing right-click view games, such as Warcraft.
+16. Force the use of the device's own vibration motor (in case your gamepad's vibration is not effective).
+17. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
+18. Trackpad tap/scrolling support
 
 # Moonlight Android
 
