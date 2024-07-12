@@ -248,7 +248,7 @@ public class GameMenu {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                Toast.makeText(game,"自定义导入格式出错了，请检查！",Toast.LENGTH_SHORT).show();
+                Toast.makeText(game,getString(R.string.wrong_import_format),Toast.LENGTH_SHORT).show();
             }
         }
         options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
@@ -289,6 +289,6 @@ public class GameMenu {
 
         options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
 
-        showMenuDialog("游戏快捷菜单", options.toArray(new MenuOption[options.size()]));
+        showMenuDialog(getString(R.string.quick_menu_title), options.toArray(new MenuOption[options.size()]));
     }
 }
