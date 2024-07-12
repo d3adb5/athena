@@ -178,6 +178,16 @@
             android:title="@string/title_checkbox_absolute_mouse_mode"
             android:summary="@string/summary_checkbox_absolute_mouse_mode"
             android:defaultValue="false" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="checkbox_force_qwerty"
+            android:summary="@string/summary_checkbox_force_qwerty"
+            android:title="@string/title_checkbox_force_qwerty" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="checkbox_back_as_meta"
+            android:summary="@string/summary_back_as_meta"
+            android:title="@string/title_checkbox_back_as_meta" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_on_screen_controls_settings"
         android:key="category_onscreen_controls">

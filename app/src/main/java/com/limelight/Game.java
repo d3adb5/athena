@@ -540,7 +540,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 httpsPort, uniqueId, config,
                 PlatformBinding.getCryptoProvider(this), serverCert);
         controllerHandler = new ControllerHandler(this, conn, this, prefConfig);
-        keyboardTranslator = new KeyboardTranslator();
+        keyboardTranslator = new KeyboardTranslator(prefConfig);
 
         InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
@@ -1514,18 +1514,22 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             // as UTF-8 text (if it's a printable character).
             short translated = keyboardTranslator.translate(event.getKeyCode(), event.getDeviceId());
             if (translated == 0) {
-                // Make sure it has a valid Unicode representation and it's not a dead character
-                // (which we don't support). If those are true, we can send it as UTF-8 text.
-                //
-                // NB: We need to be sure this happens before the getRepeatCount() check because
-                // UTF-8 events don't auto-repeat on the host side.
-                int unicodeChar = event.getUnicodeChar();
-                if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) == 0 && (unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK) != 0) {
-                    conn.sendUtf8Text(""+(char)unicodeChar);
-                    return true;
-                }
+                if (prefConfig.backAsMeta && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                    translated = 0x5b; // Meta key
+                } else {
+                    // Make sure it has a valid Unicode representation and it's not a dead character
+                    // (which we don't support). If those are true, we can send it as UTF-8 text.
+                    //
+                    // NB: We need to be sure this happens before the getRepeatCount() check because
+                    // UTF-8 events don't auto-repeat on the host side.
+                    int unicodeChar = event.getUnicodeChar();
+                    if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) == 0 && (unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK) != 0) {
+                        conn.sendUtf8Text(""+(char)unicodeChar);
+                        return true;
+                    }
 
-                return false;
+                    return false;
+                }
             }
 
             // Eat repeat down events
@@ -1591,10 +1595,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             short translated = keyboardTranslator.translate(event.getKeyCode(), event.getDeviceId());
             if (translated == 0) {
-                // If we sent this event as UTF-8 on key down, also report that it was handled
-                // when we get the key up event for it.
-                int unicodeChar = event.getUnicodeChar();
-                return (unicodeChar & KeyCharacterMap.COMBINING_ACCENT) == 0 && (unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK) != 0;
+                if (prefConfig.backAsMeta && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                    translated = 0x5b; // Meta key
+                } else {
+                    // If we sent this event as UTF-8 on key down, also report that it was handled
+                    // when we get the key up event for it.
+                    int unicodeChar = event.getUnicodeChar();
+                    return (unicodeChar & KeyCharacterMap.COMBINING_ACCENT) == 0 && (unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK) != 0;
+                }
             }
 
             conn.sendKeyboardInput(translated, KeyboardPacket.KEY_UP, getModifierState(event),

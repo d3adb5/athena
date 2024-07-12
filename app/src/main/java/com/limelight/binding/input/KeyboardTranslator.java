@@ -7,6 +7,8 @@ import android.util.SparseArray;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 
+import com.limelight.preferences.PreferenceConfiguration;
+
 import java.util.Arrays;
 
 /**
@@ -86,7 +88,7 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
 
     public static final int VK_F4 = 115;
 
-
+    private final PreferenceConfiguration prefConfig;
 
     private static class KeyboardMapping {
         private final InputDevice device;
@@ -126,7 +128,8 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
 
     private final SparseArray<KeyboardMapping> keyboardMappings = new SparseArray<>();
 
-    public KeyboardTranslator() {
+    public KeyboardTranslator(PreferenceConfiguration prefConfig) {
+        this.prefConfig = prefConfig;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             for (int deviceId : InputDevice.getDeviceIds()) {
                 InputDevice device = InputDevice.getDevice(deviceId);
@@ -163,7 +166,8 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
         int translated;
 
         // If a device ID was provided, look up the keyboard mapping
-        if (deviceId >= 0) {
+        // Force qwerty will break user's keyboard layout settings
+        if (prefConfig.forceQwerty && deviceId >= 0) {
             KeyboardMapping mapping = keyboardMappings.get(deviceId);
             if (mapping != null) {
                 // Try to map this device-specific keycode onto a QWERTY layout.

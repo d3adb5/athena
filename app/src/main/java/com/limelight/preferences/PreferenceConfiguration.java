@@ -68,6 +68,9 @@ public class PreferenceConfiguration {
     private static final String GAMEPAD_MOTION_SENSORS_PREF_STRING = "checkbox_gamepad_motion_sensors";
     private static final String GAMEPAD_MOTION_FALLBACK_PREF_STRING = "checkbox_gamepad_motion_fallback";
 
+    private static final String CHECKBOX_FORCE_QWERTY = "checkbox_force_qwerty";
+    private static final String CHECKBOX_BACK_AS_META = "checkbox_back_as_meta";
+
     //是否弹出软键盘
     private static final String CHECKBOX_ENABLE_QUIT_DIALOG = "checkbox_enable_quit_dialog";
 
@@ -125,6 +128,8 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_GAMEPAD_TOUCHPAD_AS_MOUSE = false;
     private static final boolean DEFAULT_GAMEPAD_MOTION_SENSORS = true;
     private static final boolean DEFAULT_GAMEPAD_MOTION_FALLBACK = false;
+    private static final boolean DEFAULT_FORCE_QWERTY = true;
+    private static final boolean DEFAULT_SEND_META_ON_PHYSICAL_BACK = false;
 
     public static final int FRAME_PACING_MIN_LATENCY = 0;
     public static final int FRAME_PACING_BALANCED = 1;
@@ -150,6 +155,8 @@ public class PreferenceConfiguration {
     public String language;
     public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
     public boolean onscreenController;
+    public boolean forceQwerty;
+    public boolean backAsMeta;
     public boolean onlyL3R3;
     public boolean enableHdr;
     public boolean enablePip;
@@ -725,6 +732,8 @@ public class PreferenceConfiguration {
         config.touchPadYSensitity=prefs.getInt("seekbar_touchpad_sensitivity_y_opacity",100);
 
         config.absoluteMouseMode = prefs.getBoolean(ABSOLUTE_MOUSE_MODE_PREF_STRING, DEFAULT_ABSOLUTE_MOUSE_MODE);
+        config.forceQwerty = prefs.getBoolean(CHECKBOX_FORCE_QWERTY, DEFAULT_FORCE_QWERTY);
+        config.backAsMeta = prefs.getBoolean(CHECKBOX_BACK_AS_META, DEFAULT_SEND_META_ON_PHYSICAL_BACK);
         config.enableAudioFx = prefs.getBoolean(ENABLE_AUDIO_FX_PREF_STRING, DEFAULT_ENABLE_AUDIO_FX);
         config.reduceRefreshRate = prefs.getBoolean(REDUCE_REFRESH_RATE_PREF_STRING, DEFAULT_REDUCE_REFRESH_RATE);
         config.fullRange = prefs.getBoolean(FULL_RANGE_PREF_STRING, DEFAULT_FULL_RANGE);

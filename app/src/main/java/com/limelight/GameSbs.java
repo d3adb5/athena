@@ -487,7 +487,7 @@ public class GameSbs extends Activity implements TextureView.SurfaceTextureListe
                 PlatformBinding.getCryptoProvider(this), serverCert);
 
         controllerHandler = new ControllerHandler(this, conn, this, prefConfig);
-        keyboardTranslator = new KeyboardTranslator();
+        keyboardTranslator = new KeyboardTranslator(prefConfig);
 
         InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
         inputManager.registerInputDeviceListener(keyboardTranslator, null);

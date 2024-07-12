@@ -422,6 +422,10 @@
     <string name="summary_device_rumble">If you are not satisfied with the vibration effect of the connected handle itself, you can enable this option! [Invalid for forced use of Moonlight\'s built-in USB driver]</string>
     <string name="title_clear_default_special_button">Disable default special button commands</string>
     <string name="summary_clear_default_special_button">If you feel the built-in commands are useless to you, you can disable them and use your imported ones.</string>
+    <string name="title_checkbox_force_qwerty">Force QWERTY layout</string>
+    <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout. Required by GFE. Turn off if you want to use a different keyboard layout.</string>
+    <string name="title_checkbox_back_as_meta">Back button as Meta</string>
+    <string name="summary_back_as_meta">Send Meta(Win) key on physical back button press.</string>
 
 </resources>
 
