@@ -26,6 +26,8 @@ This project version mainly implements the following features:
 16. Force the use of the device's own vibration motor (in case your gamepad's vibration is not effective).
 17. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
 18. Trackpad tap/scrolling support
+19. Non-QWERTY keyboard layout support
+20. Quick Meta key with physicl BACK button
 
 # Moonlight Android
 
