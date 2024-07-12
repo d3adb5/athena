@@ -426,6 +426,9 @@
     <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout. Required by GFE. Turn off if you want to use a different keyboard layout.</string>
     <string name="title_checkbox_back_as_meta">Back button as Meta</string>
     <string name="summary_back_as_meta">Send Meta(Win) key on physical back button press.</string>
+    <string name="perf_overlay_lite_bandwidth">Bandwidth</string>
+    <string name="perf_overlay_lite_network_decoding_delay">Network/Decoding delay</string>
+    <string name="perf_overlay_lite_packet_loss">Packet loss</string>
 
 </resources>
 

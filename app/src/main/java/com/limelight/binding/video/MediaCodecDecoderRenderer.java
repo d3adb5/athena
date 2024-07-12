@@ -38,7 +38,6 @@ import android.os.SystemClock;
 import android.util.Range;
 import android.view.Choreographer;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 
 public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements Choreographer.FrameCallback {
 
@@ -1453,7 +1452,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                     if(TrafficStatsHelper.getPackageRxBytes(Process.myUid())!= TrafficStats.UNSUPPORTED){
                         long netData=TrafficStatsHelper.getPackageRxBytes(Process.myUid())+TrafficStatsHelper.getPackageTxBytes(Process.myUid());
                         if(lastNetDataNum!=0){
-                            sb.append("带宽：");
+                            sb.append(context.getString(R.string.perf_overlay_lite_bandwidth) + ": ");
                             float realtimeNetData=(netData-lastNetDataNum)/1024f;
                             if(realtimeNetData>=1000){
                                 sb.append(String.format("%.2f", realtimeNetData/1024f) +"M/s\t ");
@@ -1465,11 +1464,12 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                     }
 //                    sb.append("分辨率：");
 //                    sb.append(initialWidth + "x" + initialHeight);
-                    sb.append("延迟/解码：");
+                    sb.append(context.getString(R.string.perf_overlay_lite_network_decoding_delay) + ": ");
                     sb.append(context.getString(R.string.perf_overlay_lite_net,(int)(rttInfo >> 32)));
                     sb.append(" / ");
                     sb.append(context.getString(R.string.perf_overlay_lite_dectime,decodeTimeMs));
-                    sb.append("\t 丢包率：");
+                    sb.append("\t");
+                    sb.append(context.getString(R.string.perf_overlay_lite_packet_loss) + ": ");
                     sb.append(context.getString(R.string.perf_overlay_lite_netdrops,(float)lastTwo.framesLost / lastTwo.totalFrames * 100));
                     sb.append("\t FPS：");
                     sb.append(context.getString(R.string.perf_overlay_lite_fps,fps.totalFps));

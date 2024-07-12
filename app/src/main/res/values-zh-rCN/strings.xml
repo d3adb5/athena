@@ -433,4 +433,7 @@
     <string name="game_menu_send_keys_alt_enter">发送 Alt + Enter</string>
     <string name="game_menu_send_keys_ctrl_alt_shift_f12">发送 Ctrl+Alt+Shift+F12 (切换显示器)</string>
     <string name="summary_back_as_meta">在按下物理返回键时发送 Meta(Win) 键</string>
+    <string name="perf_overlay_lite_bandwidth">带宽</string>
+    <string name="perf_overlay_lite_network_decoding_delay">网络/解码延迟</string>
+    <string name="perf_overlay_lite_packet_loss">丢包率</string>
 </resources>
