@@ -1093,66 +1093,75 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
 
     // This must not be called on the main thread due to risk of ANRs!
     private void sendControllerBatteryPacket(InputDeviceContext context) {
-        int currentBatteryStatus;
-        float currentBatteryCapacity;
+        int currentBatteryStatus = BatteryState.STATUS_FULL;
+        float currentBatteryCapacity = 0;
+
+        boolean batteryPresent = false;
 
         // Use the BatteryState object introduced in Android S, if it's available and present.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && context.inputDevice.getBatteryState().isPresent()) {
-            currentBatteryStatus = context.inputDevice.getBatteryState().getStatus();
-            currentBatteryCapacity = context.inputDevice.getBatteryState().getCapacity();
-        }
-        else if (sceManager.isRecognizedDevice(context.inputDevice)) {
-            // On the SHIELD Android TV, we can use a proprietary API to access battery/charge state.
-            // We will convert it to the same form used by BatteryState to share code.
-            int batteryPercentage = sceManager.getBatteryPercentage(context.inputDevice);
-            if (batteryPercentage < 0) {
-                currentBatteryCapacity = Float.NaN;
-            }
-            else {
-                currentBatteryCapacity = batteryPercentage / 100.f;
-            }
-
-            SceConnectionType connectionType = sceManager.getConnectionType(context.inputDevice);
-            SceChargingState chargingState = sceManager.getChargingState(context.inputDevice);
-
-            // We can make some assumptions about charge state based on the connection type
-            if (connectionType == SceConnectionType.WIRED || connectionType == SceConnectionType.BOTH) {
-                if (batteryPercentage == 100) {
-                    currentBatteryStatus = BatteryState.STATUS_FULL;
-                }
-                else if (chargingState == SceChargingState.NOT_CHARGING) {
-                    currentBatteryStatus = BatteryState.STATUS_NOT_CHARGING;
-                }
-                else {
-                    currentBatteryStatus = BatteryState.STATUS_CHARGING;
-                }
-            }
-            else if (connectionType == SceConnectionType.WIRELESS) {
-                if (chargingState == SceChargingState.CHARGING) {
-                    currentBatteryStatus = BatteryState.STATUS_CHARGING;
-                }
-                else {
-                    currentBatteryStatus = BatteryState.STATUS_DISCHARGING;
-                }
-            }
-            else {
-                // If connection type is unknown, just use the charge state
-                if (batteryPercentage == 100) {
-                    currentBatteryStatus = BatteryState.STATUS_FULL;
-                }
-                else if (chargingState == SceChargingState.NOT_CHARGING) {
-                    currentBatteryStatus = BatteryState.STATUS_DISCHARGING;
-                }
-                else if (chargingState == SceChargingState.CHARGING) {
-                    currentBatteryStatus = BatteryState.STATUS_CHARGING;
-                }
-                else {
-                    currentBatteryStatus = BatteryState.STATUS_UNKNOWN;
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            BatteryState batteryState = context.inputDevice.getBatteryState();
+            batteryPresent = batteryState.isPresent();
+            if (batteryPresent) {
+                currentBatteryStatus = batteryState.getStatus();
+                currentBatteryCapacity = batteryState.getCapacity();
             }
         }
-        else {
-            return;
+
+        if (!batteryPresent) {
+            if (sceManager.isRecognizedDevice(context.inputDevice)) {
+                // On the SHIELD Android TV, we can use a proprietary API to access battery/charge state.
+                // We will convert it to the same form used by BatteryState to share code.
+                int batteryPercentage = sceManager.getBatteryPercentage(context.inputDevice);
+                if (batteryPercentage < 0) {
+                    currentBatteryCapacity = Float.NaN;
+                }
+                else {
+                    currentBatteryCapacity = batteryPercentage / 100.f;
+                }
+
+                SceConnectionType connectionType = sceManager.getConnectionType(context.inputDevice);
+                SceChargingState chargingState = sceManager.getChargingState(context.inputDevice);
+
+                // We can make some assumptions about charge state based on the connection type
+                if (connectionType == SceConnectionType.WIRED || connectionType == SceConnectionType.BOTH) {
+                    if (batteryPercentage == 100) {
+                        currentBatteryStatus = BatteryState.STATUS_FULL;
+                    }
+                    else if (chargingState == SceChargingState.NOT_CHARGING) {
+                        currentBatteryStatus = BatteryState.STATUS_NOT_CHARGING;
+                    }
+                    else {
+                        currentBatteryStatus = BatteryState.STATUS_CHARGING;
+                    }
+                }
+                else if (connectionType == SceConnectionType.WIRELESS) {
+                    if (chargingState == SceChargingState.CHARGING) {
+                        currentBatteryStatus = BatteryState.STATUS_CHARGING;
+                    }
+                    else {
+                        currentBatteryStatus = BatteryState.STATUS_DISCHARGING;
+                    }
+                }
+                else {
+                    // If connection type is unknown, just use the charge state
+                    if (batteryPercentage == 100) {
+                        currentBatteryStatus = BatteryState.STATUS_FULL;
+                    }
+                    else if (chargingState == SceChargingState.NOT_CHARGING) {
+                        currentBatteryStatus = BatteryState.STATUS_DISCHARGING;
+                    }
+                    else if (chargingState == SceChargingState.CHARGING) {
+                        currentBatteryStatus = BatteryState.STATUS_CHARGING;
+                    }
+                    else {
+                        currentBatteryStatus = BatteryState.STATUS_UNKNOWN;
+                    }
+                }
+            }
+            else {
+                return;
+            }
         }
 
         if (currentBatteryStatus != context.lastReportedBatteryStatus ||
