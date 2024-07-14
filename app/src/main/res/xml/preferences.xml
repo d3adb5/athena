@@ -136,6 +136,11 @@
             android:title="@string/title_checkbox_gamepad_motion_fallback"
             android:summary="@string/summary_checkbox_gamepad_motion_fallback"
             android:defaultValue="false" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="checkbox_gamepad_enable_battery_report"
+            android:summary="@string/summary_checkbox_gamepad_enable_battery_report"
+            android:title="@string/title_checkbox_gamepad_enable_battery_report" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_input_settings"
         android:key="category_input_settings">

@@ -438,4 +438,6 @@
     <string name="perf_overlay_lite_packet_loss">丢包率</string>
     <string name="quick_menu_title">快捷菜单</string>
     <string name="wrong_import_format">自定义导入格式出错了，请检查！</string>
+    <string name="title_checkbox_gamepad_enable_battery_report">启用手柄电池状态报告</string>
+    <string name="summary_checkbox_gamepad_enable_battery_report">在可用时汇报手柄电池状态。如果在使用触摸屏/触摸板/手写笔/鼠标时偶尔有卡顿现象发生，关闭此选项可能会有用。</string>
 </resources>

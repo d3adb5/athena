@@ -3263,7 +3263,11 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
                     reportedType, supportedButtonFlags, capabilities);
 
             // After reporting arrival to the host, send initial battery state and begin monitoring
-            backgroundThreadHandler.post(batteryStateUpdateRunnable);
+            // Might result in stutter in pointer device input. The problem happens within Android framework,
+            // Here we can only provide a workaround by disabling this option if user wishes.
+            if (prefConfig.enableBatteryReport) {
+                backgroundThreadHandler.post(batteryStateUpdateRunnable);
+            }
         }
 
         public void migrateContext(InputDeviceContext oldContext) {
