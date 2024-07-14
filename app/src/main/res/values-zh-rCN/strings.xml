@@ -440,4 +440,6 @@
     <string name="wrong_import_format">自定义导入格式出错了，请检查！</string>
     <string name="title_checkbox_gamepad_enable_battery_report">启用手柄电池状态报告</string>
     <string name="summary_checkbox_gamepad_enable_battery_report">在可用时汇报手柄电池状态。如果在使用触摸屏/触摸板/手写笔/鼠标时偶尔有卡顿现象发生，关闭此选项可能会有用。</string>
+    <string name="title_checkbox_enforce_refresh_rate">强制设置刷新率</string>
+    <string name="summary_checkbox_enforce_refresh_rate">强制使用设置的FPS参数。在某些设备(如ColorOS/Flyme)等上必须启用才能正确设置刷新率。请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
 </resources>

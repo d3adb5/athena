@@ -30,6 +30,7 @@ public class PreferenceConfiguration {
     static final String FPS_PREF_STRING = "list_fps";
     static final String BITRATE_PREF_STRING = "seekbar_bitrate_kbps";
     private static final String BITRATE_PREF_OLD_STRING = "seekbar_bitrate";
+    private static final String ENFORCE_REFRESH_RATE_PREF_STRING = "checkbox_enforce_refresh_rate";
     private static final String STRETCH_PREF_STRING = "checkbox_stretch_video";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
     private static final String DISABLE_TOASTS_PREF_STRING = "checkbox_disable_warnings";
@@ -93,6 +94,7 @@ public class PreferenceConfiguration {
 
     static final String DEFAULT_RESOLUTION = "1280x720";
     static final String DEFAULT_FPS = "60";
+    private static final boolean DEFAULT_ENFORCE_REFRESH_RATE = false;
     private static final boolean DEFAULT_STRETCH = false;
     private static final boolean DEFAULT_SOPS = true;
     private static final boolean DEFAULT_DISABLE_TOASTS = false;
@@ -153,7 +155,7 @@ public class PreferenceConfiguration {
     public int oscOpacity;
     public int oscKeyboardOpacity;
     public int oscKeyboardHeight;
-    public boolean stretchVideo, enableSops, playHostAudio, disableWarnings;
+    public boolean enforceRefreshRate, stretchVideo, enableSops, playHostAudio, disableWarnings;
     public String language;
     public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
     public boolean onscreenController;
@@ -663,6 +665,7 @@ public class PreferenceConfiguration {
 
         // Checkbox preferences
         config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS);
+        config.enforceRefreshRate = prefs.getBoolean(ENFORCE_REFRESH_RATE_PREF_STRING, DEFAULT_ENFORCE_REFRESH_RATE);
         config.enableSops = prefs.getBoolean(SOPS_PREF_STRING, DEFAULT_SOPS);
         config.stretchVideo = prefs.getBoolean(STRETCH_PREF_STRING, DEFAULT_STRETCH);
         config.playHostAudio = prefs.getBoolean(HOST_AUDIO_PREF_STRING, DEFAULT_HOST_AUDIO);
