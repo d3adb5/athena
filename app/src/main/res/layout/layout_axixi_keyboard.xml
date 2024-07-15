@@ -729,7 +729,7 @@
             android:background="@drawable/bg_ax_keyboard_button"
             android:gravity="center"
             android:tag="hide"
-            android:text="隐藏\n键盘"
+            android:text="@string/virtual_keyboard_hide"
             android:textSize="8sp" />
     </LinearLayout>
 

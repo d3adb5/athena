@@ -376,7 +376,7 @@
     <string name="title_import_special_button">Import custom special button configuration file</string>
     <string name="summary_import_special_button">Each import will overwrite the previous one, please backup accordingly.</string>
     <string name="title_software_update">Software Version Update</string>
-    <string name="summary_software_update">Moonlight Nior Version by ClassicOldSong - Jump to GitHub to get releases</string>
+    <string name="summary_software_update">Moonlight Nior Version by ClassicOldSong - Jump to GitHub to get latest releases</string>
     <string name="title_about_fork">About Original Fork</string>
     <string name="summary_about_fork">Jump to Axixi\'s Daily personal homepage on Bilibili</string>
     <string name="title_special_key_layout">Special Key Layout - Axixi\'s Daily</string>
@@ -423,7 +423,7 @@
     <string name="title_clear_default_special_button">Disable default special button commands</string>
     <string name="summary_clear_default_special_button">If you feel the built-in commands are useless to you, you can disable them and use your imported ones.</string>
     <string name="title_checkbox_force_qwerty">Force QWERTY layout</string>
-    <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout. Required by GFE. Turn off if you want to use a different keyboard layout.</string>
+    <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout.\nRequired by GFE.\nTurn off if you want to use a different keyboard layout.</string>
     <string name="title_checkbox_back_as_meta">Back button as Meta</string>
     <string name="summary_back_as_meta">Send Meta(Win) key on physical back button press.</string>
     <string name="perf_overlay_lite_bandwidth">Bandwidth</string>
@@ -432,9 +432,10 @@
     <string name="quick_menu_title">Quick Menu</string>
     <string name="wrong_import_format">Wrong import format, please check!</string>
     <string name="title_checkbox_gamepad_enable_battery_report">Enable battery status report for gamepad</string>
-    <string name="summary_checkbox_gamepad_enable_battery_report">Report gamepad battery status when possible. Disable this option might help if you experience stutter with touch screen/touch pad/stylus/mouse input occasionally.</string>
+    <string name="summary_checkbox_gamepad_enable_battery_report">Report gamepad battery status when possible.\nDisable this option might help if you experience stutter with touch screen/touch pad/stylus/mouse input occasionally.</string>
     <string name="title_checkbox_enforce_refresh_rate">Enforce refresh rate settings</string>
-    <string name="summary_checkbox_enforce_refresh_rate">Force surface to use the desired refresh rate settings. Required by some devices (such as ColorOS/Flyme etc.) to set refresh rate properly. Do not enable on ChromeCast 4K as it might lead to bugs.</string>
+    <string name="summary_checkbox_enforce_refresh_rate">Force surface to use the desired refresh rate settings.\nRequired by some devices (such as ColorOS/Flyme etc.) to set refresh rate properly.\nDo not enable on ChromeCast 4K as it might lead to bugs.</string>
+    <string name="virtual_keyboard_hide">Hide\nKBD</string>
 
 </resources>
 

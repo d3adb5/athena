@@ -404,7 +404,7 @@
     <string name="summary_import_special_button">每次都会覆盖原来的，请注意备份。</string>
 
     <string name="title_software_update">软件版本更新</string>
-    <string name="summary_software_update">ClassicOldSong 黑月光修改版 - 跳转到github获取releases</string>
+    <string name="summary_software_update">ClassicOldSong 黑月光修改版 - 跳转到github获取更新</string>
 
     <string name="title_about_fork">关于原Fork</string>
     <string name="summary_about_fork">跳转到B站阿西西的日常个人首页</string>
@@ -425,7 +425,7 @@
     <string name="title_reset_keyboard_layout">重置屏幕虚拟按键布局</string>
     <string name="summary_reset_keyboard_layout">初始化特殊按键布局（重置默认选择的那套布局方案）</string>
     <string name="title_checkbox_force_qwerty">强制使用 QWERTY 布局</string>
-    <string name="summary_checkbox_force_qwerty">强制使用 QWERTY 键盘布局。GFE必须使用。如果你希望使用其他键盘布局的话，请将此选项关闭。</string>
+    <string name="summary_checkbox_force_qwerty">强制使用 QWERTY 键盘布局。GFE必须使用。\n如果你希望使用其他键盘布局的话，请关闭此选项。</string>
     <string name="title_checkbox_back_as_meta">使用返回键作为 Meta</string>
     <string name="game_menu_send_keys_esc">发送 ESC</string>
     <string name="game_menu_send_keys_f11">发送 F11</string>
@@ -439,7 +439,8 @@
     <string name="quick_menu_title">快捷菜单</string>
     <string name="wrong_import_format">自定义导入格式出错了，请检查！</string>
     <string name="title_checkbox_gamepad_enable_battery_report">启用手柄电池状态报告</string>
-    <string name="summary_checkbox_gamepad_enable_battery_report">在可用时汇报手柄电池状态。如果在使用触摸屏/触摸板/手写笔/鼠标时偶尔有卡顿现象发生，关闭此选项可能会有用。</string>
+    <string name="summary_checkbox_gamepad_enable_battery_report">在可用时汇报手柄电池状态。\n如果在使用触摸屏/触摸板/手写笔/鼠标时偶尔有卡顿现象发生，关闭此选项可能会有用。</string>
     <string name="title_checkbox_enforce_refresh_rate">强制设置刷新率</string>
-    <string name="summary_checkbox_enforce_refresh_rate">强制使用设置的FPS参数。在某些设备(如ColorOS/Flyme)等上必须启用才能正确设置刷新率。请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
+    <string name="summary_checkbox_enforce_refresh_rate">强制使用设置的FPS参数。\n在某些设备(如ColorOS/Flyme)等上必须启用才能正确设置刷新率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
+    <string name="virtual_keyboard_hide">隐藏\n键盘</string>
 </resources>
