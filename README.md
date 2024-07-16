@@ -2,10 +2,7 @@
 
 Based on https://github.com/Axixi2233/moonlight-android
 
-- This project implements modifications to the official Moonlight Android app.
-- If you particularly like certain features, you can extract the relevant code and submit a merge request to the official repository without mentioning that it comes from this project.
-- Finally, do not use this project's code in commercial software.
-- If you like digital gadgets and games, you can follow my Bilibili account (https://space.bilibili.com/16893379).
+As I heard that the original fork had some [dark history](https://www.bilibili.com/read/cv35787801), as it is open sourced now, there's no issue continue improving based on that fork.
 
 This project version mainly implements the following features:
 1. Custom virtual buttons with import and export support.
@@ -26,8 +23,12 @@ This project version mainly implements the following features:
 16. Force the use of the device's own vibration motor (in case your gamepad's vibration is not effective).
 17. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
 18. Trackpad tap/scrolling support
-19. Non-QWERTY keyboard layout support
-20. Quick Meta key with physicl BACK button
+19. Natural track pad mode with touch screen
+20. Non-QWERTY keyboard layout support
+21. Quick Meta key with physicl BACK button
+22. Frame rate lock fix for some devices
+
+Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
 # Moonlight Android
 
