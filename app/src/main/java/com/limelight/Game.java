@@ -9,7 +9,6 @@ import com.limelight.binding.input.KeyboardTranslator;
 import com.limelight.binding.input.capture.InputCaptureManager;
 import com.limelight.binding.input.capture.InputCaptureProvider;
 import com.limelight.binding.input.touch.AbsoluteTouchContext;
-import com.limelight.binding.input.touch.AbsoluteTouchSwitchContext;
 import com.limelight.binding.input.touch.RelativeTouchContext;
 import com.limelight.binding.input.driver.UsbDriverService;
 import com.limelight.binding.input.evdev.EvdevListener;
@@ -546,19 +545,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
 
         // Initialize touch contexts
-//        for (int i = 0; i < touchContextMap.length; i++) {
-//            if (!prefConfig.touchscreenTrackpad) {
-//                touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView);
-//            }
-//            else {
-//                touchContextMap[i] = new RelativeTouchContext(conn, i,
-//                        REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
-//                        streamView, prefConfig);
-//            }
-//        }
-        //鼠标触控模式
-        String mouseModel=PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_model_list_axi", "0");
-        applyMouseMode(Integer.parseInt(mouseModel));
+        String mouseMode = PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_model_list_axi", "0");
+        applyMouseMode(Integer.parseInt(mouseMode));
 
         // Initialize trackpad contexts
         for (int i = 0; i < trackpadContextMap.length; i++) {
@@ -2229,6 +2217,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         return true;
                     }
 
+                    // If touch is disabled or not initialized, we'll just return false
+                    if (touchContextMap[0] == null) {
+                        return false;
+                    }
+
                     // If this is the parent view, we'll offset our coordinates to appear as if they
                     // are relative to the StreamView like our StreamView touch events are.
                     float xOffset, yOffset;
@@ -2976,48 +2969,39 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
-    private void applyMouseMode(int which){
-        //多点触控
-        if(which==0){
-            prefConfig.enableMultiTouchScreen=true;
-            prefConfig.touchscreenTrackpad=false;
+    private void applyMouseMode(int mode) {
+        switch (mode) {case 0: // Multi-touch
+            prefConfig.enableMultiTouchScreen = true;
+            prefConfig.touchscreenTrackpad = false;
+            break;
+            case 1: // Normal mouse
+            case 5: // Normal mouse with swapped buttons
+                prefConfig.enableMultiTouchScreen = false;
+                prefConfig.touchscreenTrackpad = false;
+                break;
+            case 2: // Trackpad (natural)
+            case 3: // Trackpad (gaming)
+                prefConfig.enableMultiTouchScreen = false;
+                prefConfig.touchscreenTrackpad = true;
+                break;
+            case 4: // Touch mouse disabled
+                break;
+            default:
+                break;
         }
-        //普通鼠标模式
-        if(which==1){
-            prefConfig.enableMultiTouchScreen=false;
-            prefConfig.touchscreenTrackpad=false;
-        }
-        //触控板(自然/游戏)模式
-        if(which==2 || which == 3){
-            prefConfig.enableMultiTouchScreen=false;
-            prefConfig.touchscreenTrackpad=true;
-        }
-        //禁用鼠标
-        if(which==4){
-            return;
-        }
-        //普通鼠标 左右键互换
-        if(which==5){
-            prefConfig.enableMultiTouchScreen=false;
-            prefConfig.touchscreenTrackpad=false;
-        }
-        // Initialize touch contexts
+
+        //Initialize touch contexts
         for (int i = 0; i < touchContextMap.length; i++) {
-            if (!prefConfig.touchscreenTrackpad) {
-                if(which==5){
-                    touchContextMap[i] = new AbsoluteTouchSwitchContext(conn, i, streamView);
-                }else{
-                    touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView);
-                }
-            }
-            else {
-                if (which == 3) {
-                    touchContextMap[i] = new RelativeTouchContext(conn, i,
-                            REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
-                            streamView, prefConfig);
-                } else {
-                    touchContextMap[i] = new TrackpadContext(conn, i);
-                }
+            if (touchContextMap[i] != null) touchContextMap[i].cancelTouch();
+            if (mode == 4) {
+                // Touch mouse disabled
+                touchContextMap[i] = null;
+            } else if (!prefConfig.touchscreenTrackpad) {
+                touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView, mode == 5);
+            } else {
+                touchContextMap[i] = (mode == 3)
+                        ? new RelativeTouchContext(conn, i, REFERENCE_HORIZ_RES, REFERENCE_VERT_RES, streamView, prefConfig)
+                        : new TrackpadContext(conn, i);
             }
         }
     }
