@@ -436,6 +436,18 @@
     <string name="title_checkbox_enforce_refresh_rate">Enforce refresh rate settings</string>
     <string name="summary_checkbox_enforce_refresh_rate">Force surface to use the desired refresh rate settings.\nRequired by some devices (such as ColorOS/Flyme etc.) to set refresh rate properly.\nDo not enable on ChromeCast 4K as it might lead to bugs.</string>
     <string name="virtual_keyboard_hide">Hide\nKBD</string>
+    <string name="mouse_mode_multi_touch">Mluti touch</string>
+    <string name="mouse_mode_absolute_touch">Absolute touch</string>
+    <string name="mouse_mode_track_pad">Track pad</string>
+    <string name="mouse_mode_disabled">Disabled</string>
+    <string name="mouse_mode_absolute_touch_swapped">Absolute touch (left/right click swapped)</string>
+    <string name="keyboard_layout_set_1">Set 1</string>
+    <string name="keyboard_layout_set_2">Set 2</string>
+    <string name="keyboard_layout_set_3">Set 3</string>
+    <string name="keyboard_layout_set_4">Set 4</string>
+    <string name="keyboard_layout_set_5">Set 5</string>
+    <string name="title_mouse_mode_modal">Select mouse mode</string>
+    <string name="toggle_local_mouse_cursor">Toggle local mouse cursor(physical mouse needed)</string>
 
 </resources>
 

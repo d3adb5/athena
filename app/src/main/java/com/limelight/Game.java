@@ -560,6 +560,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         String mouseModel=PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_model_list_axi", "0");
         switchMouseModel(Integer.parseInt(mouseModel));
 
+        // Initialize trackpad contexts
+        for (int i = 0; i < trackpadContextMap.length; i++) {
+            trackpadContextMap[i] = new TrackpadContext(conn, i);
+        }
+
         if (prefConfig.onscreenController) {
             // create virtual onscreen controller
             initVirtualController();
@@ -2947,7 +2952,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public void switchMouseModel(){
         String[] strings=getResources().getStringArray(R.array.mouse_model_names_axi);
         String[] items =Arrays.copyOf(strings,strings.length+1);
-        items[items.length-1]="切换本地鼠标(需外接物理鼠标)";
+        items[items.length-1]=getString(R.string.toggle_local_mouse_cursor);
 //        {"多点触控模式","普通鼠标模式","触控板模式","禁用鼠标/触控","普通鼠标模式（左右键互换）","切换本地鼠标(需外接物理鼠标)"}
         new AlertDialog.Builder(this).setItems(items, (dialog, which) -> {
             dialog.dismiss();
@@ -2957,7 +2962,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return;
             }
             switchMouseModel(which);
-        }).setTitle("请选择鼠标模式").create().show();
+        }).setTitle(getString(R.string.title_mouse_mode_modal)).create().show();
     }
 
     //本地鼠标光标切换
@@ -3000,10 +3005,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         if(which==4){
             prefConfig.enableMultiTouchScreen=false;
             prefConfig.touchscreenTrackpad=false;
-        }
-        // Initialize trackpad contexts
-        for (int i = 0; i < trackpadContextMap.length; i++) {
-            trackpadContextMap[i] = new TrackpadContext(conn, i);
         }
         // Initialize touch contexts
         for (int i = 0; i < touchContextMap.length; i++) {

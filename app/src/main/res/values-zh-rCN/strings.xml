@@ -443,4 +443,16 @@
     <string name="title_checkbox_enforce_refresh_rate">强制设置刷新率</string>
     <string name="summary_checkbox_enforce_refresh_rate">强制使用设置的FPS参数。\n在某些设备(如ColorOS/Flyme)等上必须启用才能正确设置刷新率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
     <string name="virtual_keyboard_hide">隐藏\n键盘</string>
+    <string name="mouse_mode_multi_touch">多点触控</string>
+    <string name="mouse_mode_absolute_touch">单点触控</string>
+    <string name="mouse_mode_track_pad">触摸板</string>
+    <string name="mouse_mode_disabled">禁用触摸</string>
+    <string name="mouse_mode_absolute_touch_swapped">单点触控(左右键互换)</string>
+    <string name="keyboard_layout_set_1">第1套</string>
+    <string name="keyboard_layout_set_2">第2套</string>
+    <string name="keyboard_layout_set_3">第3套</string>
+    <string name="keyboard_layout_set_4">第4套</string>
+    <string name="keyboard_layout_set_5">第5套</string>
+    <string name="title_mouse_mode_modal">选择鼠标模式</string>
+    <string name="toggle_local_mouse_cursor">切换本地光标(需外接物理鼠标)</string>
 </resources>
