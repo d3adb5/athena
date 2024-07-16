@@ -558,7 +558,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 //        }
         //鼠标触控模式
         String mouseModel=PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_model_list_axi", "0");
-        switchMouseModel(Integer.parseInt(mouseModel));
+        applyMouseMode(Integer.parseInt(mouseModel));
 
         // Initialize trackpad contexts
         for (int i = 0; i < trackpadContextMap.length; i++) {
@@ -2946,10 +2946,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         super.onBackPressed();
     }
 
-    //禁用鼠标
-    private boolean disableMouseModel;
-
-    public void switchMouseModel(){
+    public void selectMouseModeModal(){
         String[] strings=getResources().getStringArray(R.array.mouse_model_names_axi);
         String[] items =Arrays.copyOf(strings,strings.length+1);
         items[items.length-1]=getString(R.string.toggle_local_mouse_cursor);
@@ -2957,16 +2954,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         new AlertDialog.Builder(this).setItems(items, (dialog, which) -> {
             dialog.dismiss();
             //切换本地鼠标
-            if(which==5){
-                switchMouseLocalCursor();
+            if(which==strings.length){
+                toggleMouseLocalCursor();
                 return;
             }
-            switchMouseModel(which);
-        }).setTitle(getString(R.string.title_mouse_mode_modal)).create().show();
+            applyMouseMode(which);
+        }).setTitle(getString(R.string.game_menu_select_mouse_mode)).create().show();
     }
 
     //本地鼠标光标切换
-    private void switchMouseLocalCursor(){
+    private void toggleMouseLocalCursor(){
         if (!grabbedInput) {
             inputCaptureProvider.enableCapture();
             grabbedInput = true;
@@ -2979,8 +2976,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
-    private void switchMouseModel(int which){
-        disableMouseModel=false;
+    private void applyMouseMode(int which){
         //多点触控
         if(which==0){
             prefConfig.enableMultiTouchScreen=true;
@@ -2991,34 +2987,37 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             prefConfig.enableMultiTouchScreen=false;
             prefConfig.touchscreenTrackpad=false;
         }
-        //触控板模式
-        if(which==2){
+        //触控板(自然/游戏)模式
+        if(which==2 || which == 3){
             prefConfig.enableMultiTouchScreen=false;
             prefConfig.touchscreenTrackpad=true;
         }
         //禁用鼠标
-        if(which==3){
-            disableMouseModel=true;
+        if(which==4){
             return;
         }
         //普通鼠标 左右键互换
-        if(which==4){
+        if(which==5){
             prefConfig.enableMultiTouchScreen=false;
             prefConfig.touchscreenTrackpad=false;
         }
         // Initialize touch contexts
         for (int i = 0; i < touchContextMap.length; i++) {
             if (!prefConfig.touchscreenTrackpad) {
-                if(which==4){
+                if(which==5){
                     touchContextMap[i] = new AbsoluteTouchSwitchContext(conn, i, streamView);
                 }else{
                     touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView);
                 }
             }
             else {
-                touchContextMap[i] = new RelativeTouchContext(conn, i,
-                        REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
-                        streamView, prefConfig);
+                if (which == 3) {
+                    touchContextMap[i] = new RelativeTouchContext(conn, i,
+                            REFERENCE_HORIZ_RES, REFERENCE_VERT_RES,
+                            streamView, prefConfig);
+                } else {
+                    touchContextMap[i] = new TrackpadContext(conn, i);
+                }
             }
         }
     }

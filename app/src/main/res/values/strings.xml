@@ -301,7 +301,7 @@
     <!-- In Game menu -->
     <string name="game_menu_toggle_keyboard">Show soft keyboard</string>
     <string name="game_menu_hud">(Show/Hide) Preformance monitor</string>
-    <string name="game_menu_switch_mouse_model">Switch mouse mode</string>
+    <string name="game_menu_select_mouse_mode">Select mouse mode</string>
     <string name="game_menu_switch_keyboard_model">(Show/Hide) Special keys</string>
     <string name="game_menu_switch_virtual_model">(Show/Hide) On-screen controller</string>
     <string name="game_menu_switch_virtual_keyboard_model">(Show/Hide) On-screen full keyboard</string>
@@ -438,7 +438,8 @@
     <string name="virtual_keyboard_hide">Hide\nKBD</string>
     <string name="mouse_mode_multi_touch">Mluti touch</string>
     <string name="mouse_mode_absolute_touch">Absolute touch</string>
-    <string name="mouse_mode_track_pad">Track pad</string>
+    <string name="mouse_mode_track_pad_natural">Track pad(Natural/Double tap to drag)</string>
+    <string name="mouse_mode_track_pad_gaming">Track pad(Gaming/Long press to drag)</string>
     <string name="mouse_mode_disabled">Disabled</string>
     <string name="mouse_mode_absolute_touch_swapped">Absolute touch (left/right click swapped)</string>
     <string name="keyboard_layout_set_1">Set 1</string>
@@ -446,7 +447,6 @@
     <string name="keyboard_layout_set_3">Set 3</string>
     <string name="keyboard_layout_set_4">Set 4</string>
     <string name="keyboard_layout_set_5">Set 5</string>
-    <string name="title_mouse_mode_modal">Select mouse mode</string>
     <string name="toggle_local_mouse_cursor">Toggle local mouse cursor(physical mouse needed)</string>
 
 </resources>

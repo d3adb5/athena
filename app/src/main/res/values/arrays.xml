@@ -151,7 +151,8 @@
     <string-array name="mouse_model_names_axi">
         <item>@string/mouse_mode_multi_touch</item>
         <item>@string/mouse_mode_absolute_touch</item>
-        <item>@string/mouse_mode_track_pad</item>
+        <item>@string/mouse_mode_track_pad_natural</item>
+        <item>@string/mouse_mode_track_pad_gaming</item>
         <item>@string/mouse_mode_disabled</item>
         <item>@string/mouse_mode_absolute_touch_swapped</item>
     </string-array>

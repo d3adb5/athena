@@ -282,7 +282,7 @@
     <string name="accessibility_description_text">此功能仅用于外接实体键盘时，某些系统存在特定的键盘快捷键，此情况会影响串流过程中，无法将相关按键指令传输给目标PC。           Moonlight不会观察您输入的文本，也不会收集您的密码、信用卡号或任何其他信息。</string>
     <string name="game_menu_toggle_keyboard">弹出软键盘</string>
     <string name="game_menu_hud">(显示/隐藏)性能信息</string>
-    <string name="game_menu_switch_mouse_model">鼠标模式切换</string>
+    <string name="game_menu_select_mouse_mode">选择鼠标模式</string>
     <string name="game_menu_switch_keyboard_model">(显示/隐藏)特殊按键</string>
     <string name="game_menu_switch_virtual_model">(显示/隐藏)虚拟手柄</string>
     <string name="game_menu_switch_virtual_keyboard_model">(显示/隐藏)虚拟全键盘</string>
@@ -445,7 +445,8 @@
     <string name="virtual_keyboard_hide">隐藏\n键盘</string>
     <string name="mouse_mode_multi_touch">多点触控</string>
     <string name="mouse_mode_absolute_touch">单点触控</string>
-    <string name="mouse_mode_track_pad">触摸板</string>
+    <string name="mouse_mode_track_pad_natural">触摸板(自然/双击拖拽)</string>
+    <string name="mouse_mode_track_pad_gaming">触摸板(游戏/长按拖拽)</string>
     <string name="mouse_mode_disabled">禁用触摸</string>
     <string name="mouse_mode_absolute_touch_swapped">单点触控(左右键互换)</string>
     <string name="keyboard_layout_set_1">第1套</string>
@@ -453,6 +454,5 @@
     <string name="keyboard_layout_set_3">第3套</string>
     <string name="keyboard_layout_set_4">第4套</string>
     <string name="keyboard_layout_set_5">第5套</string>
-    <string name="title_mouse_mode_modal">选择鼠标模式</string>
     <string name="toggle_local_mouse_cursor">切换本地光标(需外接物理鼠标)</string>
 </resources>

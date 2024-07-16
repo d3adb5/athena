@@ -4,9 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -17,7 +15,6 @@ import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.preferences.PreferenceConfiguration;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -264,8 +261,8 @@ public class GameMenu {
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 () -> game.toggleKeyboard()));
 
-        options.add(new MenuOption(getString(R.string.game_menu_switch_mouse_model), true,
-                () -> game.switchMouseModel()));
+        options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
+                () -> game.selectMouseModeModal()));
 
         options.add(new MenuOption(getString(R.string.game_menu_send_keys), () -> showSpecialKeysMenu()));
 
