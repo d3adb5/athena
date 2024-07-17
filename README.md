@@ -17,16 +17,15 @@ This project version mainly implements the following features:
 10. Custom shortcut commands.
 11. Easy soft keyboard switching.
 12. Portrait mode.
-13. SBS entertainment mode.
-14. Topmost display for the screen, useful for foldable screens.
-15. Virtual touchpad space and sensitivity adjustment for playing right-click view games, such as Warcraft.
-16. Force the use of the device's own vibration motor (in case your gamepad's vibration is not effective).
-17. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
-18. Trackpad tap/scrolling support
-19. Natural track pad mode with touch screen
-20. Non-QWERTY keyboard layout support
-21. Quick Meta key with physicl BACK button
-22. Frame rate lock fix for some devices
+13. Topmost display for the screen, useful for foldable screens.
+14. Virtual touchpad space and sensitivity adjustment for playing right-click view games, such as Warcraft.
+15. Force the use of the device's own vibration motor (in case your gamepad's vibration is not effective).
+16. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
+17. Trackpad tap/scrolling support
+18. Natural track pad mode with touch screen
+19. Non-QWERTY keyboard layout support
+20. Quick Meta key with physicl BACK button
+21. Frame rate lock fix for some devices
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
