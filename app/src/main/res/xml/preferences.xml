@@ -355,7 +355,7 @@
             android:defaultValue="false"/>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="@string/title_axixi_settings"
+    <PreferenceCategory android:title="@string/title_additional_settings"
         android:key="category_axixi_settings">
 
         <CheckBoxPreference
@@ -363,12 +363,6 @@
             android:title="@string/title_quit_dialog"
             android:summary="@string/summary_quit_dialog"
             android:defaultValue="true"/>
-
-        <CheckBoxPreference
-            android:key="checkbox_enable_sbs"
-            android:title="@string/title_sbs_mode"
-            android:summary="@string/summary_sbs_mode"
-            android:defaultValue="false"/>
 
         <CheckBoxPreference
             android:key="checkbox_enable_joyconfix"

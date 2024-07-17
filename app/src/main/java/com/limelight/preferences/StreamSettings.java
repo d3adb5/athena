@@ -23,9 +23,7 @@ import android.preference.PreferenceScreen;
 import android.support.v4.content.FileProvider;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.method.NumberKeyListener;
 import android.util.DisplayMetrics;
 import android.util.Range;
 import android.view.Display;
@@ -37,7 +35,7 @@ import android.view.WindowInsets;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.google.gson.Gson;
-import com.limelight.AxiTestActivity;
+import com.limelight.DebugInfoActivity;
 import com.limelight.BuildConfig;
 import com.limelight.GameMenu;
 import com.limelight.LimeLog;
@@ -50,7 +48,6 @@ import com.limelight.utils.FileUriUtils;
 import com.limelight.utils.UiHelper;
 import org.json.JSONObject;
 import java.io.File;
-import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -746,10 +743,10 @@ public class StreamSettings extends Activity {
             });
 
 
-            findPreference("pref_axi_test").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            findPreference("pref_debug_info").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Intent intent=new Intent(getActivity(), AxiTestActivity.class);
+                    Intent intent=new Intent(getActivity(), DebugInfoActivity.class);
                     getActivity().startActivity(intent);
                     return false;
                 }

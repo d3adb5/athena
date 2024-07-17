@@ -6,7 +6,6 @@ import android.widget.Toast;
 
 import com.limelight.AppView;
 import com.limelight.Game;
-import com.limelight.GameSbs;
 import com.limelight.R;
 import com.limelight.ShortcutTrampoline;
 import com.limelight.binding.PlatformBinding;
@@ -16,7 +15,6 @@ import com.limelight.nvstream.http.HostHttpResponseException;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
 import com.limelight.nvstream.jni.MoonBridge;
-import com.limelight.preferences.PreferenceConfiguration;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -58,9 +56,6 @@ public class ServerHelper {
                                            ComputerManagerService.ComputerManagerBinder managerBinder) {
 
         Intent intent = new Intent(parent, Game.class);
-        if(PreferenceConfiguration.readPreferences(parent).enableSbs){
-            intent.setClass(parent,GameSbs.class);
-        }
         intent.putExtra(Game.EXTRA_HOST, computer.activeAddress.address);
         intent.putExtra(Game.EXTRA_PORT, computer.activeAddress.port);
         intent.putExtra(Game.EXTRA_HTTPS_PORT, computer.httpsPort);

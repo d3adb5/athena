@@ -332,14 +332,11 @@
     <string name="title_checkbox_enable_perf_overlay_lite_dialog">Lite精简模式点击弹出快捷选项</string>
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">代替返回键逻辑，弹出游戏快捷菜单。</string>
 
-    <string name="title_axixi_settings">阿西西的日常设置</string>
+    <string name="title_additional_settings">附加设置</string>
 
     <string name="title_quit_dialog">快捷选项</string>
     <string name="summary_quit_dialog">开启后，串流界面点击手机物理返回键 展示相关选项！
             \n软键盘、性能信息、触控模式切换、发送特殊按键</string>
-
-    <string name="title_sbs_mode">Side-By-Side模式</string>
-    <string name="summary_sbs_mode">左右格式3D模式,仅供娱乐！需外接手柄使用！</string>
 
     <string name="dialog_custom_resolution">设置完分辨率后，退出设置页面 重新打开生效！</string>
     <string name="summary_custom_resolution">添加一个自定义分辨率,x号分割,比较奇怪的分辨率可能无法生效。
