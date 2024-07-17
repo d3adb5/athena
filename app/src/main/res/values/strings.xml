@@ -385,7 +385,7 @@
     <string name="summary_square_buttons">Virtual button shapes are square buttons, by default they are round.</string>
     <string name="title_reset_keyboard_layout">Reset virtual keyboard layout</string>
     <string name="summary_reset_keyboard_layout">Initialize the special key layout (reset the default selected layout scheme)</string>
-    <string name="title_joyconfix">Compatible with Switch JoyCon Handle</string>
+    <string name="title_joyconfix">Compatible with Switch JoyCon</string>
     <string name="summary_joyconfix">If your JoyCon cannot be used or has key recognition issues, you can try to enable this feature. Adapted for Android 10 and above</string>
     <string name="title_keyboard_opacity">Virtual Full Keyboard Opacity</string>
     <string name="title_keyboard_height">Virtual Full Keyboard Height</string>
@@ -408,14 +408,14 @@
     <string name="summary_touch_sensitivity_x">Multi-touch mode, when playing games, some games may not meet the sensitivity adjustment needs, you can use this option to modify the sensitivity of the field of view.</string>
     <string name="title_touch_sensitivity_y">Screen Sensitivity Adjustment Y Axis</string>
     <string name="summary_touch_sensitivity_y">Multi-touch mode, when playing games, some games may not meet the sensitivity adjustment needs, you can use this option to modify the sensitivity of the field of view.</string>
-    <string name="title_axi_test">Axixi\'s Test Page</string>
-    <string name="summary_axi_test">Test handle vibration and other content.</string>
+    <string name="title_debug_info">Debug Info Page</string>
+    <string name="summary_debug_info">Test gamepad vibration and other content.</string>
     <string name="title_touchpad_sensitivity_x">Touchpad Sensitivity X Axis</string>
     <string name="summary_touchpad_sensitivity_x">For mouse touchpad mode and virtual special button touchpad control;\nBoth share a sensitivity value, but the sensitivity performance may be different.\nDoes anyone use both together?</string>
     <string name="title_touchpad_sensitivity_y">Touchpad Sensitivity Y Axis</string>
     <string name="summary_touchpad_sensitivity_y">For mouse touchpad mode and virtual special button touchpad control;\nBoth share a sensitivity value, but the sensitivity performance may be different.\nDoes anyone use both together?</string>
     <string name="title_device_rumble">Force use of device\'s own vibration motor</string>
-    <string name="summary_device_rumble">If you are not satisfied with the vibration effect of the connected handle itself, you can enable this option! [Invalid for forced use of Moonlight\'s built-in USB driver]</string>
+    <string name="summary_device_rumble">If you are not satisfied with the vibration effect of the connected gamepad itself, you can enable this option! [Invalid for forced use of Moonlight\'s built-in USB driver]</string>
     <string name="title_clear_default_special_button">Disable default special button commands</string>
     <string name="summary_clear_default_special_button">If you feel the built-in commands are useless to you, you can disable them and use your imported ones.</string>
     <string name="title_checkbox_force_qwerty">Force QWERTY layout</string>
@@ -444,6 +444,36 @@
     <string name="keyboard_layout_set_4">Set 4</string>
     <string name="keyboard_layout_set_5">Set 5</string>
     <string name="toggle_local_mouse_cursor">Toggle local mouse cursor(physical mouse needed)</string>
+    <string name="debug_info_android_version">Android Version:</string>
+    <string name="debug_info_api_version">API Version:</string>
+    <string name="debug_info_kernel_version">Kernel Version:</string>
+    <string name="debug_info_brand_model">Brand and Model:</string>
+    <string name="debug_info_has_vibration_motor">Has Vibration Motor</string>
+    <string name="debug_info_no_vibration_motor">No Vibration Motor</string>
+    <string name="debug_info_test_device_vibration">Test Device Vibration (%s)</string>
+    <string name="debug_info_vibration_amplitude">Vibration Amplitude (%d)</string>
+    <string name="debug_info_simple_vibration">Simple Vibration for 1 Second</string>
+    <string name="debug_info_continuous_hd_vibration">Continuous HD Vibration</string>
+    <string name="debug_info_please_choose">Please Choose</string>
+    <string name="debug_info_no_gamepad_detected">No gamepad detected, please connect a gamepad, click the refresh button, and try again!</string>
+    <string name="debug_info_no_vibrator">No vibrator detected on the gamepad!</string>
+    <string name="debug_info_set_amplitude">Set Amplitude 0-255 [Effective for HD Vibration]</string>
+    <string name="debug_info_name">Name:</string>
+    <string name="debug_info_sensors">Sensors:</string>
+    <string name="debug_info_no_relevant_driver">None (no relevant driver or gamepad not supported)</string>
+    <string name="debug_info_no_api_below_android12">No corresponding API below Android 12</string>
+    <string name="debug_info_vid_pid">VID_PID:</string>
+    <string name="debug_info_vibration">Vibration:</string>
+    <string name="debug_info_supported">Supported</string>
+    <string name="debug_info_not_supported">Not Supported</string>
+    <string name="debug_info_details">Details:</string>
+    <string name="debug_info_number_of_gamepads">Number of Gamepads:</string>
+    <string name="debug_info_accelerometer">+Accelerometer</string>
+    <string name="debug_info_gyroscope">+Gyroscope</string>
+    <string name="debug_info_stop_vibration">Stop Vibration</string>
+    <string name="debug_info_refresh_gamepad_info">Tap to refresh gamepad info</string>
+    <string name="debug_info_refresh_gamepad_list">Refresh gamepad list</string>
+    <string name="debug_info_test_gamepad_rumble">Test gamepad rumble</string>
 
 </resources>
 

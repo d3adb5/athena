@@ -188,7 +188,7 @@
         </activity>
 
 
-        <activity android:name=".AxiTestActivity"
+        <activity android:name=".DebugInfoActivity"
             android:launchMode="singleTask"
             android:theme="@style/StreamTheme"/>
 

@@ -310,7 +310,6 @@
     <string name="summary_seekbar_vibrate_fallback_strength">增强或减弱设备的震动强度</string>
     <string name="analogscroll_none">默认 (两个摇杆都控制鼠标)</string>
     <string name="perf_overlay_lite_decoder">解码器： %1$s</string>
-
     <string name="title_import_keyboard_layout">导入键盘布局</string>
     <string name="title_export_keyboard_layout">导出键盘布局</string>
     <string name="summary_import_keyboard_layout">导入键盘布局配置。会覆盖当前配置。</string>
@@ -322,100 +321,70 @@
     <string name="summary_touchscreen_mode">选择多点触控/单点触控/触摸板/禁用</string>
     <string name="title_checkbox_mouse_local_cursor">使用本地鼠标光标</string>
     <string name="summary_checkbox_mouse_local_cursor">默认外接物理鼠标的光标会被捕获，此选项可显示安卓系统光标</string>
-
     <string name="title_checkbox_onscreen_style_official">官方虚拟手柄皮肤</string>
     <string name="summary_checkbox_onscreen_style_official">如果你还是喜欢官方旧版虚拟手柄按键风格可以勾选此选项。\n按键形状可以为方形，如果你勾选了底部虚拟按键【普通按钮为方形按钮】</string>
-
     <string name="title_checkbox_enable_perf_overlay_lite">开启Lite精简模式</string>
     <string name="summary_checkbox_enable_perf_overlay_lite">展示简化版性能信息：网速/延迟/解码/丢包率/FPS</string>
-
     <string name="title_checkbox_enable_perf_overlay_lite_dialog">Lite精简模式点击弹出快捷选项</string>
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">代替返回键逻辑，弹出游戏快捷菜单。</string>
-
     <string name="title_additional_settings">附加设置</string>
-
     <string name="title_quit_dialog">快捷选项</string>
     <string name="summary_quit_dialog">开启后，串流界面点击手机物理返回键 展示相关选项！
             \n软键盘、性能信息、触控模式切换、发送特殊按键</string>
-
     <string name="dialog_custom_resolution">设置完分辨率后，退出设置页面 重新打开生效！</string>
     <string name="summary_custom_resolution">添加一个自定义分辨率,x号分割,比较奇怪的分辨率可能无法生效。
             \n例如：1920x1080
             \n非原生分辨率如果是刘海屏可能不会默认填充刘海区域，
             \n如果画面比例一样，可手动设置拉伸画面来充满全屏</string>
     <string name="title_custom_resolution">自定义分辨率</string>
-
     <string name="title_portrait_mode">竖屏模式</string>
     <string name="summary_portrait_mode">屏幕宽高将被反转，串流画面将设为竖屏。\n请确保远端显示器支持反转后的分辨率。\n你可能需要手动设置远端PC的屏幕显示方向。</string>
-
     <string name="title_joyconfix">兼容Switch JoyCon手柄</string>
     <string name="summary_joyconfix">如果你的JoyCon无法使用或识别按键有问题，可以尝试开启此功能。适配Android 10及以上</string>
-
     <string name="title_keyboard_opacity">虚拟全键盘透明度</string>
-
     <string name="title_keyboard_height">虚拟全键盘高度</string>
     <string name="summary_keyboard_height">调整虚拟全键盘的高度</string>
-
     <string name="title_free_analog_stick">自由摇杆</string>
     <string name="summary_free_analog_stick">虚拟手柄 左右摇杆中心点位置不固定，可自由调整在一定区域内移动。</string>
     <string name="summary_free_analog_stick_opacity">默认只有摇杆移动的时候，有背景显示，如何不喜欢可调节透明度效果。</string>
     <string name="title_free_analog_stick_opacity">自由摇杆背景透明度</string>
-
     <string name="title_exdisplay_mode">外接显示器模式（Beta）</string>
     <string name="summary_exdisplay_mode">串流画面显示在显示器，虚拟按键及性能信息等控件在手机屏幕。</string>
-
     <string name="title_top_center_display">画面顶部居中显示</string>
     <string name="summary_top_center_display">可能对折叠屏手机有点帮助，设置分辨率为上半屏幕分辨率，勾选此选项，则画面在上半屏幕显示而非居中显示。</string>
-
     <string name="title_touch_sensitivity">触控屏幕灵敏度</string>
     <string name="summary_touch_sensitivity">开启后，可手动调整触控灵敏度。</string>
-
     <string name="title_global_touch_sensitivity">触控屏幕灵敏度全局生效</string>
     <string name="summary_global_touch_sensitivity">默认不勾选，只有右半边屏幕生效(适合玩原神)，勾选则全屏幕范围内生效。</string>
-
     <string name="title_auto_touch_sensitivity">触控坐标超过边界，自动回屏幕中心点</string>
     <string name="summary_auto_touch_sensitivity">正常灵敏度太高，滑动很小的距离就会超出边界，导致划不动，可勾选此选项。</string>
-
     <string name="title_touch_sensitivity_x">屏幕灵敏度调整X轴</string>
     <string name="summary_touch_sensitivity_x">多点触控模式，玩游戏时，可能某些游戏灵敏度调节不能满足需求，可使用此选项修改视野的灵敏度。</string>
-
     <string name="title_touch_sensitivity_y">屏幕灵敏度调整Y轴</string>
     <string name="summary_touch_sensitivity_y">多点触控模式，玩游戏时，可能某些游戏灵敏度调节不能满足需求，可使用此选项修改视野的灵敏度。</string>
-
-    <string name="title_axi_test">阿西西调试页面</string>
-    <string name="summary_axi_test">测试手柄震动及其他内容。</string>
-
+    <string name="title_debug_info">调试信息</string>
+    <string name="summary_debug_info">测试手柄震动及其他内容。</string>
     <string name="title_touchpad_sensitivity_x">触控板灵敏度X轴</string>
     <string name="summary_touchpad_sensitivity_x">适用于鼠标触控板模式及虚拟特殊按键触控板控件；\n两者共用一个灵敏度数值，但是灵敏度表现可能不一样。\n有人两个一起用吗？</string>
-
     <string name="title_touchpad_sensitivity_y">触控板灵敏度Y轴</string>
     <string name="summary_touchpad_sensitivity_y">适用于鼠标触控板模式及虚拟特殊按键触控板控件；\n两者共用一个灵敏度数值，但是灵敏度表现可能不一样。\n有人两个一起用吗？</string>
-
     <string name="title_device_rumble">强制使用设备本身的震动马达</string>
     <string name="summary_device_rumble">你如果对连接的手柄本身震动效果不满意，可以开启此选项！【对强制使用月光自带USB驱动无效】</string>
-
     <string name="title_clear_default_special_button">禁用默认的特殊按键指令</string>
     <string name="summary_clear_default_special_button">如果你感觉内置的指令对你没什么用的话，可以禁用，使用自己导入的。</string>
-
     <string name="title_import_special_button">导入自定义特殊指令配置文件</string>
     <string name="summary_import_special_button">每次都会覆盖原来的，请注意备份。</string>
-
     <string name="title_software_update">软件版本更新</string>
     <string name="summary_software_update">ClassicOldSong 黑月光修改版 - 跳转到github获取更新</string>
-
     <string name="title_special_key_layout">特殊按键布局</string>
     <string name="title_show_virtual_key">屏幕显示虚拟按键</string>
     <string name="summary_show_virtual_key">在触摸屏上显示一层虚拟特殊按键。
 \n按键透明度与上方选项中虚拟手柄共用。</string>
-
     <string name="title_default_layout_scheme">默认布局方案</string>
     <string name="summary_default_layout_scheme">每套布局方案初始默认一样（根据keyboards.json文件生成），可自行进行删减调整</string>
-
     <string name="summary_vibrate_keyboard">点按屏幕按键时，会触发手机马达震动，此选项也可用于虚拟手柄按钮。</string>
-
     <string name="title_square_buttons">普通按钮为方形按钮</string>
     <string name="summary_square_buttons">虚拟按钮形状为方形按钮，默认为圆形。</string>
-
     <string name="title_reset_keyboard_layout">重置屏幕虚拟按键布局</string>
     <string name="summary_reset_keyboard_layout">初始化特殊按键布局（重置默认选择的那套布局方案）</string>
     <string name="title_checkbox_force_qwerty">强制使用 QWERTY 布局</string>
@@ -449,4 +418,34 @@
     <string name="keyboard_layout_set_4">第4套</string>
     <string name="keyboard_layout_set_5">第5套</string>
     <string name="toggle_local_mouse_cursor">切换本地光标(需外接物理鼠标)</string>
+    <string name="debug_info_android_version">安卓版本：</string>
+    <string name="debug_info_api_version">api版本：</string>
+    <string name="debug_info_kernel_version">内核版本：</string>
+    <string name="debug_info_brand_model">品牌型号：</string>
+    <string name="debug_info_has_vibration_motor">有震动马达</string>
+    <string name="debug_info_no_vibration_motor">无震动马达</string>
+    <string name="debug_info_test_device_vibration">测试设备震动 (%s)</string>
+    <string name="debug_info_vibration_amplitude">振幅强度 (%d)</string>
+    <string name="debug_info_simple_vibration">简单震一秒</string>
+    <string name="debug_info_continuous_hd_vibration">持续HD震动</string>
+    <string name="debug_info_please_choose">请选择</string>
+    <string name="debug_info_no_gamepad_detected">目前没有检测到手柄，请连接手柄，点击刷新按钮，再尝试！</string>
+    <string name="debug_info_no_vibrator">手柄没有识别到震动马达！</string>
+    <string name="debug_info_set_amplitude">设置振幅0-255【HD震动生效】</string>
+    <string name="debug_info_name">名称：</string>
+    <string name="debug_info_sensors">传感器：</string>
+    <string name="debug_info_no_relevant_driver">无（没有相关驱动或者手柄不支持）</string>
+    <string name="debug_info_no_api_below_android12">低于Android12没有对应API</string>
+    <string name="debug_info_vid_pid">VID_PID：</string>
+    <string name="debug_info_vibration">震动：</string>
+    <string name="debug_info_supported">支持</string>
+    <string name="debug_info_not_supported">不支持</string>
+    <string name="debug_info_details">详细信息：</string>
+    <string name="debug_info_number_of_gamepads">手柄数量：</string>
+    <string name="debug_info_accelerometer">+加速度传感器</string>
+    <string name="debug_info_gyroscope">+陀螺仪</string>
+    <string name="debug_info_stop_vibration">停止震动</string>
+    <string name="debug_info_refresh_gamepad_info">点击刷新手柄信息</string>
+    <string name="debug_info_refresh_gamepad_list">刷新手柄列表</string>
+    <string name="debug_info_test_gamepad_rumble">测试手柄震动</string>
 </resources>

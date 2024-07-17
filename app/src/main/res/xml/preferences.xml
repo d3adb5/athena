@@ -463,9 +463,9 @@
             android:title="@string/title_touch_sensitivity_y" />
 
         <Preference
-            android:key="pref_axi_test"
-            android:title="@string/title_axi_test"
-            android:summary="@string/summary_axi_test"
+            android:key="pref_debug_info"
+            android:title="@string/title_debug_info"
+            android:summary="@string/summary_debug_info"
             />
 
         <com.limelight.preferences.SeekBarPreference
