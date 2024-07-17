@@ -54,9 +54,24 @@
             android:title="@string/title_checkbox_enforce_refresh_rate" />
 
         <CheckBoxPreference
+            android:key="checkbox_enable_portrait"
+            android:title="@string/title_portrait_mode"
+            android:summary="@string/summary_portrait_mode"
+            android:defaultValue="false"/>
+
+        <EditTextPreference
+            android:key="edit_diy_w_h"
+            android:defaultValue="1920x1080"
+            android:singleLine="true"
+            android:dialogTitle="@string/dialog_custom_resolution"
+            android:summary="@string/summary_custom_resolution"
+            android:title="@string/title_custom_resolution" />
+
+        <CheckBoxPreference
             android:key="checkbox_stretch_video"
             android:title="@string/title_checkbox_stretch_video"
             android:defaultValue="false" />
+
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_audio_settings">
         <ListPreference
@@ -355,20 +370,6 @@
             android:summary="@string/summary_sbs_mode"
             android:defaultValue="false"/>
 
-        <EditTextPreference
-            android:key="edit_diy_w_h"
-            android:defaultValue="1920x1080"
-            android:singleLine="true"
-            android:dialogTitle="@string/dialog_custom_resolution"
-            android:summary="@string/summary_custom_resolution"
-            android:title="@string/title_custom_resolution" />
-
-        <CheckBoxPreference
-            android:key="checkbox_enable_portrait"
-            android:title="@string/title_portrait_mode"
-            android:summary="@string/summary_portrait_mode"
-            android:defaultValue="false"/>
-
         <CheckBoxPreference
             android:key="checkbox_enable_joyconfix"
             android:title="@string/title_joyconfix"
@@ -515,11 +516,6 @@
             android:title="@string/title_software_update"
             android:summary="@string/summary_software_update"
             url="https://github.com/ClassicOldSong/moonlight-android/releases"/>
-
-        <com.limelight.preferences.WebLauncherPreference
-            android:title="@string/title_about_fork"
-            android:summary="@string/summary_about_fork"
-            url="https://space.bilibili.com/16893379"/>
 
     </PreferenceCategory>
 

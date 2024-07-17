@@ -136,6 +136,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private PreferenceConfiguration prefConfig;
     private SharedPreferences tombstonePrefs;
 
+    private int displayWidth;
+    private int displayHeight;
+
     private NvConnection conn;
     private SpinnerDialog spinner;
     private boolean displayedFailureDialog = false;
@@ -248,10 +251,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         prefConfig = PreferenceConfiguration.readPreferences(this);
         tombstonePrefs = Game.this.getSharedPreferences("DecoderTombstone", 0);
 
+        displayWidth = prefConfig.enablePortrait ? prefConfig.height : prefConfig.width;
+        displayHeight = prefConfig.enablePortrait ? prefConfig.width : prefConfig.height;
+
         // Enter landscape unless we're on a square screen
         setPreferredOrientationForCurrentDisplay();
 
-        if (prefConfig.stretchVideo || shouldIgnoreInsetsForResolution(prefConfig.width, prefConfig.height)) {
+        if (prefConfig.stretchVideo || shouldIgnoreInsetsForResolution(displayWidth, displayHeight)) {
             // Allow the activity to layout under notches if the fill-screen option
             // was turned on by the user or it's a full-screen native resolution
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -515,7 +521,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         StreamConfiguration config = new StreamConfiguration.Builder()
-                .setResolution(prefConfig.width, prefConfig.height)
+                .setResolution(
+                        displayWidth,
+                        displayHeight
+                )
                 .setLaunchRefreshRate(prefConfig.fps)
                 .setRefreshRate(chosenFrameRate)
                 .setApp(app)
@@ -651,7 +660,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             // For native resolution, we will lock the orientation to the one that matches the specified resolution
             if (PreferenceConfiguration.isNativeResolution(prefConfig.width, prefConfig.height)) {
-                if (prefConfig.width > prefConfig.height) {
+                if (displayWidth > displayHeight) {
                     desiredOrientation = Configuration.ORIENTATION_LANDSCAPE;
                 }
                 else {
@@ -769,7 +778,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private PictureInPictureParams getPictureInPictureParams(boolean autoEnter) {
         PictureInPictureParams.Builder builder =
                 new PictureInPictureParams.Builder()
-                        .setAspectRatio(new Rational(prefConfig.width, prefConfig.height))
+                        .setAspectRatio(new Rational(displayWidth, displayHeight))
                         .setSourceRectHint(new Rect(
                                 streamView.getLeft(), streamView.getTop(),
                                 streamView.getRight(), streamView.getBottom()));
@@ -1074,7 +1083,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             display.getSize(screenSize);
 
             double screenAspectRatio = ((double)screenSize.y) / screenSize.x;
-            double streamAspectRatio = ((double)prefConfig.height) / prefConfig.width;
+            double streamAspectRatio = ((double)displayHeight) / displayWidth;
             if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001) {
                 LimeLog.info("Stream has compatible aspect ratio with output display");
                 aspectRatioMatch = true;
@@ -1083,12 +1092,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         if (prefConfig.stretchVideo || aspectRatioMatch) {
             // Set the surface to the size of the video
-            streamView.getHolder().setFixedSize(prefConfig.width, prefConfig.height);
+            streamView.getHolder().setFixedSize(displayWidth, displayHeight);
         }
         else {
             // Set the surface to scale based on the aspect ratio of the stream
-            streamView.setDesiredAspectRatio((double)prefConfig.width / (double)prefConfig.height);
-            LimeLog.info("surfaceChanged-->"+(double)prefConfig.width / (double)prefConfig.height);
+            streamView.setDesiredAspectRatio((double)displayWidth / (double)displayHeight);
+            LimeLog.info("surfaceChanged-->"+(double)displayWidth / (double)displayHeight);
         }
 
         // Set the desired refresh rate that will get passed into setFrameRate() later
@@ -2740,7 +2749,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             throw new IllegalStateException("Surface changed before creation!");
         }
 
-        LimeLog.info("surfaceChanged-->"+width+" x "+height + "----"+prefConfig.width+" x "+prefConfig.height);
+        LimeLog.info("surfaceChanged-->"+width+" x "+height + "----"+displayWidth+" x "+displayHeight);
         if (!attemptedConnection) {
             attemptedConnection = true;
 

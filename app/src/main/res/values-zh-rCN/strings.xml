@@ -348,8 +348,8 @@
             \n如果画面比例一样，可手动设置拉伸画面来充满全屏</string>
     <string name="title_custom_resolution">自定义分辨率</string>
 
-    <string name="title_portrait_mode">竖屏显示模式</string>
-    <string name="summary_portrait_mode">搭配自定义分辨率使用，确保你使用的串流端支持并且PC端分辨率是竖直方向</string>
+    <string name="title_portrait_mode">竖屏模式</string>
+    <string name="summary_portrait_mode">屏幕宽高将被反转，串流画面将设为竖屏。\n请确保远端显示器支持反转后的分辨率。\n你可能需要手动设置远端PC的屏幕显示方向。</string>
 
     <string name="title_joyconfix">兼容Switch JoyCon手柄</string>
     <string name="summary_joyconfix">如果你的JoyCon无法使用或识别按键有问题，可以尝试开启此功能。适配Android 10及以上</string>
@@ -406,10 +406,7 @@
     <string name="title_software_update">软件版本更新</string>
     <string name="summary_software_update">ClassicOldSong 黑月光修改版 - 跳转到github获取更新</string>
 
-    <string name="title_about_fork">关于原Fork</string>
-    <string name="summary_about_fork">跳转到B站阿西西的日常个人首页</string>
-
-    <string name="title_special_key_layout">特殊按键布局-阿西西的日常</string>
+    <string name="title_special_key_layout">特殊按键布局</string>
     <string name="title_show_virtual_key">屏幕显示虚拟按键</string>
     <string name="summary_show_virtual_key">在触摸屏上显示一层虚拟特殊按键。
 \n按键透明度与上方选项中虚拟手柄共用。</string>

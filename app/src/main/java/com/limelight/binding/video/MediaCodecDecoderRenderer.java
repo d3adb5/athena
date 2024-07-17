@@ -142,7 +142,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private boolean decoderCanMeetPerformancePoint(MediaCodecInfo.VideoCapabilities caps, PreferenceConfiguration prefs) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            MediaCodecInfo.VideoCapabilities.PerformancePoint targetPerfPoint = new MediaCodecInfo.VideoCapabilities.PerformancePoint(prefs.width, prefs.height, prefs.fps);
+            MediaCodecInfo.VideoCapabilities.PerformancePoint targetPerfPoint = new MediaCodecInfo.VideoCapabilities.PerformancePoint(initialWidth, initialHeight, prefs.fps);
             List<MediaCodecInfo.VideoCapabilities.PerformancePoint> perfPoints = caps.getSupportedPerformancePoints();
             if (perfPoints != null) {
                 for (MediaCodecInfo.VideoCapabilities.PerformancePoint perfPoint : perfPoints) {
@@ -163,7 +163,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             try {
                 // We'll ask the decoder what it can do for us at this resolution and see if our
                 // requested frame rate falls below or inside the range of achievable frame rates.
-                Range<Double> fpsRange = caps.getAchievableFrameRatesFor(prefs.width, prefs.height);
+                Range<Double> fpsRange = caps.getAchievableFrameRatesFor(initialWidth, initialHeight);
                 if (fpsRange != null) {
                     return prefs.fps <= fpsRange.getUpper();
                 }
@@ -178,7 +178,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         // As a last resort, we will use areSizeAndRateSupported() which is explicitly NOT a
         // performance metric, but it can work at least for the purpose of determining if
         // the codec is going to die when given a stream with the specified settings.
-        return caps.areSizeAndRateSupported(prefs.width, prefs.height, prefs.fps);
+        return caps.areSizeAndRateSupported(initialWidth, initialHeight, prefs.fps);
     }
 
     private boolean decoderCanMeetPerformancePointWithHevcAndNotAvc(MediaCodecInfo hevcDecoderInfo, MediaCodecInfo avcDecoderInfo, PreferenceConfiguration prefs) {
@@ -245,7 +245,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                     LimeLog.info("Forcing HEVC enabled for HDR streaming");
                 }
                 // > 4K streaming also requires HEVC, so force it on there too.
-                else if (prefs.width > 4096 || prefs.height > 4096) {
+                else if (initialWidth > 4096 || initialHeight > 4096) {
                     LimeLog.info("Forcing HEVC enabled for over 4K streaming");
                 }
                 // Use HEVC if the H.264 decoder is unable to meet the performance point
@@ -346,7 +346,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         int hevcOptimalSlicesPerFrame = 0;
         if (avcDecoder != null) {
             directSubmit = MediaCodecHelper.decoderCanDirectSubmit(avcDecoder.getName());
-            refFrameInvalidationAvc = MediaCodecHelper.decoderSupportsRefFrameInvalidationAvc(avcDecoder.getName(), prefs.height);
+            refFrameInvalidationAvc = MediaCodecHelper.decoderSupportsRefFrameInvalidationAvc(avcDecoder.getName(), initialHeight);
             avcOptimalSlicesPerFrame = MediaCodecHelper.getDecoderOptimalSlicesPerFrame(avcDecoder.getName());
 
             if (directSubmit) {
@@ -707,8 +707,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public int setup(int format, int width, int height, int redrawRate) {
-        this.initialWidth = width;
-        this.initialHeight = height;
+        this.initialWidth = prefs.enablePortrait ? height : width;
+        this.initialHeight = prefs.enablePortrait? width : height;
         this.videoFormat = format;
         this.refreshRate = redrawRate;
 
