@@ -757,98 +757,75 @@ public class StreamSettings extends Activity {
 
             editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
 
-//            editText.setKeyListener(new NumberKeyListener() {
-//                @Override
-//                public int getInputType() {
-//                    return InputType.TYPE_MASK_VARIATION;
-//                }
-//                @Override
-//                protected char[] getAcceptedChars() {/*这里实现字符串过滤，把你允许输入的字母添加到下面的数组即可！*/
-//                    return new char[]{'0', '1', '2', '3', '4', '5','6','7', '8', '9', '.'};
-//                }
-//            });
             editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)/*这里限制输入的长度为5个字母*/});
 
             bitrateEditPre.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    String value= (String) newValue;
-                    if(TextUtils.isEmpty(value)){
-                        Toast.makeText(getActivity(),"请输入0-9999的数值。",Toast.LENGTH_SHORT).show();
+                    String value = (String) newValue;
+                    if (TextUtils.isEmpty(value)) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
                         return false;
                     }
-                    float bitrateValue=Float.valueOf(value)*1000;
-                    LimeLog.info("axi-bitrateValue:"+bitrateValue);
-                    int bitrate= (int) bitrateValue;
-                    LimeLog.info("axi-bitrate:"+bitrate);
+                    float bitrateValue = Float.valueOf(value) * 1000;
+                    LimeLog.info("axi-bitrateValue:" + bitrateValue);
+                    int bitrate = (int) bitrateValue;
+                    LimeLog.info("axi-bitrate:" + bitrate);
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                    prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING,bitrate).apply();
-                    Toast.makeText(getActivity(),"设置成功！",Toast.LENGTH_SHORT).show();
+                    prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING, bitrate).apply();
+                    Toast.makeText(getActivity(), getString(R.string.pref_set_success), Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
-
-
-//            findPreference("checkbox_multi_touch_screen").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-//                @Override
-//                public boolean onPreferenceChange(Preference preference, Object newValue) {
-//
-//                    if(((Boolean) newValue)){
-//                        CheckBoxPreference checkBoxPreference= (CheckBoxPreference) findPreference(PreferenceConfiguration.TOUCHSCREEN_TRACKPAD_PREF_STRING);
-//                        checkBoxPreference.setChecked(false);
-//                    }
-//
-//                    return true;
-//                }
-//            });
         }
-        int READ_REQUEST_CODE=1001;
-        int READ_REQUEST_SPECIAL_CODE=1002;
+        int READ_REQUEST_CODE = 1001;
+        int READ_REQUEST_SPECIAL_CODE = 1002;
+
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
             super.onActivityResult(requestCode, resultCode, data);
-            if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK &&data.getData()!=null) {
+            if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK && data.getData() != null) {
                 try {
                     Uri uri = data.getData();
-                    String json=FileUriUtils.openUriForRead(getActivity(),uri);
-                    if(TextUtils.isEmpty(json)){
-                        Toast.makeText(getActivity(),"空文件~",Toast.LENGTH_SHORT).show();
+                    String json = FileUriUtils.openUriForRead(getActivity(), uri);
+                    if (TextUtils.isEmpty(json)) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_empty_file), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     String name = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
                     SharedPreferences.Editor prefEditor = getActivity().getSharedPreferences(name, Activity.MODE_PRIVATE).edit();
-                    JSONObject object=new JSONObject(json);
+                    JSONObject object = new JSONObject(json);
                     Iterator it = object.keys();
                     prefEditor.clear();
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         String key = (String) it.next();// 获得key
                         String value = object.getString(key);// 获得value
-                        prefEditor.putString(key,value);
+                        prefEditor.putString(key, value);
                     }
                     prefEditor.apply();
-                    Toast.makeText(getActivity(),"导入成功！",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getString(R.string.pref_import_success), Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(getActivity(),"出错啦~"+e.getMessage(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getString(R.string.pref_error_occurred) + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
 
-            if (requestCode == READ_REQUEST_SPECIAL_CODE && resultCode == Activity.RESULT_OK &&data.getData()!=null) {
+            if (requestCode == READ_REQUEST_SPECIAL_CODE && resultCode == Activity.RESULT_OK && data.getData() != null) {
                 try {
                     Uri uri = data.getData();
-                    String json=FileUriUtils.openUriForRead(getActivity(),uri);
-                    if(TextUtils.isEmpty(json)){
-                        Toast.makeText(getActivity(),"空文件~",Toast.LENGTH_SHORT).show();
+                    String json = FileUriUtils.openUriForRead(getActivity(), uri);
+                    if (TextUtils.isEmpty(json)) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_empty_file), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     SharedPreferences.Editor prefEditor = getActivity().getSharedPreferences(GameMenu.PREF_NAME, Activity.MODE_PRIVATE).edit();
-                    prefEditor.putString(GameMenu.KEY_NAME,json);
+                    prefEditor.putString(GameMenu.KEY_NAME, json);
                     prefEditor.apply();
-                    Toast.makeText(getActivity(),"导入成功！",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getString(R.string.pref_import_success), Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Toast.makeText(getActivity(),"出错啦~"+e.getMessage(),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getString(R.string.pref_error_occurred) + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
         }

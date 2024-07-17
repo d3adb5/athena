@@ -431,7 +431,7 @@
     <string name="debug_info_please_choose">请选择</string>
     <string name="debug_info_no_gamepad_detected">目前没有检测到手柄，请连接手柄，点击刷新按钮，再尝试！</string>
     <string name="debug_info_no_vibrator">手柄没有识别到震动马达！</string>
-    <string name="debug_info_set_amplitude">设置振幅0-255【HD震动生效】</string>
+    <string name="debug_info_set_amplitude">设置振幅0-255(只对HD震动生效)</string>
     <string name="debug_info_name">名称：</string>
     <string name="debug_info_sensors">传感器：</string>
     <string name="debug_info_no_relevant_driver">无（没有相关驱动或者手柄不支持）</string>
@@ -448,4 +448,9 @@
     <string name="debug_info_refresh_gamepad_info">点击刷新手柄信息</string>
     <string name="debug_info_refresh_gamepad_list">刷新手柄列表</string>
     <string name="debug_info_test_gamepad_rumble">测试手柄震动</string>
+    <string name="pref_enter_value_0_9999">请输入0-9999的数值。</string>
+    <string name="pref_set_success">设置成功！</string>
+    <string name="pref_empty_file">文件为空！</string>
+    <string name="pref_import_success">导入成功！</string>
+    <string name="pref_error_occurred">出错啦~</string>
 </resources>

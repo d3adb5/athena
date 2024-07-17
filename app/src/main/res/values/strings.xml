@@ -455,25 +455,28 @@
     <string name="debug_info_simple_vibration">Simple Vibration for 1 Second</string>
     <string name="debug_info_continuous_hd_vibration">Continuous HD Vibration</string>
     <string name="debug_info_please_choose">Please Choose</string>
-    <string name="debug_info_no_gamepad_detected">No gamepad detected, please connect a gamepad, click the refresh button, and try again!</string>
+    <string name="debug_info_no_gamepad_detected">No gamepad detected, please connect a gamepad, tap refresh, and try again!</string>
     <string name="debug_info_no_vibrator">No vibrator detected on the gamepad!</string>
-    <string name="debug_info_set_amplitude">Set Amplitude 0-255 [Effective for HD Vibration]</string>
-    <string name="debug_info_name">Name:</string>
-    <string name="debug_info_sensors">Sensors:</string>
+    <string name="debug_info_set_amplitude">Set Amplitude 0-255 (Effective only for HD Vibration)</string>
+    <string name="debug_info_name">Name: </string>
+    <string name="debug_info_sensors">Sensors: </string>
     <string name="debug_info_no_relevant_driver">None (no relevant driver or gamepad not supported)</string>
     <string name="debug_info_no_api_below_android12">No corresponding API below Android 12</string>
-    <string name="debug_info_vid_pid">VID_PID:</string>
-    <string name="debug_info_vibration">Vibration:</string>
+    <string name="debug_info_vid_pid">VID_PID: </string>
+    <string name="debug_info_vibration">Vibration: </string>
     <string name="debug_info_supported">Supported</string>
     <string name="debug_info_not_supported">Not Supported</string>
-    <string name="debug_info_details">Details:</string>
-    <string name="debug_info_number_of_gamepads">Number of Gamepads:</string>
+    <string name="debug_info_details">Details: </string>
+    <string name="debug_info_number_of_gamepads">Number of Gamepads: </string>
     <string name="debug_info_accelerometer">+Accelerometer</string>
     <string name="debug_info_gyroscope">+Gyroscope</string>
     <string name="debug_info_stop_vibration">Stop Vibration</string>
     <string name="debug_info_refresh_gamepad_info">Tap to refresh gamepad info</string>
     <string name="debug_info_refresh_gamepad_list">Refresh gamepad list</string>
     <string name="debug_info_test_gamepad_rumble">Test gamepad rumble</string>
-
+    <string name="pref_enter_value_0_9999">Please enter a value between 0 and 9999.</string>
+    <string name="pref_set_success">Settings saved successfully!</string>
+    <string name="pref_empty_file">Empty file!</string>
+    <string name="pref_import_success">Import successful!</string>
+    <string name="pref_error_occurred">An error occurred: </string>
 </resources>
-
