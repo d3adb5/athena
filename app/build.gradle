@@ -81,9 +81,9 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix ".niordebug"
-            resValue "string", "app_label", "Moonlight Nior (Debug)"
-            resValue "string", "app_label_root", "Moonlight Nior (Root Debug)"
+            applicationIdSuffix ".noirdebug"
+            resValue "string", "app_label", "Moonlight Noir (Debug)"
+            resValue "string", "app_label_root", "Moonlight Noir (Root Debug)"
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -119,9 +119,9 @@ android {
             // is to please change the applicationId before you publish.
             //
             // TL;DR: Leave the following line alone!
-            applicationIdSuffix ".nior"
-            resValue "string", "app_label", "Moonlight Nior"
-            resValue "string", "app_label_root", "Moonlight Nior (Root)"
+            applicationIdSuffix ".noir"
+            resValue "string", "app_label", "Moonlight Noir"
+            resValue "string", "app_label_root", "Moonlight Noir (Root)"
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'

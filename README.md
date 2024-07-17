@@ -1,4 +1,4 @@
-# Moonlight Android Nior
+# Moonlight Android Noir
 
 Based on https://github.com/Axixi2233/moonlight-android
 
