@@ -4,6 +4,8 @@ Based on https://github.com/Axixi2233/moonlight-android
 
 As I heard that the original fork had some [dark history](https://www.bilibili.com/read/cv35787801), as it is open sourced now, there's no issue continue improving based on that fork.
 
+Citing @TrueZhuangJia for several [very useful modifications](https://github.com/moonlight-stream/moonlight-android/issues/1348#issuecomment-2236344729)! Thanks for all the contributions made by wonderful people!
+
 This project version mainly implements the following features:
 1. Custom virtual buttons with import and export support.
 2. Custom resolutions.
