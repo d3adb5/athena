@@ -472,7 +472,7 @@
             android:background="@drawable/bg_ax_keyboard_button"
             android:gravity="center"
             android:tag="115"
-            android:text="中/英"
+            android:text="Caps"
             android:textSize="12sp" />
 
         <TextView
@@ -772,13 +772,13 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="310"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
+            android:layout_weight="310"
             android:background="@drawable/bg_ax_keyboard_button"
             android:gravity="center"
             android:tag="62"
-            android:text="空格"
+            android:text="___"
             android:textSize="12sp" />
 
 <!--        <TextView-->

@@ -300,11 +300,11 @@
 
     <!-- In Game menu -->
     <string name="game_menu_toggle_keyboard">Show soft keyboard</string>
-    <string name="game_menu_hud">(Show/Hide) Preformance monitor</string>
+    <string name="game_menu_hud">Toggle Preformance monitor</string>
     <string name="game_menu_select_mouse_mode">Select mouse mode</string>
-    <string name="game_menu_switch_keyboard_model">(Show/Hide) Special keys</string>
-    <string name="game_menu_switch_virtual_model">(Show/Hide) On-screen controller</string>
-    <string name="game_menu_switch_virtual_keyboard_model">(Show/Hide) On-screen full keyboard</string>
+    <string name="game_menu_switch_keyboard_model">Toggle Special keys</string>
+    <string name="game_menu_switch_virtual_model">Toggle On-screen controller</string>
+    <string name="game_menu_switch_virtual_keyboard_model">Toggle On-screen full keyboard</string>
     <string name="game_menu_switch_touch_sensitivity_model">Switch touch sensitivity</string>
 
 
