@@ -23,18 +23,40 @@ import com.limelight.binding.input.ControllerHandler;
 import com.limelight.preferences.PreferenceConfiguration;
 
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class KeyBoardLayoutController {
 
-    private final ControllerHandler controllerHandler;
     private final Context context;
     private FrameLayout frame_layout = null;
     private Vibrator vibrator;
-    private LinearLayout keyboardView;
 
-    public KeyBoardLayoutController(final ControllerHandler controllerHandler, FrameLayout layout, final Context context) {
-        this.controllerHandler = controllerHandler;
+    private LinearLayout keyboardView;private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
+    static {
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_RIGHT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_CTRL_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_CTRL_RIGHT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_SHIFT_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_SHIFT_RIGHT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_META_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_META_RIGHT);
+    }
+
+    private final BitSet modifierKeyStates = new BitSet();
+
+    public boolean isModifierKeyPressed(int keyCode) {
+        return modifierKeyStates.get(keyCode);
+    }
+
+    private boolean isModifierKey(int keyCode) {
+        return MODIFIER_KEY_CODES.contains(keyCode);
+    }
+
+    public KeyBoardLayoutController(FrameLayout layout, final Context context) {
         this.frame_layout = layout;
         this.context = context;
         this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
@@ -46,33 +68,49 @@ public class KeyBoardLayoutController {
         View.OnTouchListener touchListener = new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                int eventAction = event.getAction();
+                String tag=(String) v.getTag();
+                if(TextUtils.equals("hide",tag)){
+                    if (eventAction == MotionEvent.ACTION_UP || eventAction == MotionEvent.ACTION_CANCEL) {
+                        hide();
+                    }
+                    return true;
+                }
+
+                int keyCode = Integer.parseInt(tag);
+                int keyAction;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        // 处理按下事件
-                        String tag=(String) v.getTag();
-                        if(TextUtils.equals("hide",tag)){
-                            return true;
+                        if (isModifierKey(keyCode)) {
+                            boolean isPressed = isModifierKeyPressed(keyCode);
+                            modifierKeyStates.flip(keyCode);
+                            keyAction = isPressed ? KeyEvent.ACTION_UP : KeyEvent.ACTION_DOWN;
+                        } else {
+                            keyAction = KeyEvent.ACTION_DOWN;
                         }
-                        KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, Integer.parseInt(tag));
-                        keyEvent.setSource(0);
-                        sendKeyEvent(keyEvent);
-                        v.setBackgroundResource(R.drawable.bg_ax_keyboard_button_confirm);
-                        return true;
+                        break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        // 处理释放事件
-                        String tag2=(String) v.getTag();
-                        if(TextUtils.equals("hide",tag2)){
-                            hide();
+                        if (isModifierKey(keyCode)) {
                             return true;
                         }
-                        KeyEvent keyUP = new KeyEvent(KeyEvent.ACTION_UP, Integer.parseInt(tag2));
-                        keyUP.setSource(0);
-                        sendKeyEvent(keyUP);
-                        v.setBackgroundResource(R.drawable.bg_ax_keyboard_button);
-                        return true;
+
+                        keyAction = KeyEvent.ACTION_UP;
+                        break;
+                    default:
+                        return false;
                 }
-                return false;
+
+                KeyEvent keyEvent = new KeyEvent(keyAction, keyCode);
+                keyEvent.setSource(0);
+                sendKeyEvent(keyEvent);
+
+                if (keyAction == KeyEvent.ACTION_DOWN) {
+                    v.setBackgroundResource(R.drawable.bg_ax_keyboard_button_confirm);
+                } else {
+                    v.setBackgroundResource(R.drawable.bg_ax_keyboard_button);
+                }
+                return true;
             }
         };
         for (int i = 0; i < keyboardView.getChildCount(); i++){
