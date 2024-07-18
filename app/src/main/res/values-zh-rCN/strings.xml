@@ -405,6 +405,8 @@
     <string name="summary_checkbox_gamepad_enable_battery_report">在可用时汇报手柄电池状态。\n如果在使用触摸屏/触摸板/手写笔/鼠标时偶尔有卡顿现象发生，关闭此选项可能会有用。</string>
     <string name="title_checkbox_enforce_refresh_rate">强制设置刷新率</string>
     <string name="summary_checkbox_enforce_refresh_rate">强制使用设置的FPS参数。\n在某些设备(如ColorOS)等上必须启用才能正确设置刷新率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
+    <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">粘滞修饰键</string>
+    <string name="summary_checkbox_enable_sticky_modifier_key_virtual_keyboard">在虚拟全键盘上使用粘滞修饰键。</string>
     <string name="virtual_keyboard_hide">隐藏\n键盘</string>
     <string name="mouse_mode_multi_touch">多点触控</string>
     <string name="mouse_mode_absolute_touch">单点触控</string>

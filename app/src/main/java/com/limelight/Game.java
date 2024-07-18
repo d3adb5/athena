@@ -614,7 +614,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private void initkeyBoardLayoutController(){
-        keyBoardLayoutController=new KeyBoardLayoutController((FrameLayout)rootView, this);
+        keyBoardLayoutController=new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
         keyBoardLayoutController.refreshLayout();
         keyBoardLayoutController.show();
     }

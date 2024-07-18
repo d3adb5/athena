@@ -7,7 +7,6 @@ package com.limelight.binding.input.virtual_controller.keyboard;
 import android.content.Context;
 import android.os.Vibrator;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -19,20 +18,18 @@ import android.widget.LinearLayout;
 
 import com.limelight.Game;
 import com.limelight.R;
-import com.limelight.binding.input.ControllerHandler;
 import com.limelight.preferences.PreferenceConfiguration;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class KeyBoardLayoutController {
 
     private final Context context;
-    private FrameLayout frame_layout = null;
+    private final PreferenceConfiguration prefConfig;
     private Vibrator vibrator;
+    private FrameLayout frame_layout = null;
 
     private LinearLayout keyboardView;private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
     static {
@@ -56,9 +53,10 @@ public class KeyBoardLayoutController {
         return MODIFIER_KEY_CODES.contains(keyCode);
     }
 
-    public KeyBoardLayoutController(FrameLayout layout, final Context context) {
+    public KeyBoardLayoutController(FrameLayout layout, final Context context, PreferenceConfiguration prefConfig) {
         this.frame_layout = layout;
         this.context = context;
+        this.prefConfig = prefConfig;
         this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         this.keyboardView= (LinearLayout) LayoutInflater.from(context).inflate(R.layout.layout_axixi_keyboard,null);
         initKeyboard();
@@ -81,7 +79,7 @@ public class KeyBoardLayoutController {
                 int keyAction;
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        if (isModifierKey(keyCode)) {
+                        if (prefConfig.stickyModifierKey && isModifierKey(keyCode)) {
                             boolean isPressed = isModifierKeyPressed(keyCode);
                             modifierKeyStates.flip(keyCode);
                             keyAction = isPressed ? KeyEvent.ACTION_UP : KeyEvent.ACTION_DOWN;
@@ -91,7 +89,7 @@ public class KeyBoardLayoutController {
                         break;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        if (isModifierKey(keyCode)) {
+                        if (prefConfig.stickyModifierKey && isModifierKey(keyCode)) {
                             return true;
                         }
 

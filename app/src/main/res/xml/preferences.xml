@@ -356,7 +356,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/title_additional_settings"
-        android:key="category_axixi_settings">
+        android:key="category_additional_settings">
 
         <CheckBoxPreference
             android:key="checkbox_enable_quit_dialog"
@@ -389,6 +389,12 @@
             android:summary="@string/summary_keyboard_height"
             android:text="dp"
             android:title="@string/title_keyboard_height" />
+
+        <CheckBoxPreference
+            android:key="checkbox_enable_sticky_modifier_key_virtual_keyboard"
+            android:title="@string/title_checkbox_enable_sticky_modifier_key_virtual_keyboard"
+            android:summary="@string/summary_checkbox_enable_sticky_modifier_key_virtual_keyboard"
+            android:defaultValue="true"/>
 
         <CheckBoxPreference
             android:key="checkbox_enable_analog_stick_new"
