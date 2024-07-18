@@ -69,7 +69,7 @@ public class PreferenceConfiguration {
     private static final String GAMEPAD_MOTION_SENSORS_PREF_STRING = "checkbox_gamepad_motion_sensors";
     private static final String GAMEPAD_MOTION_FALLBACK_PREF_STRING = "checkbox_gamepad_motion_fallback";
 
-    private static final String CHECKBOX_ENABLE_BATTERY_REPORT = "checkbox_enable_battery_report";
+    private static final String CHECKBOX_ENABLE_BATTERY_REPORT = "checkbox_gamepad_enable_battery_report";
     private static final String CHECKBOX_FORCE_QWERTY = "checkbox_force_qwerty";
     private static final String CHECKBOX_BACK_AS_META = "checkbox_back_as_meta";
 
