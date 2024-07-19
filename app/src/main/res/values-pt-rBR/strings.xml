@@ -169,7 +169,6 @@
     <string name="summary_fps_list">Aumente para uma transmissão de vídeo mais suave. Diminua para melhor desempenho em dispositivos de baixo custo.</string>
     <string name="title_seekbar_bitrate">Taxa de bits</string>
     <string name="summary_seekbar_bitrate">Aumente para uma melhor qualidade de imagem. Diminua para melhorar o desempenho em conexões mais lentas.</string>
-    <string name="title_checkbox_stretch_video">Esticar vídeo para tela cheia</string>
     <string name="resolution_prefix_native">Nativa</string>
     <string name="resolution_prefix_native_fullscreen">Nativa Tela Cheia</string>
     <string name="category_audio_settings">Configurações de Áudio</string>

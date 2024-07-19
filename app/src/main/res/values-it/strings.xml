@@ -95,7 +95,6 @@
     <string name="summary_resolution_list">Aumentare per migliorare la nitidezza dell\'immagine. Diminuire per aumentare le prestazioni su dispositivi di fascia più bassa e reti più lente.</string>
     <string name="title_seekbar_bitrate">Velocità di trasmissione video</string>
     <string name="summary_seekbar_bitrate">Aumentare per migliorare la qualità dell\'immagine. Diminuire per aumentare le prestazioni su reti più lente.</string>
-    <string name="title_checkbox_stretch_video">Forza video a schermo intero</string>
     <string name="title_checkbox_disable_warnings">Disabilita messaggi di warning</string>
     <string name="summary_checkbox_disable_warnings">Disabilita i messaggi di warning sullo schermo durante lo streaming</string>
     <string name="title_checkbox_enable_pip">Abilita modalità spettatore Picture-in-Picture</string>

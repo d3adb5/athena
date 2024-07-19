@@ -257,7 +257,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         // Enter landscape unless we're on a square screen
         setPreferredOrientationForCurrentDisplay();
 
-        if (prefConfig.stretchVideo || shouldIgnoreInsetsForResolution(displayWidth, displayHeight)) {
+        if (
+                prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.STRETCH ||
+                        shouldIgnoreInsetsForResolution(displayWidth, displayHeight)
+        ) {
             // Allow the activity to layout under notches if the fill-screen option
             // was turned on by the user or it's a full-screen native resolution
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -276,12 +279,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         streamView.setInputCallbacks(this);
 
         //光标是否显示
-        cursorVisible=prefConfig.enableMouseLocalCursor;
+        cursorVisible = prefConfig.enableMouseLocalCursor;
 
         //串流画面 顶部居中显示
         if(prefConfig.enableDisplayTopCenter){
-            FrameLayout.LayoutParams params= (FrameLayout.LayoutParams) streamView.getLayoutParams();
-            params.gravity= Gravity.CENTER_HORIZONTAL|Gravity.TOP;
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) streamView.getLayoutParams();
+            params.gravity = Gravity.CENTER_HORIZONTAL|Gravity.TOP;
         }
         // Listen for touch events on the background touch view to enable trackpad mode
         // to work on areas outside of the StreamView itself. We use a separate View
@@ -1090,14 +1093,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         }
 
-        if (prefConfig.stretchVideo || aspectRatioMatch) {
+        if (prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.STRETCH || aspectRatioMatch) {
             // Set the surface to the size of the video
             streamView.getHolder().setFixedSize(displayWidth, displayHeight);
         }
         else {
             // Set the surface to scale based on the aspect ratio of the stream
             streamView.setDesiredAspectRatio((double)displayWidth / (double)displayHeight);
+            streamView.setFillDisplay(prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FILL);
             LimeLog.info("surfaceChanged-->"+(double)displayWidth / (double)displayHeight);
+            LimeLog.info("scaleMode-->"+prefConfig.videoScaleMode);
         }
 
         // Set the desired refresh rate that will get passed into setFrameRate() later

@@ -32,6 +32,17 @@
         <item>120</item>
     </string-array>
 
+    <string-array name="video_scale_mode_names">
+        <item>@string/video_scale_mode_fit</item>
+        <item>@string/video_scale_mode_fill</item>
+        <item>@string/video_scale_mode_stretch</item>
+    </string-array>
+    <string-array name="video_scale_mode_values" translatable="false">
+        <item>fit</item>
+        <item>fill</item>
+        <item>stretch</item>
+    </string-array>
+
     <string-array name="audio_config_names">
         <item>@string/audioconf_stereo</item>
         <item>@string/audioconf_51surround</item>

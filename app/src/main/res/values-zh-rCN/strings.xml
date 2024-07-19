@@ -113,7 +113,6 @@
     <string name="summary_seekbar_bitrate">高码率提升图像质量。低码率提升在较慢网络中的串流体验。</string>
     <string name="title_unlock_fps"> 解锁所有可用帧数 </string>
     <string name="summary_unlock_fps">以90或120帧串流可能会减少在高端设备上的网络延迟，但会在不支持的设备上造成卡顿或崩溃</string>
-    <string name="title_checkbox_stretch_video"> 将画面拉伸至全屏 </string>
     <string name="title_checkbox_disable_warnings"> 禁用错误提示 </string>
     <string name="summary_checkbox_disable_warnings"> 串流中禁用连接错误提示 </string>
     <string name="title_checkbox_enable_pip">启用画中画观察模式</string>
@@ -236,6 +235,11 @@
     <string name="pacing_balanced">平衡</string>
     <string name="pacing_smoothness">优先视频流畅度（可能会显著增大延迟）</string>
     <string name="summary_setup_guide">查看有关如何设置游戏电脑以进行流传输的说明</string>
+    <string name="title_video_scale_mode">视频缩放模式</string>
+    <string name="summary_video_scale_mode">选择适应/填充/拉伸</string>
+    <string name="video_scale_mode_fit">适应</string>
+    <string name="video_scale_mode_fill">填充</string>
+    <string name="video_scale_mode_stretch">拉伸</string>
     <string name="title_privacy_policy">隐私政策</string>
     <string name="summary_privacy_policy">查看 Moonlight 隐私政策</string>
     <string name="category_help">帮助</string>

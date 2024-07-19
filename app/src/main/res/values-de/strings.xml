@@ -133,7 +133,6 @@
     <string name="title_seekbar_bitrate">Video Bitrate</string>
     <string name="summary_seekbar_bitrate">Erhöhen für einen schärferen Video-Stream. Verringern um auf langsameren Geräten eine bessere Performance zu erzielen.</string>
     <string name="suffix_seekbar_bitrate_mbps">Mbit/s</string>
-    <string name="title_checkbox_stretch_video">Video auf Vollbildschirm strecken</string>
     <string name="category_audio_settings">Audio Einstellungen</string>
     <string name="title_audio_config_list">Surround Sound Konfiguration </string>
     <string name="summary_audio_config_list">Aktivieren von 5.1- oder 7.1-Surround-Sound für Heimkinosysteme</string>

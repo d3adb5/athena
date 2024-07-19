@@ -5,10 +5,12 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 public class StreamView extends SurfaceView {
     private double desiredAspectRatio;
     private InputCallbacks inputCallbacks;
+    private boolean fillDisplay = false;
 
     public void setDesiredAspectRatio(double aspectRatio) {
         this.desiredAspectRatio = aspectRatio;
@@ -16,6 +18,10 @@ public class StreamView extends SurfaceView {
 
     public void setInputCallbacks(InputCallbacks callbacks) {
         this.inputCallbacks = callbacks;
+    }
+
+    public void setFillDisplay(boolean fillDisplay) {
+        this.fillDisplay = fillDisplay;
     }
 
     public StreamView(Context context) {
@@ -47,12 +53,23 @@ public class StreamView extends SurfaceView {
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
         int measuredHeight, measuredWidth;
-        if (widthSize > heightSize * desiredAspectRatio) {
-            measuredHeight = heightSize;
-            measuredWidth = (int)(measuredHeight * desiredAspectRatio);
-        } else {
-            measuredWidth = widthSize;
-            measuredHeight = (int)(measuredWidth / desiredAspectRatio);
+        if (fillDisplay) {
+            if (widthSize < heightSize * desiredAspectRatio) {
+                measuredHeight = heightSize;
+                measuredWidth = (int)(heightSize * desiredAspectRatio);
+            } else {
+                measuredWidth = widthSize;
+                measuredHeight = (int)(widthSize / desiredAspectRatio);
+            }
+        }
+        else {
+            if (widthSize > heightSize * desiredAspectRatio) {
+                measuredHeight = heightSize;
+                measuredWidth = (int)(measuredHeight * desiredAspectRatio);
+            } else {
+                measuredWidth = widthSize;
+                measuredHeight = (int)(measuredWidth / desiredAspectRatio);
+            }
         }
 
         setMeasuredDimension(measuredWidth, measuredHeight);

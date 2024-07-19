@@ -147,7 +147,6 @@
     <string name="title_resolution_list">Resolusi video</string>
     <string name="summary_resolution_list">Tingkatkan untuk meningkatkan kejernihan gambar. Turunkan untuk kinerja yang lebih baik pada perangkat kelas bawah dan jaringan yang lebih lambat.</string>
     <string name="suffix_seekbar_bitrate_mbps">Mbps</string>
-    <string name="title_checkbox_stretch_video">Regangkan video ke layar penuh</string>
     <string name="resolution_prefix_native">Asli</string>
     <string name="resolution_prefix_native_fullscreen">Layar Penuh Asli</string>
     <string name="category_audio_settings">Pengaturan Audio</string>

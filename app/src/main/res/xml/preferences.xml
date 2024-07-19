@@ -59,6 +59,14 @@
             android:summary="@string/summary_portrait_mode"
             android:defaultValue="false"/>
 
+        <ListPreference
+            android:key="list_video_scale_mode"
+            android:title="@string/title_video_scale_mode"
+            android:summary="@string/summary_video_scale_mode"
+            android:entries="@array/video_scale_mode_names"
+            android:entryValues="@array/video_scale_mode_values"
+            android:defaultValue="fit" />
+
         <EditTextPreference
             android:key="edit_diy_w_h"
             android:defaultValue="1920x1080"
@@ -66,11 +74,6 @@
             android:dialogTitle="@string/dialog_custom_resolution"
             android:summary="@string/summary_custom_resolution"
             android:title="@string/title_custom_resolution" />
-
-        <CheckBoxPreference
-            android:key="checkbox_stretch_video"
-            android:title="@string/title_checkbox_stretch_video"
-            android:defaultValue="false" />
 
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_audio_settings">

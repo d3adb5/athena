@@ -10,6 +10,12 @@ import android.view.Display;
 import com.limelight.nvstream.jni.MoonBridge;
 
 public class PreferenceConfiguration {
+    public enum ScaleMode {
+        FIT,
+        FILL,
+        STRETCH
+    }
+
     public enum FormatOption {
         AUTO,
         FORCE_AV1,
@@ -25,13 +31,14 @@ public class PreferenceConfiguration {
 
     private static final String LEGACY_RES_FPS_PREF_STRING = "list_resolution_fps";
     private static final String LEGACY_ENABLE_51_SURROUND_PREF_STRING = "checkbox_51_surround";
+    private static final String LEGACY_STRETCH_PREF_STRING = "checkbox_stretch_video";
 
     static final String RESOLUTION_PREF_STRING = "list_resolution";
     static final String FPS_PREF_STRING = "list_fps";
     static final String BITRATE_PREF_STRING = "seekbar_bitrate_kbps";
     private static final String BITRATE_PREF_OLD_STRING = "seekbar_bitrate";
     private static final String ENFORCE_REFRESH_RATE_PREF_STRING = "checkbox_enforce_refresh_rate";
-    private static final String STRETCH_PREF_STRING = "checkbox_stretch_video";
+    private static final String VIDEO_SCALE_MODE_PREF_STRING = "list_video_scale_mode";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
     private static final String DISABLE_TOASTS_PREF_STRING = "checkbox_disable_warnings";
     private static final String HOST_AUDIO_PREF_STRING = "checkbox_host_audio";
@@ -95,6 +102,7 @@ public class PreferenceConfiguration {
     static final String DEFAULT_RESOLUTION = "1280x720";
     static final String DEFAULT_FPS = "60";
     private static final boolean DEFAULT_ENFORCE_REFRESH_RATE = false;
+    private static final String DEFAULT_VIDEO_SCALE_MODE = "fit";
     private static final boolean DEFAULT_STRETCH = false;
     private static final boolean DEFAULT_SOPS = true;
     private static final boolean DEFAULT_DISABLE_TOASTS = false;
@@ -156,7 +164,8 @@ public class PreferenceConfiguration {
     public int oscOpacity;
     public int oscKeyboardOpacity;
     public int oscKeyboardHeight;
-    public boolean enforceRefreshRate, stretchVideo, enableSops, playHostAudio, disableWarnings;
+    public boolean enforceRefreshRate, enableSops, playHostAudio, disableWarnings;
+    public ScaleMode videoScaleMode;
     public String language;
     public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
     public boolean onscreenController;
@@ -462,6 +471,25 @@ public class PreferenceConfiguration {
         }
     }
 
+    private static ScaleMode getVideoScaleMode(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String str = prefs.getString(VIDEO_SCALE_MODE_PREF_STRING, DEFAULT_VIDEO_SCALE_MODE);
+        if (str.equals("fit")) {
+            return ScaleMode.FIT;
+        }
+        else if (str.equals("fill")) {
+            return ScaleMode.FILL;
+        }
+        else if (str.equals("stretch")) {
+            return ScaleMode.STRETCH;
+        }
+        else {
+            // Should never get here
+            return ScaleMode.FIT;
+        }
+    }
+
     private static int getFramePacingValue(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -621,6 +649,14 @@ public class PreferenceConfiguration {
             config.fps = Integer.parseInt(prefs.getString(FPS_PREF_STRING, PreferenceConfiguration.DEFAULT_FPS));
         }
 
+        if (prefs.contains(LEGACY_STRETCH_PREF_STRING)) {
+            boolean stretch = prefs.getBoolean(LEGACY_STRETCH_PREF_STRING, false);
+            prefs.edit()
+                    .remove(LEGACY_STRETCH_PREF_STRING)
+                    .putString(VIDEO_SCALE_MODE_PREF_STRING, stretch ? "stretch" : "fit")
+                    .apply();
+        }
+
         if (!prefs.contains(SMALL_ICONS_PREF_STRING)) {
             // We need to write small icon mode's default to disk for the settings page to display
             // the current state of the option properly
@@ -653,6 +689,8 @@ public class PreferenceConfiguration {
             config.audioConfiguration = MoonBridge.AUDIO_CONFIGURATION_STEREO;
         }
 
+        config.videoScaleMode = getVideoScaleMode(context);
+
         config.videoFormat = getVideoFormatValue(context);
         config.framePacing = getFramePacingValue(context);
 
@@ -668,7 +706,6 @@ public class PreferenceConfiguration {
         config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS);
         config.enforceRefreshRate = prefs.getBoolean(ENFORCE_REFRESH_RATE_PREF_STRING, DEFAULT_ENFORCE_REFRESH_RATE);
         config.enableSops = prefs.getBoolean(SOPS_PREF_STRING, DEFAULT_SOPS);
-        config.stretchVideo = prefs.getBoolean(STRETCH_PREF_STRING, DEFAULT_STRETCH);
         config.playHostAudio = prefs.getBoolean(HOST_AUDIO_PREF_STRING, DEFAULT_HOST_AUDIO);
         config.smallIconMode = prefs.getBoolean(SMALL_ICONS_PREF_STRING, getDefaultSmallMode(context));
         config.multiController = prefs.getBoolean(MULTI_CONTROLLER_PREF_STRING, DEFAULT_MULTI_CONTROLLER);

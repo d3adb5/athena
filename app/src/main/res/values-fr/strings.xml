@@ -126,7 +126,6 @@
     <string name="summary_fps_list">Augmentez pour un flux vidéo plus fluide. Diminuez pour de meilleures performances sur les appareils bas de gamme.</string>
     <string name="title_seekbar_bitrate">Bitrate vidéo</string>
     <string name="summary_seekbar_bitrate">Augmentez-le pour une meilleure qualité d’image. Diminuez-le pour améliorer les performances sur les connexions plus lentes.</string>
-    <string name="title_checkbox_stretch_video">Étirer la vidéo en plein écran</string>
     <string name="title_checkbox_disable_warnings">Désactiver les messages d\'avertissement</string>
     <string name="title_checkbox_enable_pip">Activer le mode observateur</string>
     <string name="summary_checkbox_enable_pip">Permet de visualiser le stream (sans le contrôler) tout en utilisant une autre appli</string>
