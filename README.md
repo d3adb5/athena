@@ -28,6 +28,8 @@ This project version mainly implements the following features:
 19. Non-QWERTY keyboard layout support
 20. Quick Meta key with physicl BACK button
 21. Frame rate lock fix for some devices
+22. Video scale mode: Fit/Fill/Stretch
+23. View pan/zoom support
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
