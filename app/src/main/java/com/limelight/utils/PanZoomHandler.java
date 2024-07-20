@@ -6,12 +6,16 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import com.limelight.preferences.PreferenceConfiguration;
+
 public class PanZoomHandler {
     static private final float MAX_SCALE = 10.0f;
 
     private final View streamView;
     private final View parent;
+    private final PreferenceConfiguration prefConfig;
     private final boolean isFillMode;
+    private final boolean isTopMode;
     private final ScaleGestureDetector scaleGestureDetector;
     private final GestureDetector gestureDetector;
     private float scaleFactor = 1.0f;
@@ -21,10 +25,12 @@ public class PanZoomHandler {
     private float parentWidth, parentHeight;
     private float childWidth, childHeight;
 
-    public PanZoomHandler(Context context, View streamView, View parent, boolean isFillMode) {
+    public PanZoomHandler(Context context, View streamView, View parent, PreferenceConfiguration prefConfig) {
         this.streamView = streamView;
         this.parent = parent;
-        this.isFillMode = isFillMode;
+        this.prefConfig = prefConfig;
+        this.isFillMode = prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FILL;
+        this.isTopMode = prefConfig.enableDisplayTopCenter;
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
     }
@@ -59,23 +65,30 @@ public class PanZoomHandler {
     private void constrainToBounds() {
         calculateDimensions();
 
-        float dx, dy;
+        float posX = streamView.getX();
+        float posY = streamView.getY();
 
-        if (parentWidth > childWidth) {
-            dx = -relativeCenterX;
+        if (parentWidth >= childWidth) {
+            posX -= relativeCenterX;
         } else {
             float boundaryX = (childWidth - parentWidth) / 2;
-            dx = Math.max(-boundaryX, Math.min(relativeCenterX, boundaryX)) - relativeCenterX;}
-
-        if (parentHeight > childHeight) {
-            dy = -relativeCenterY;
-        } else {
-            float boundaryY = (childHeight - parentHeight) / 2;
-            dy = Math.max(-boundaryY, Math.min(relativeCenterY, boundaryY)) - relativeCenterY;
+            posX += Math.max(-boundaryX, Math.min(relativeCenterX, boundaryX)) - relativeCenterX;
         }
 
-        streamView.setX(streamView.getX() + dx);
-        streamView.setY(streamView.getY() + dy);
+        if (parentHeight >= childHeight) {
+            if (isTopMode) {
+                float boundaryY = (childHeight - parentHeight) / 2;
+                posY += boundaryY - relativeCenterY;
+            } else {
+                posY -= relativeCenterY;
+            }
+        } else {
+            float boundaryY = (childHeight - parentHeight) / 2;
+            posY += Math.max(-boundaryY, Math.min(relativeCenterY, boundaryY)) - relativeCenterY;
+        }
+
+        streamView.setX(posX);
+        streamView.setY(posY);
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {

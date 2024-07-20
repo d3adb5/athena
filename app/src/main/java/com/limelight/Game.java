@@ -297,7 +297,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         rootView = streamView.getParent();
 
-        panZoomHandler = new PanZoomHandler(getApplicationContext(), streamView, (View)rootView);
+        panZoomHandler = new PanZoomHandler(
+                getApplicationContext(),
+                streamView,
+                (View)rootView,
+                prefConfig
+        );
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Request unbuffered input event dispatching for all input classes we handle here.
@@ -1766,8 +1771,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         // For the containing background view, we must subtract the origin
         // of the StreamView to get video-relative coordinates.
         if (view != streamView) {
-            normalizedX -= streamView.getX();
-            normalizedY -= streamView.getY();
+            float[] normalized = getNormalizedCoordinates(view, streamView, normalizedX, normalizedY);
+            normalizedX = normalized[0];
+            normalizedY = normalized[1];
         }
 
         normalizedX = Math.max(normalizedX, 0.0f);
@@ -1778,6 +1784,27 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         normalizedX /= streamView.getWidth();
         normalizedY /= streamView.getHeight();
+
+        return new float[] { normalizedX, normalizedY };
+    }
+
+    private float[] getNormalizedCoordinates(View parentView, View streamView, float rawX, float rawY) {
+        float scaleX = streamView.getScaleX();
+        float scaleY = streamView.getScaleY();
+
+        int[] parentLocation = new int[2];
+        int[] childLocation = new int[2];
+
+        parentView.getLocationInWindow(parentLocation);
+        streamView.getLocationInWindow(childLocation);
+
+        float parentOriginX = parentLocation[0];
+        float parentOriginY = parentLocation[1];
+        float childOriginX = childLocation[0];
+        float childOriginY = childLocation[1];
+
+        float normalizedX = (rawX + parentOriginX - childOriginX) / scaleX;
+        float normalizedY = (rawY + parentOriginY - childOriginY) / scaleY;
 
         return new float[] { normalizedX, normalizedY };
     }
@@ -2226,7 +2253,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             // This case is for fingers
             else {
                 if (eventSource == InputDevice.SOURCE_TOUCHPAD) {
-                    return handleTouchInput(event, 0.f, 0.f, trackpadContextMap);
+                    return handleTouchInput(event, trackpadContextMap);
                 } else {
                     if (virtualController != null &&
                             (virtualController.getControllerMode() == VirtualController.ControllerMode.MoveButtons ||
@@ -2238,21 +2265,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     // If touch is disabled or not initialized, we'll try panning the streamView
                     if (touchContextMap[0] == null) {
                         // panning the streamView
-//                        ViewGroup.LayoutParams params = streamView.getLayoutParams();
-//                        panStreamView(streamView, event);
-                        panZoomHandler.handleTouchEvent(event);
+//                        if (prefConfig.videoScaleMode != PreferenceConfiguration.ScaleMode.STRETCH) {
+                            panZoomHandler.handleTouchEvent(event);
+//                        }
                         return true;
-                    }
-
-                    // If this is the parent view, we'll offset our coordinates to appear as if they
-                    // are relative to the StreamView like our StreamView touch events are.
-                    float xOffset, yOffset;
-                    if (view != streamView && !prefConfig.touchscreenTrackpad) {
-                        xOffset = -streamView.getX();
-                        yOffset = -streamView.getY();
-                    } else {
-                        xOffset = 0.f;
-                        yOffset = 0.f;
                     }
 
                     // Special handling for 3 finger gesture
@@ -2281,7 +2297,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         }
                     }
 
-                    return handleTouchInput(event, xOffset, yOffset, touchContextMap);
+                    return handleTouchInput(event, touchContextMap);
                 }
             }
 
@@ -2293,11 +2309,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return false;
     }
 
-    private boolean handleTouchInput(MotionEvent event, float xOffset, float yOffset, TouchContext[] inputContextMap) {
+    private boolean handleTouchInput(MotionEvent event, TouchContext[] inputContextMap) {
         int actionIndex = event.getActionIndex();
 
-        int eventX = (int)(event.getX(actionIndex) + xOffset);
-        int eventY = (int)(event.getY(actionIndex) + yOffset);
+        int eventX = (int)event.getX(actionIndex);
+        int eventY = (int)event.getY(actionIndex);
+
+        // Handle view scaling
+        if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+            float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, eventX, eventY);
+            eventX = (int)normalizedCoords[0];
+            eventY = (int)normalizedCoords[1];
+        }
 
         TouchContext context = getTouchContext(actionIndex, inputContextMap);
         if (context == null) {
@@ -2339,9 +2362,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 }
                 if (actionIndex == 0 && event.getPointerCount() > 1 && !context.isCancelled()) {
                     // The original secondary touch now becomes primary
+                    int pointer1X = (int)event.getX(1);
+                    int pointer1Y = (int)event.getY(1);
+                    if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+                        float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, pointer1X, pointer1Y);
+                        pointer1X = (int)normalizedCoords[0];
+                        pointer1Y = (int)normalizedCoords[1];
+                    }
                     context.touchDownEvent(
-                            (int)(event.getX(1) + xOffset),
-                            (int)(event.getY(1) + yOffset),
+                            pointer1X,
+                            pointer1Y,
                             event.getEventTime(), false);
                 }
                 break;
@@ -2354,9 +2384,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     for (TouchContext aTouchContextMap : inputContextMap) {
                         if (aTouchContextMap.getActionIndex() < event.getPointerCount())
                         {
+                            int historicalX = (int)event.getHistoricalX(aTouchContextMap.getActionIndex(), i);
+                            int historicalY = (int)event.getHistoricalY(aTouchContextMap.getActionIndex(), i);
+                            if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+                                float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, historicalX, historicalY);
+                                historicalX = (int)normalizedCoords[0];
+                                historicalY = (int)normalizedCoords[1];
+                            }
                             aTouchContextMap.touchMoveEvent(
-                                    (int)(event.getHistoricalX(aTouchContextMap.getActionIndex(), i) + xOffset),
-                                    (int)(event.getHistoricalY(aTouchContextMap.getActionIndex(), i) + yOffset),
+                                    historicalX,
+                                    historicalY,
                                     event.getHistoricalEventTime(i));
                         }
                     }
@@ -2366,9 +2403,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 for (TouchContext aTouchContextMap : inputContextMap) {
                     if (aTouchContextMap.getActionIndex() < event.getPointerCount())
                     {
+                        int currentX = (int)event.getX(aTouchContextMap.getActionIndex());
+                        int currentY = (int)event.getY(aTouchContextMap.getActionIndex());
+                        if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+                            float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, currentX, currentY);
+                            currentX = (int)normalizedCoords[0];
+                            currentY = (int)normalizedCoords[1];
+                        }
                         aTouchContextMap.touchMoveEvent(
-                                (int)(event.getX(aTouchContextMap.getActionIndex()) + xOffset),
-                                (int)(event.getY(aTouchContextMap.getActionIndex()) + yOffset),
+                                currentX,
+                                currentY,
                                 event.getEventTime());
                     }
                 }
