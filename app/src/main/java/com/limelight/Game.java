@@ -35,6 +35,7 @@ import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.ui.GameGestures;
 import com.limelight.ui.StreamView;
 import com.limelight.utils.Dialog;
+import com.limelight.utils.PanZoomHandler;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
@@ -112,6 +113,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     // Only 2 touches are supported
     private final TouchContext[] touchContextMap = new TouchContext[2];
     private final TouchContext[] trackpadContextMap = new TouchContext[2];
+    private PanZoomHandler panZoomHandler;
     private long threeFingerDownTime = 0;
 
     private static final int REFERENCE_HORIZ_RES = 1280;
@@ -293,7 +295,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         View backgroundTouchView = findViewById(R.id.backgroundTouchView);
         backgroundTouchView.setOnTouchListener(this);
 
-        rootView=streamView.getParent();
+        rootView = streamView.getParent();
+
+        panZoomHandler = new PanZoomHandler(getApplicationContext(), streamView, (View)rootView);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Request unbuffered input event dispatching for all input classes we handle here.
@@ -2231,9 +2235,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         return true;
                     }
 
-                    // If touch is disabled or not initialized, we'll just return false
+                    // If touch is disabled or not initialized, we'll try panning the streamView
                     if (touchContextMap[0] == null) {
-                        return false;
+                        // panning the streamView
+//                        ViewGroup.LayoutParams params = streamView.getLayoutParams();
+//                        panStreamView(streamView, event);
+                        panZoomHandler.handleTouchEvent(event);
+                        return true;
                     }
 
                     // If this is the parent view, we'll offset our coordinates to appear as if they
