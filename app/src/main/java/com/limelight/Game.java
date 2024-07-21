@@ -2253,7 +2253,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             // This case is for fingers
             else {
                 if (eventSource == InputDevice.SOURCE_TOUCHPAD) {
-                    return handleTouchInput(event, trackpadContextMap);
+                    return handleTouchInput(event, trackpadContextMap, false);
                 } else {
                     if (virtualController != null &&
                             (virtualController.getControllerMode() == VirtualController.ControllerMode.MoveButtons ||
@@ -2265,9 +2265,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     // If touch is disabled or not initialized, we'll try panning the streamView
                     if (touchContextMap[0] == null) {
                         // panning the streamView
-//                        if (prefConfig.videoScaleMode != PreferenceConfiguration.ScaleMode.STRETCH) {
-                            panZoomHandler.handleTouchEvent(event);
-//                        }
+                        panZoomHandler.handleTouchEvent(event);
                         return true;
                     }
 
@@ -2297,7 +2295,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         }
                     }
 
-                    return handleTouchInput(event, touchContextMap);
+                    return handleTouchInput(event, touchContextMap, true);
                 }
             }
 
@@ -2309,14 +2307,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return false;
     }
 
-    private boolean handleTouchInput(MotionEvent event, TouchContext[] inputContextMap) {
+    private boolean handleTouchInput(MotionEvent event, TouchContext[] inputContextMap, boolean isTouchScreen) {
         int actionIndex = event.getActionIndex();
 
         int eventX = (int)event.getX(actionIndex);
         int eventY = (int)event.getY(actionIndex);
 
         // Handle view scaling
-        if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+        if (isTouchScreen) {
             float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, eventX, eventY);
             eventX = (int)normalizedCoords[0];
             eventY = (int)normalizedCoords[1];
@@ -2364,7 +2362,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     // The original secondary touch now becomes primary
                     int pointer1X = (int)event.getX(1);
                     int pointer1Y = (int)event.getY(1);
-                    if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+                    if (isTouchScreen) {
                         float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, pointer1X, pointer1Y);
                         pointer1X = (int)normalizedCoords[0];
                         pointer1Y = (int)normalizedCoords[1];
@@ -2386,7 +2384,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         {
                             int historicalX = (int)event.getHistoricalX(aTouchContextMap.getActionIndex(), i);
                             int historicalY = (int)event.getHistoricalY(aTouchContextMap.getActionIndex(), i);
-                            if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+                            if (isTouchScreen) {
                                 float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, historicalX, historicalY);
                                 historicalX = (int)normalizedCoords[0];
                                 historicalY = (int)normalizedCoords[1];
@@ -2405,7 +2403,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     {
                         int currentX = (int)event.getX(aTouchContextMap.getActionIndex());
                         int currentY = (int)event.getY(aTouchContextMap.getActionIndex());
-                        if (event.getSource() != InputDevice.SOURCE_TOUCHPAD) {
+                        if (isTouchScreen) {
                             float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, currentX, currentY);
                             currentX = (int)normalizedCoords[0];
                             currentY = (int)normalizedCoords[1];
