@@ -19,11 +19,9 @@ public class PanZoomHandler {
     private final ScaleGestureDetector scaleGestureDetector;
     private final GestureDetector gestureDetector;
     private float scaleFactor = 1.0f;
-    private float childCenterX, childCenterY;
-    private float parentCenterX, parentCenterY;
-    private float relativeCenterX, relativeCenterY;
-    private float parentWidth, parentHeight;
-    private float childWidth, childHeight;
+    private float childX, childY = 0;
+    private float parentWidth, parentHeight = 0;
+    private float childWidth, childHeight = 0;
 
     public PanZoomHandler(Context context, View streamView, View parent, PreferenceConfiguration prefConfig) {
         this.streamView = streamView;
@@ -33,6 +31,12 @@ public class PanZoomHandler {
         this.isTopMode = prefConfig.enableDisplayTopCenter;
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
+
+        // Everything gets easier with 0,0 as the pivot point
+        streamView.setPivotX(0);
+        streamView.setPivotY(0);
+        parent.setPivotX(0);
+        parent.setPivotY(0);
     }
 
     public void handleTouchEvent(MotionEvent motionEvent) {
@@ -40,88 +44,97 @@ public class PanZoomHandler {
         gestureDetector.onTouchEvent(motionEvent);
     }
 
-    private void calculateDimensions() {
-        int[] childLocation = new int[2];
-        int[] parentLocation = new int[2];
-
-        streamView.getLocationInWindow(childLocation);
-        parent.getLocationInWindow(parentLocation);
+    private void updateDimensions() {
+        childX = streamView.getX();
+        childY = streamView.getY();
 
         childHeight = streamView.getHeight() * scaleFactor;
         childWidth = streamView.getWidth() * scaleFactor;
         parentWidth = parent.getWidth();
         parentHeight = parent.getHeight();
-
-        childCenterX = childLocation[0] + childWidth / 2.0f;
-        childCenterY = childLocation[1] + childHeight / 2.0f;
-
-        parentCenterX = parentLocation[0] + parentWidth / 2.0f;
-        parentCenterY = parentLocation[1] + parentHeight / 2.0f;
-
-        relativeCenterX = childCenterX - parentCenterX;
-        relativeCenterY = childCenterY - parentCenterY;
     }
 
     private void constrainToBounds() {
-        calculateDimensions();
-
-        float posX = streamView.getX();
-        float posY = streamView.getY();
+        updateDimensions();
 
         if (parentWidth >= childWidth) {
-            posX -= relativeCenterX;
+            childX = (parentWidth - childWidth) / 2;
         } else {
-            float boundaryX = (childWidth - parentWidth) / 2;
-            posX += Math.max(-boundaryX, Math.min(relativeCenterX, boundaryX)) - relativeCenterX;
+            float boundaryX = childWidth - parentWidth;
+            childX = Math.max(-boundaryX, Math.min(childX, 0));
         }
 
         if (parentHeight >= childHeight) {
             if (isTopMode) {
-                float boundaryY = (childHeight - parentHeight) / 2;
-                posY += boundaryY - relativeCenterY;
+                childY = 0;
             } else {
-                posY -= relativeCenterY;
+                childY = (parentHeight - childHeight) / 2;
             }
         } else {
-            float boundaryY = (childHeight - parentHeight) / 2;
-            posY += Math.max(-boundaryY, Math.min(relativeCenterY, boundaryY)) - relativeCenterY;
+            float boundaryY = childHeight - parentHeight;
+            childY = Math.max(-boundaryY, Math.min(childY, 0));
         }
 
-        streamView.setX(posX);
-        streamView.setY(posY);
+        streamView.setX(childX);
+        streamView.setY(childY);
+    }
+
+    public void handleSurfaceChange() {
+        if (childWidth == 0) {
+            return;
+        }
+
+        float prevChildWidth = childWidth;
+        float prevParentWidth = parentWidth;
+        float prevParentHeight = parentHeight;
+
+        float prevViewCenterX = childX - prevParentWidth / 2;
+        float prevViewCenterY = childY - prevParentHeight / 2;
+
+        updateDimensions();
+
+        float viewScale = childWidth / prevChildWidth;
+
+        float newViewCenterX = prevViewCenterX * viewScale;
+        float newViewCenterY = prevViewCenterY * viewScale;
+
+        childX = newViewCenterX + parentWidth / 2;
+        childY = newViewCenterY + parentHeight / 2;
+
+        streamView.setX((int)childX);
+        streamView.setY((int)childY);
+
+        constrainToBounds();
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float newScaleFactor = scaleFactor * detector.getScaleFactor();
-            newScaleFactor = Math.min(newScaleFactor, MAX_SCALE); // Apply minimum scale
-
-            // Ensure the streamView does not scale smaller than the parent
-            float minWScale = parentWidth / streamView.getWidth();
-            float minHScale = parentHeight / streamView.getHeight();
-            float minPossibleScale = isFillMode ? Math.max(minWScale, minHScale) : Math.min(minWScale, minHScale);
-            newScaleFactor = Math.max(newScaleFactor, minPossibleScale);
-
-            float prevScaleFactor = scaleFactor;
-            scaleFactor = newScaleFactor;
-            calculateDimensions();
+            newScaleFactor = Math.max(1, Math.min(newScaleFactor, MAX_SCALE)); // Apply minimum scale
 
             // Calculate pivot point
             float focusX = detector.getFocusX();
             float focusY = detector.getFocusY();
 
-            float dPivotX = childCenterX - focusX;
-            float dPivotY = childCenterY - focusY;
+            childX = streamView.getX();
+            childY = streamView.getY();
+
+            float prevScaleFactor = scaleFactor;
+
+            float dPivotX = childX - focusX;
+            float dPivotY = childY - focusY;
 
             float moveX = dPivotX * (newScaleFactor / prevScaleFactor - 1);
             float moveY = dPivotY * (newScaleFactor / prevScaleFactor - 1);
 
-            streamView.setScaleX(scaleFactor);
-            streamView.setScaleY(scaleFactor);
+            streamView.setScaleX(newScaleFactor);
+            streamView.setScaleY(newScaleFactor);
 
             streamView.setX(streamView.getX() + moveX);
             streamView.setY(streamView.getY() + moveY);
+
+            scaleFactor = newScaleFactor;
 
             constrainToBounds(); // Use the new method name
 
@@ -132,11 +145,11 @@ public class PanZoomHandler {
     private class GestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            float panX = streamView.getX() - distanceX;
-            float panY = streamView.getY() - distanceY;
+            childX = streamView.getX() - distanceX;
+            childY = streamView.getY() - distanceY;
 
-            streamView.setX(panX);
-            streamView.setY(panY);
+            streamView.setX(childX);
+            streamView.setY(childY);
 
             constrainToBounds();
 

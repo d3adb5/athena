@@ -788,12 +788,26 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @TargetApi(Build.VERSION_CODES.O)
     private PictureInPictureParams getPictureInPictureParams(boolean autoEnter) {
+        Rational aspectRatio;
+        Rect hint;
+        if (prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FIT) {
+            aspectRatio = new Rational(displayWidth, displayHeight);
+            hint = new Rect(
+                    streamView.getLeft(), streamView.getTop(),
+                    streamView.getRight(), streamView.getBottom());
+        } else {
+            int left = ((View)rootView).getLeft();
+            int top = ((View)rootView).getTop();
+            int right = ((View)rootView).getRight();
+            int bottom = ((View)rootView).getBottom();
+            aspectRatio = new Rational(right - left, bottom - top);
+            hint = new Rect(left, top, right, bottom);
+        }
+
         PictureInPictureParams.Builder builder =
                 new PictureInPictureParams.Builder()
-                        .setAspectRatio(new Rational(displayWidth, displayHeight))
-                        .setSourceRectHint(new Rect(
-                                streamView.getLeft(), streamView.getTop(),
-                                streamView.getRight(), streamView.getBottom()));
+                        .setAspectRatio(aspectRatio)
+                        .setSourceRectHint(hint);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             builder.setAutoEnterEnabled(autoEnter);
@@ -1102,11 +1116,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         }
 
-        if (prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.STRETCH || aspectRatioMatch) {
-            // Set the surface to the size of the video
-            streamView.getHolder().setFixedSize(displayWidth, displayHeight);
-        }
-        else {
+        // Don't do setFixedSize since it might not update the view dimensions correctly when entering PiP mode
+        if (!(prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.STRETCH || aspectRatioMatch)) {
             // Set the surface to scale based on the aspect ratio of the stream
             streamView.setDesiredAspectRatio((double)displayWidth / (double)displayHeight);
             streamView.setFillDisplay(prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FILL);
@@ -2805,6 +2816,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         LimeLog.info("surfaceChanged-->"+width+" x "+height + "----"+displayWidth+" x "+displayHeight);
+
         if (!attemptedConnection) {
             attemptedConnection = true;
 
@@ -2815,6 +2827,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
                     decoderRenderer, Game.this);
         }
+
+        panZoomHandler.handleSurfaceChange();
     }
 
     @Override
