@@ -12,22 +12,19 @@ public class PanZoomHandler {
     static private final float MAX_SCALE = 10.0f;
 
     private final View streamView;
-    private final View parent;
     private final PreferenceConfiguration prefConfig;
-    private final boolean isFillMode;
     private final boolean isTopMode;
     private final ScaleGestureDetector scaleGestureDetector;
     private final GestureDetector gestureDetector;
+    private View parent;
     private float scaleFactor = 1.0f;
     private float childX, childY = 0;
     private float parentWidth, parentHeight = 0;
     private float childWidth, childHeight = 0;
 
-    public PanZoomHandler(Context context, View streamView, View parent, PreferenceConfiguration prefConfig) {
+    public PanZoomHandler(Context context, View streamView, PreferenceConfiguration prefConfig) {
         this.streamView = streamView;
-        this.parent = parent;
         this.prefConfig = prefConfig;
-        this.isFillMode = prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FILL;
         this.isTopMode = prefConfig.enableDisplayTopCenter;
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
@@ -35,8 +32,6 @@ public class PanZoomHandler {
         // Everything gets easier with 0,0 as the pivot point
         streamView.setPivotX(0);
         streamView.setPivotY(0);
-        parent.setPivotX(0);
-        parent.setPivotY(0);
     }
 
     public void handleTouchEvent(MotionEvent motionEvent) {
@@ -80,7 +75,9 @@ public class PanZoomHandler {
     }
 
     public void handleSurfaceChange() {
-        if (childWidth == 0) {
+        if (childWidth == 0 || parent == null) {
+            // Retrieve parent, should handle both built-in display and external display
+            parent = (View)streamView.getParent();
             return;
         }
 
@@ -93,10 +90,11 @@ public class PanZoomHandler {
 
         updateDimensions();
 
-        float viewScale = childWidth / prevChildWidth;
+        float viewScaleX = childWidth / prevChildWidth;
+        float viewScaleY = childHeight / prevParentHeight;
 
-        float newViewCenterX = prevViewCenterX * viewScale;
-        float newViewCenterY = prevViewCenterY * viewScale;
+        float newViewCenterX = prevViewCenterX * viewScaleX;
+        float newViewCenterY = prevViewCenterY * viewScaleY;
 
         childX = newViewCenterX + parentWidth / 2;
         childY = newViewCenterY + parentHeight / 2;

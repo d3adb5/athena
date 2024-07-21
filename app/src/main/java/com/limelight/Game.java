@@ -300,7 +300,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         panZoomHandler = new PanZoomHandler(
                 getApplicationContext(),
                 streamView,
-                (View)rootView,
                 prefConfig
         );
 
@@ -1782,7 +1781,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         // For the containing background view, we must subtract the origin
         // of the StreamView to get video-relative coordinates.
         if (view != streamView) {
-            float[] normalized = getNormalizedCoordinates(view, streamView, normalizedX, normalizedY);
+            float[] normalized = getNormalizedCoordinates(streamView, normalizedX, normalizedY);
             normalizedX = normalized[0];
             normalizedY = normalized[1];
         }
@@ -1799,23 +1798,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return new float[] { normalizedX, normalizedY };
     }
 
-    private float[] getNormalizedCoordinates(View parentView, View streamView, float rawX, float rawY) {
+    private float[] getNormalizedCoordinates(View streamView, float rawX, float rawY) {
         float scaleX = streamView.getScaleX();
         float scaleY = streamView.getScaleY();
 
-        int[] parentLocation = new int[2];
-        int[] childLocation = new int[2];
-
-        parentView.getLocationInWindow(parentLocation);
-        streamView.getLocationInWindow(childLocation);
-
-        float parentOriginX = parentLocation[0];
-        float parentOriginY = parentLocation[1];
-        float childOriginX = childLocation[0];
-        float childOriginY = childLocation[1];
-
-        float normalizedX = (rawX + parentOriginX - childOriginX) / scaleX;
-        float normalizedY = (rawY + parentOriginY - childOriginY) / scaleY;
+        float normalizedX = (rawX - streamView.getX()) / scaleX;
+        float normalizedY = (rawY - streamView.getY()) / scaleY;
 
         return new float[] { normalizedX, normalizedY };
     }
@@ -2326,7 +2314,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // Handle view scaling
         if (isTouchScreen) {
-            float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, eventX, eventY);
+            float[] normalizedCoords = getNormalizedCoordinates(streamView, eventX, eventY);
             eventX = (int)normalizedCoords[0];
             eventY = (int)normalizedCoords[1];
         }
@@ -2374,7 +2362,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     int pointer1X = (int)event.getX(1);
                     int pointer1Y = (int)event.getY(1);
                     if (isTouchScreen) {
-                        float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, pointer1X, pointer1Y);
+                        float[] normalizedCoords = getNormalizedCoordinates(streamView, pointer1X, pointer1Y);
                         pointer1X = (int)normalizedCoords[0];
                         pointer1Y = (int)normalizedCoords[1];
                     }
@@ -2396,7 +2384,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                             int historicalX = (int)event.getHistoricalX(aTouchContextMap.getActionIndex(), i);
                             int historicalY = (int)event.getHistoricalY(aTouchContextMap.getActionIndex(), i);
                             if (isTouchScreen) {
-                                float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, historicalX, historicalY);
+                                float[] normalizedCoords = getNormalizedCoordinates(streamView, historicalX, historicalY);
                                 historicalX = (int)normalizedCoords[0];
                                 historicalY = (int)normalizedCoords[1];
                             }
@@ -2415,7 +2403,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         int currentX = (int)event.getX(aTouchContextMap.getActionIndex());
                         int currentY = (int)event.getY(aTouchContextMap.getActionIndex());
                         if (isTouchScreen) {
-                            float[] normalizedCoords = getNormalizedCoordinates((View)rootView, streamView, currentX, currentY);
+                            float[] normalizedCoords = getNormalizedCoordinates(streamView, currentX, currentY);
                             currentX = (int)normalizedCoords[0];
                             currentY = (int)normalizedCoords[1];
                         }
@@ -3135,7 +3123,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 ((ViewGroup)rootView).removeView(streamView); // <- fix
                 presentation.addView(streamView);
             }
-
         }
     }
 
