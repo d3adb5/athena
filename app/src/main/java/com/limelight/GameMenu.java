@@ -262,11 +262,13 @@ public class GameMenu {
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 () -> game.toggleKeyboard()));
 
-        options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
-                () -> game.selectMouseModeModal()));
-
         options.add(new MenuOption(getString(R.string.game_menu_toggle_zoom_mode), true,
                 () -> game.toggleZoomMode()));
+
+        if (game.presentation == null) {
+            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
+                    () -> game.selectMouseModeModal()));
+        }
 
         options.add(new MenuOption(getString(R.string.game_menu_rotate_screen), true,
                 () -> game.rotateScreen()));

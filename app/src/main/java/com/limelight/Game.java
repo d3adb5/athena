@@ -3058,7 +3058,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private void applyMouseMode(int mode) {
-        switch (mode) {case 0: // Multi-touch
+        switch (mode) {
+            case 0: // Multi-touch
             prefConfig.enableMultiTouchScreen = true;
             prefConfig.touchscreenTrackpad = false;
             break;
@@ -3127,7 +3128,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
 
-    private SecondaryDisplayPresentation presentation;
+    public SecondaryDisplayPresentation presentation;
     public void showSecondScreen(){
         DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
         Display[] displays = displayManager.getDisplays();
@@ -3148,6 +3149,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 ((ViewGroup)rootView).removeView(streamView); // <- fix
                 presentation.addView(streamView);
             }
+            // Force mouse mode as trackpad during presentation as user won't see anything on device screen
+            applyMouseMode(2);
         }
     }
 
