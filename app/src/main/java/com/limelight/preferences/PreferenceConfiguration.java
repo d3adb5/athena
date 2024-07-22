@@ -32,12 +32,13 @@ public class PreferenceConfiguration {
     private static final String LEGACY_RES_FPS_PREF_STRING = "list_resolution_fps";
     private static final String LEGACY_ENABLE_51_SURROUND_PREF_STRING = "checkbox_51_surround";
     private static final String LEGACY_STRETCH_PREF_STRING = "checkbox_stretch_video";
+    private static final String LEGACY_ENFORCE_REFRESH_RATE_STRING = "checkbox_enforce_refresh_rate";
 
     static final String RESOLUTION_PREF_STRING = "list_resolution";
     static final String FPS_PREF_STRING = "list_fps";
     static final String BITRATE_PREF_STRING = "seekbar_bitrate_kbps";
     private static final String BITRATE_PREF_OLD_STRING = "seekbar_bitrate";
-    private static final String ENFORCE_REFRESH_RATE_PREF_STRING = "checkbox_enforce_refresh_rate";
+    private static final String ENFORCE_DISPLAY_MODE_PREF_STRING = "checkbox_enforce_display_mode";
     private static final String INVERT_VIDEO_RESOLUTION_PREF_STRING = "checkbox_invert_video_resolution";
     private static final String VIDEO_SCALE_MODE_PREF_STRING = "list_video_scale_mode";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
@@ -102,7 +103,7 @@ public class PreferenceConfiguration {
 
     static final String DEFAULT_RESOLUTION = "1280x720";
     static final String DEFAULT_FPS = "60";
-    private static final boolean DEFAULT_ENFORCE_REFRESH_RATE = false;
+    private static final boolean DEFAULT_ENFORCE_DISPLAY_MODE = false;
     private static final String DEFAULT_VIDEO_SCALE_MODE = "fit";
     private static final boolean DEFAULT_INVERT_VIDEO_RESOLUTION = false;
     private static final boolean DEFAULT_SOPS = true;
@@ -165,7 +166,7 @@ public class PreferenceConfiguration {
     public int oscOpacity;
     public int oscKeyboardOpacity;
     public int oscKeyboardHeight;
-    public boolean enforceRefreshRate, enableSops, playHostAudio, disableWarnings;
+    public boolean enforceDisplayMode, enableSops, playHostAudio, disableWarnings;
     public ScaleMode videoScaleMode;
     public String language;
     public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
@@ -660,6 +661,14 @@ public class PreferenceConfiguration {
                     .apply();
         }
 
+        if (prefs.contains(LEGACY_ENFORCE_REFRESH_RATE_STRING)) {
+            boolean enforce = prefs.getBoolean(LEGACY_ENFORCE_REFRESH_RATE_STRING, false);
+            prefs.edit()
+                    .remove(LEGACY_ENFORCE_REFRESH_RATE_STRING)
+                    .putBoolean(ENFORCE_DISPLAY_MODE_PREF_STRING, enforce)
+                    .apply();
+        }
+
         if (!prefs.contains(SMALL_ICONS_PREF_STRING)) {
             // We need to write small icon mode's default to disk for the settings page to display
             // the current state of the option properly
@@ -707,7 +716,7 @@ public class PreferenceConfiguration {
 
         // Checkbox preferences
         config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS);
-        config.enforceRefreshRate = prefs.getBoolean(ENFORCE_REFRESH_RATE_PREF_STRING, DEFAULT_ENFORCE_REFRESH_RATE);
+        config.enforceDisplayMode = prefs.getBoolean(ENFORCE_DISPLAY_MODE_PREF_STRING, DEFAULT_ENFORCE_DISPLAY_MODE);
         config.enableSops = prefs.getBoolean(SOPS_PREF_STRING, DEFAULT_SOPS);
         config.playHostAudio = prefs.getBoolean(HOST_AUDIO_PREF_STRING, DEFAULT_HOST_AUDIO);
         config.smallIconMode = prefs.getBoolean(SMALL_ICONS_PREF_STRING, getDefaultSmallMode(context));

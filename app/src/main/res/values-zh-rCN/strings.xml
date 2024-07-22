@@ -162,7 +162,7 @@
     <string name="title_checkbox_host_audio"> 在电脑上播放声音 </string>
     <string name="summary_checkbox_host_audio"> 在电脑和本设备同时输出声音 </string>
     <string name="category_advanced_settings"> 高级设置 </string>
-    <string name="title_disable_frame_drop"> 永不掉帧 </string>
+    <string name="title_disable_frame_drop"> 永不丢帧 </string>
     <string name="summary_disable_frame_drop"> 可能会减少在一些设备上的卡顿，但会增加延迟 </string>
     <string name="title_video_format">更改编解码器设置</string>
     <string name="summary_video_format">如果您的设备支持较新的编解码器，则可以降低视频带宽要求。如果主机软件或显卡不支持编解码器选择，则可能会忽略编解码器选择。</string>
@@ -326,7 +326,7 @@
     <string name="summary_manual_enter_bitrate">手动输入码率，可以超过滑动条选项的极限。</string>
     <string name="dialog_manual_enter_bitrate">以 Mbps 输入码率。以0.5为限四舍五入。</string>
     <string name="title_touchscreen_mode">触摸屏鼠标模拟方式</string>
-    <string name="summary_touchscreen_mode">选择多点触控/单点触控/触摸板/禁用。\n禁用时可以拖拽/缩放画面，且手写笔仍可使用。\n在使用外接屏幕时强制为触摸板(自然)模式。</string>
+    <string name="summary_touchscreen_mode">选择多点触控/单点触控/触摸板/禁用。\n禁用时手写笔仍可使用。\n在使用外接屏幕时强制为触摸板(自然)模式。</string>
     <string name="title_checkbox_mouse_local_cursor">使用本地鼠标光标</string>
     <string name="summary_checkbox_mouse_local_cursor">默认外接物理鼠标的光标会被捕获，此选项可显示安卓系统光标</string>
     <string name="title_checkbox_onscreen_style_official">官方虚拟手柄皮肤</string>
@@ -377,7 +377,7 @@
     <string name="title_touchpad_sensitivity_y">触控板灵敏度Y轴</string>
     <string name="summary_touchpad_sensitivity_y">适用于鼠标触控板模式及虚拟特殊按键触控板控件；\n两者共用一个灵敏度数值，但是灵敏度表现可能不一样。\n有人两个一起用吗？</string>
     <string name="title_device_rumble">强制使用设备本身的震动马达</string>
-    <string name="summary_device_rumble">你如果对连接的手柄本身震动效果不满意，可以开启此选项！【对强制使用月光自带USB驱动无效】</string>
+    <string name="summary_device_rumble">你如果对连接的手柄本身震动效果不满意，可以开启此选项。\n对强制使用月光自带USB驱动无效。</string>
     <string name="title_clear_default_special_button">禁用默认的特殊按键指令</string>
     <string name="summary_clear_default_special_button">如果你感觉内置的指令对你没什么用的话，可以禁用，使用自己导入的。</string>
     <string name="title_import_special_button">导入自定义特殊指令配置文件</string>
@@ -411,8 +411,8 @@
     <string name="wrong_import_format">自定义导入格式出错了，请检查！</string>
     <string name="title_checkbox_gamepad_enable_battery_report">启用手柄电池状态报告</string>
     <string name="summary_checkbox_gamepad_enable_battery_report">在可用时汇报手柄电池状态。\n如果在使用触摸屏/触摸板/手写笔/鼠标时偶尔有卡顿现象发生，关闭此选项可能会有用。</string>
-    <string name="title_checkbox_enforce_refresh_rate">强制设置刷新率</string>
-    <string name="summary_checkbox_enforce_refresh_rate">强制使用设置的FPS参数。\n在某些设备(如ColorOS)等上必须启用才能正确设置刷新率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
+    <string name="title_checkbox_enforce_display_mode">强制设置显示模式</string>
+    <string name="summary_checkbox_enforce_display_mode">强制使用最佳显示模式。\n在某些系统(如ColorOS等)上必须启用才能正确设置刷新率/分辨率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
     <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">粘滞修饰键</string>
     <string name="summary_checkbox_enable_sticky_modifier_key_virtual_keyboard">在虚拟全键盘上使用粘滞修饰键。</string>
     <string name="virtual_keyboard_hide">隐藏\n键盘</string>

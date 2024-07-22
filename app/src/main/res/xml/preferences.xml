@@ -49,9 +49,9 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
-            android:key="checkbox_enforce_refresh_rate"
-            android:summary="@string/summary_checkbox_enforce_refresh_rate"
-            android:title="@string/title_checkbox_enforce_refresh_rate" />
+            android:key="checkbox_enforce_display_mode"
+            android:summary="@string/summary_checkbox_enforce_display_mode"
+            android:title="@string/title_checkbox_enforce_display_mode" />
 
         <CheckBoxPreference
             android:key="checkbox_enable_portrait"
