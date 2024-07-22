@@ -30,6 +30,7 @@ This project version mainly implements the following features:
 21. Frame rate lock fix for some devices
 22. Video scale mode: Fit/Fill/Stretch
 23. View pan/zoom support
+24. Rotate screen in-game
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
