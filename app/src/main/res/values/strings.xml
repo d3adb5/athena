@@ -360,7 +360,7 @@
     <string name="summary_manual_enter_bitrate">Enter bitrate manually.\nCan exceed the maximum range of the seekbar.</string>
     <string name="dialog_manual_enter_bitrate">Enter bitrate in Mbps. Round to 0.5.</string>
     <string name="title_touchscreen_mode">Touchscreen Mode</string>
-    <string name="summary_touchscreen_mode">Select between MultiTouch/SingleTouch/Trackpad/Disabled mode.\nYou can pan/zoom the view and still use Pen/Stylus input when Disabled is selected.</string>
+    <string name="summary_touchscreen_mode">Select between MultiTouch/SingleTouch/Trackpad/Disabled mode.\nYou can pan/zoom the view and still use Pen/Stylus input when Disabled is selected.\nForced to Track Pad(Natural) mode when useing external display.</string>
 
     <!-- New Strings -->
     <string name="title_checkbox_mouse_local_cursor">Use local mouse cursor</string>
