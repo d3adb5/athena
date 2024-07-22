@@ -160,6 +160,8 @@
     <string name="resolution_prefix_native_portrait">(Portrait)</string>
     <string name="fps_suffix_fps">FPS</string>
     <string name="title_native_fps_dialog">Native FPS Warning</string>
+    <string name="title_checkbox_invert_video_resolution">Invert Resolution</string>
+    <string name="summary_checkbox_invert_video_resolution">Invert the width and height of the video stream.\nFor example: 1920x1080 will become 1080x1920.\nUseful with Portrait mode.</string>
     <string name="title_video_scale_mode">Video Scale Mode</string>
     <string name="summary_video_scale_mode">Select between Fit, Fill and Stretch</string>
     <string name="video_scale_mode_fit">Fit</string>
@@ -374,7 +376,7 @@
     <string name="summary_custom_resolution">Add a custom resolution, separated by x, strange resolutions may not work.\nFor example: 1920x1080\nIf it is a non-native resolution, it may not fill the notch area by default. If the aspect ratio is the same, you can manually set to stretch the screen to fill the full screen</string>
     <string name="title_custom_resolution">Custom Resolution</string>
     <string name="title_portrait_mode">Portrait Mode</string>
-    <string name="summary_portrait_mode">Screen width and height will be inverted, the streaming display will be set to portrait.\nBe sure the remote PC supports the inverted resolution.\nYou might need to set screen orientation manually on the remote PC.</string>
+    <string name="summary_portrait_mode">Streaming display will be displayed in portrait.</string>
     <string name="title_import_special_button">Import custom special button configuration file</string>
     <string name="summary_import_special_button">Each import will overwrite the previous one, please backup accordingly.</string>
     <string name="title_software_update">Software Version Update</string>

@@ -38,6 +38,7 @@ public class PreferenceConfiguration {
     static final String BITRATE_PREF_STRING = "seekbar_bitrate_kbps";
     private static final String BITRATE_PREF_OLD_STRING = "seekbar_bitrate";
     private static final String ENFORCE_REFRESH_RATE_PREF_STRING = "checkbox_enforce_refresh_rate";
+    private static final String INVERT_VIDEO_RESOLUTION_PREF_STRING = "checkbox_invert_video_resolution";
     private static final String VIDEO_SCALE_MODE_PREF_STRING = "list_video_scale_mode";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
     private static final String DISABLE_TOASTS_PREF_STRING = "checkbox_disable_warnings";
@@ -103,7 +104,7 @@ public class PreferenceConfiguration {
     static final String DEFAULT_FPS = "60";
     private static final boolean DEFAULT_ENFORCE_REFRESH_RATE = false;
     private static final String DEFAULT_VIDEO_SCALE_MODE = "fit";
-    private static final boolean DEFAULT_STRETCH = false;
+    private static final boolean DEFAULT_INVERT_VIDEO_RESOLUTION = false;
     private static final boolean DEFAULT_SOPS = true;
     private static final boolean DEFAULT_DISABLE_TOASTS = false;
     private static final boolean DEFAULT_HOST_AUDIO = false;
@@ -184,6 +185,8 @@ public class PreferenceConfiguration {
     public boolean enableLatencyToast;
     //软键盘
     public boolean enableQtDialog;
+    //Invert video width/height
+    public boolean invertVideoResolution;
     //竖屏模式
     public boolean enablePortrait;
     //虚拟屏幕键盘按键
@@ -729,6 +732,7 @@ public class PreferenceConfiguration {
         //软键盘
         config.enableQtDialog = prefs.getBoolean(CHECKBOX_ENABLE_QUIT_DIALOG,false);
         config.enablePortrait = prefs.getBoolean(CHECKBOX_ENABLE_PORTRAIT,false);
+        config.invertVideoResolution = prefs.getBoolean(INVERT_VIDEO_RESOLUTION_PREF_STRING,DEFAULT_INVERT_VIDEO_RESOLUTION);
 
         config.enableKeyboard = prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD,false);
 

@@ -235,6 +235,8 @@
     <string name="pacing_balanced">平衡</string>
     <string name="pacing_smoothness">优先视频流畅度（可能会显著增大延迟）</string>
     <string name="summary_setup_guide">查看有关如何设置游戏电脑以进行流传输的说明</string>
+    <string name="title_checkbox_invert_video_resolution">反转分辨率</string>
+    <string name="summary_checkbox_invert_video_resolution">反转视频流的宽/高。\n例如: 1920x1080 会变成 1080x1920。\n在竖屏模式下比较有用。</string>
     <string name="title_video_scale_mode">视频缩放模式</string>
     <string name="summary_video_scale_mode">选择适应/填充/拉伸</string>
     <string name="video_scale_mode_fit">适应</string>
@@ -342,7 +344,7 @@
             \n如果画面比例一样，可手动设置拉伸画面来充满全屏</string>
     <string name="title_custom_resolution">自定义分辨率</string>
     <string name="title_portrait_mode">竖屏模式</string>
-    <string name="summary_portrait_mode">屏幕宽高将被反转，串流画面将设为竖屏。\n请确保远端显示器支持反转后的分辨率。\n你可能需要手动设置远端PC的屏幕显示方向。</string>
+    <string name="summary_portrait_mode">串流画面将以竖屏呈现。</string>
     <string name="title_joyconfix">兼容Switch JoyCon手柄</string>
     <string name="summary_joyconfix">如果你的JoyCon无法使用或识别按键有问题，可以尝试开启此功能。适配Android 10及以上</string>
     <string name="title_keyboard_opacity">虚拟全键盘透明度</string>

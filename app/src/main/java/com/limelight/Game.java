@@ -253,8 +253,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         prefConfig = PreferenceConfiguration.readPreferences(this);
         tombstonePrefs = Game.this.getSharedPreferences("DecoderTombstone", 0);
 
-        displayWidth = prefConfig.enablePortrait ? prefConfig.height : prefConfig.width;
-        displayHeight = prefConfig.enablePortrait ? prefConfig.width : prefConfig.height;
+        displayWidth = prefConfig.invertVideoResolution ? prefConfig.height : prefConfig.width;
+        displayHeight = prefConfig.invertVideoResolution ? prefConfig.width : prefConfig.height;
 
         // Enter landscape unless we're on a square screen
         setPreferredOrientationForCurrentDisplay();

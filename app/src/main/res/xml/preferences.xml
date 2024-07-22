@@ -59,6 +59,12 @@
             android:summary="@string/summary_portrait_mode"
             android:defaultValue="false"/>
 
+        <CheckBoxPreference
+            android:key="checkbox_invert_video_resolution"
+            android:title="@string/title_checkbox_invert_video_resolution"
+            android:summary="@string/summary_checkbox_invert_video_resolution"
+            android:defaultValue="false"/>
+
         <ListPreference
             android:key="list_video_scale_mode"
             android:title="@string/title_video_scale_mode"

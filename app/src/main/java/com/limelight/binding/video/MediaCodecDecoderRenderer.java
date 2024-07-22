@@ -707,8 +707,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public int setup(int format, int width, int height, int redrawRate) {
-        this.initialWidth = prefs.enablePortrait ? height : width;
-        this.initialHeight = prefs.enablePortrait? width : height;
+        this.initialWidth = prefs.invertVideoResolution ? height : width;
+        this.initialHeight = prefs.invertVideoResolution ? width : height;
         this.videoFormat = format;
         this.refreshRate = redrawRate;
 
