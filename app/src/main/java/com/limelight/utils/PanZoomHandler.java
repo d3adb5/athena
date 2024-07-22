@@ -40,9 +40,6 @@ public class PanZoomHandler {
     }
 
     private void updateDimensions() {
-        childX = streamView.getX();
-        childY = streamView.getY();
-
         childHeight = streamView.getHeight() * scaleFactor;
         childWidth = streamView.getWidth() * scaleFactor;
         parentWidth = parent.getWidth();
@@ -55,8 +52,8 @@ public class PanZoomHandler {
         if (parentWidth >= childWidth) {
             childX = (parentWidth - childWidth) / 2;
         } else {
-            float boundaryX = childWidth - parentWidth;
-            childX = Math.max(-boundaryX, Math.min(childX, 0));
+            float boundaryX = parentWidth - childWidth;
+            childX = Math.max(boundaryX, Math.min(childX, 0));
         }
 
         if (parentHeight >= childHeight) {
@@ -66,8 +63,8 @@ public class PanZoomHandler {
                 childY = (parentHeight - childHeight) / 2;
             }
         } else {
-            float boundaryY = childHeight - parentHeight;
-            childY = Math.max(-boundaryY, Math.min(childY, 0));
+            float boundaryY = parentHeight - childHeight;
+            childY = Math.max(boundaryY, Math.min(childY, 0));
         }
 
         streamView.setX(childX);
@@ -82,25 +79,26 @@ public class PanZoomHandler {
         }
 
         float prevChildWidth = childWidth;
+        float prevChildHeight = childHeight;
         float prevParentWidth = parentWidth;
         float prevParentHeight = parentHeight;
-
-        float prevViewCenterX = childX - prevParentWidth / 2;
-        float prevViewCenterY = childY - prevParentHeight / 2;
 
         updateDimensions();
 
         float viewScaleX = childWidth / prevChildWidth;
-        float viewScaleY = childHeight / prevParentHeight;
+        float viewScaleY = childHeight / prevChildHeight;
 
-        float newViewCenterX = prevViewCenterX * viewScaleX;
-        float newViewCenterY = prevViewCenterY * viewScaleY;
+        float dPivotX1 = childX - prevParentWidth / 2;
+        float dPivotY1 = childY - prevParentHeight / 2;
 
-        childX = newViewCenterX + parentWidth / 2;
-        childY = newViewCenterY + parentHeight / 2;
+        float dPivotX2 = dPivotX1 * viewScaleX;
+        float dPivotY2 = dPivotY1 * viewScaleY;
 
-        streamView.setX((int)childX);
-        streamView.setY((int)childY);
+        childX = dPivotX2 + parentWidth / 2;
+        childY = dPivotY2 + parentHeight / 2;
+
+        streamView.setX(childX);
+        streamView.setY(childY);
 
         constrainToBounds();
     }
@@ -115,27 +113,21 @@ public class PanZoomHandler {
             float focusX = detector.getFocusX();
             float focusY = detector.getFocusY();
 
-            childX = streamView.getX();
-            childY = streamView.getY();
+            float dPivotX = (childX - focusX) / scaleFactor * newScaleFactor;
+            float dPivotY = (childY - focusY) / scaleFactor * newScaleFactor;
 
-            float prevScaleFactor = scaleFactor;
-
-            float dPivotX = childX - focusX;
-            float dPivotY = childY - focusY;
-
-            float moveX = dPivotX * (newScaleFactor / prevScaleFactor - 1);
-            float moveY = dPivotY * (newScaleFactor / prevScaleFactor - 1);
-
-            streamView.setScaleX(newScaleFactor);
-            streamView.setScaleY(newScaleFactor);
-
-            streamView.setX(streamView.getX() + moveX);
-            streamView.setY(streamView.getY() + moveY);
+            childX = focusX + dPivotX;
+            childY = focusY + dPivotY;
 
             scaleFactor = newScaleFactor;
 
-            constrainToBounds(); // Use the new method name
+            streamView.setScaleX(scaleFactor);
+            streamView.setScaleY(scaleFactor);
 
+            streamView.setX(childX);
+            streamView.setY(childY);
+
+            constrainToBounds();
             return true;
         }
     }
@@ -150,7 +142,6 @@ public class PanZoomHandler {
             streamView.setY(childY);
 
             constrainToBounds();
-
             return true;
         }
     }
