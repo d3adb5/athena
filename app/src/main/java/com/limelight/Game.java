@@ -159,6 +159,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private int modifierFlags = 0;
     private boolean grabbedInput = true;
     private boolean cursorVisible = false;
+    private boolean isPanZoomMode = false;
     private boolean waitingForAllModifiersUp = false;
     private int specialKeyCode = KeyEvent.KEYCODE_UNKNOWN;
     private StreamView streamView;
@@ -167,6 +168,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private float lastAbsTouchUpX, lastAbsTouchUpY;
     private float lastAbsTouchDownX, lastAbsTouchDownY;
 
+    private boolean orientationOverriden = false;
     private boolean isHidingOverlays;
     private TextView notificationOverlayView;
     private int requestedNotificationOverlayVisibility = View.GONE;
@@ -712,7 +714,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         super.onConfigurationChanged(newConfig);
 
         // Set requested orientation for possible new screen size
-        setPreferredOrientationForCurrentDisplay();
+        if (!orientationOverriden) {
+            setPreferredOrientationForCurrentDisplay();
+        }
 
         if (virtualController != null) {
             // Refresh layout of OSC for possible new screen size
@@ -2261,10 +2265,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         return true;
                     }
 
-                    // If touch is disabled or not initialized, we'll try panning the streamView
-                    if (touchContextMap[0] == null) {
+                    if (isPanZoomMode) {
                         // panning the streamView
                         panZoomHandler.handleTouchEvent(event);
+                        return true;
+                    }
+
+                    // If touch is disabled or not initialized, we'll try panning the streamView
+                    if (touchContextMap[0] == null) {
                         return true;
                     }
 
@@ -3005,6 +3013,20 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         super.onBackPressed();
     }
 
+    public void toggleZoomMode() {
+        this.isPanZoomMode = !this.isPanZoomMode;
+    }
+
+    public void rotateScreen() {
+        orientationOverriden = true;
+        int currentOrientation = getResources().getConfiguration().orientation;
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+        }
+    }
+
     public void selectMouseModeModal(){
         String[] strings=getResources().getStringArray(R.array.mouse_model_names_axi);
         String[] items =Arrays.copyOf(strings,strings.length+1);
@@ -3070,6 +3092,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         : new TrackpadContext(conn, i);
             }
         }
+
+        // Always exit zoom mode if mouse mode has changed
+        isPanZoomMode = false;
     }
 
     public void showHUD(){

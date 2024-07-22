@@ -3,6 +3,7 @@ package com.limelight;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
@@ -264,18 +265,24 @@ public class GameMenu {
         options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
                 () -> game.selectMouseModeModal()));
 
-        options.add(new MenuOption(getString(R.string.game_menu_send_keys), () -> showSpecialKeysMenu()));
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_zoom_mode), true,
+                () -> game.toggleZoomMode()));
+
+        options.add(new MenuOption(getString(R.string.game_menu_rotate_screen), true,
+                () -> game.rotateScreen()));
 
         options.add(new MenuOption(getString(R.string.game_menu_hud), true,
                 () -> game.showHUD()));
 
-        options.add(new MenuOption(getString(R.string.game_menu_switch_keyboard_model), true,
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true,
                 () -> game.showHideKeyboardController()));
 
-        options.add(new MenuOption(getString(R.string.game_menu_switch_virtual_model), true,
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_model), true,
                 () -> game.showHideVirtualController()));
-        options.add(new MenuOption(getString(R.string.game_menu_switch_virtual_keyboard_model), true,
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_keyboard_model), true,
                 () -> game.showHidekeyBoardLayoutController()));
+
+        options.add(new MenuOption(getString(R.string.game_menu_send_keys), () -> showSpecialKeysMenu()));
 
         options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true,
                 () -> game.switchTouchSensitivity()));
