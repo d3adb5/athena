@@ -301,6 +301,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         panZoomHandler = new PanZoomHandler(
                 getApplicationContext(),
+                this,
                 streamView,
                 prefConfig
         );
@@ -791,21 +792,24 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @TargetApi(Build.VERSION_CODES.O)
     private PictureInPictureParams getPictureInPictureParams(boolean autoEnter) {
-        Rational aspectRatio;
+        View view;
         Rect hint;
-        if (prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FIT) {
-            aspectRatio = new Rational(displayWidth, displayHeight);
-            hint = new Rect(
-                    streamView.getLeft(), streamView.getTop(),
-                    streamView.getRight(), streamView.getBottom());
+        if (prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.FIT && streamView.getScaleX() == 1) {
+            view = streamView;
         } else {
-            int left = ((View)rootView).getLeft();
-            int top = ((View)rootView).getTop();
-            int right = ((View)rootView).getRight();
-            int bottom = ((View)rootView).getBottom();
-            aspectRatio = new Rational(right - left, bottom - top);
-            hint = new Rect(left, top, right, bottom);
+            view = (View)rootView;
         }
+
+        int[] viewLocation = new int[2];
+
+        view.getLocationOnScreen(viewLocation);
+
+        int left = viewLocation[0];
+        int top = viewLocation[1];
+        int width = view.getWidth();
+        int height = view.getHeight();
+        Rational aspectRatio = new Rational(width, height);
+        hint = new Rect(left, top, left + width, top + height);
 
         PictureInPictureParams.Builder builder =
                 new PictureInPictureParams.Builder()
@@ -832,7 +836,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return builder.build();
     }
 
-    private void updatePipAutoEnter() {
+    public void updatePipAutoEnter() {
         if (!prefConfig.enablePip) {
             return;
         }
@@ -2825,6 +2829,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         panZoomHandler.handleSurfaceChange();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!isInPictureInPictureMode()) {
+                updatePipAutoEnter();
+            }
+        }
     }
 
     @Override

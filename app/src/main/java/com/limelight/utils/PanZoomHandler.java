@@ -6,11 +6,13 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import com.limelight.Game;
 import com.limelight.preferences.PreferenceConfiguration;
 
 public class PanZoomHandler {
     static private final float MAX_SCALE = 10.0f;
 
+    private final Game game;
     private final View streamView;
     private final PreferenceConfiguration prefConfig;
     private final boolean isTopMode;
@@ -22,7 +24,8 @@ public class PanZoomHandler {
     private float parentWidth, parentHeight = 0;
     private float childWidth, childHeight = 0;
 
-    public PanZoomHandler(Context context, View streamView, PreferenceConfiguration prefConfig) {
+    public PanZoomHandler(Context context, Game game, View streamView, PreferenceConfiguration prefConfig) {
+        this.game = game;
         this.streamView = streamView;
         this.prefConfig = prefConfig;
         this.isTopMode = prefConfig.enableDisplayTopCenter;
@@ -129,6 +132,11 @@ public class PanZoomHandler {
 
             constrainToBounds();
             return true;
+        }
+
+        @Override
+        public void onScaleEnd(ScaleGestureDetector detector) {
+            game.updatePipAutoEnter();
         }
     }
 
