@@ -66,7 +66,7 @@ public class VirtualControllerConfigurationLoader {
                     inputContext.inputMap &= ~ControllerPacket.DOWN_FLAG;
                 }
 
-                controller.sendControllerInputContext();
+                controller.sendControllerInputContext(10, 0x22);
             }
         });
 

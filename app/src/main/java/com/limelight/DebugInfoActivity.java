@@ -179,15 +179,12 @@ public class DebugInfoActivity extends Activity implements View.OnClickListener 
     }
 
     private void rumble(Vibrator vibrator) {
-        long pwmPeriod = 20;
-        long onTime = (long) ((simulatedAmplitude / 255.0) * pwmPeriod);
-        long offTime = pwmPeriod - onTime;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            VibrationAttributes vibrationAttributes = new VibrationAttributes.Builder()
-                    .setUsage(VibrationAttributes.USAGE_HARDWARE_FEEDBACK)
-                    .build();
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[]{0, onTime, offTime}, 0), vibrationAttributes);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[]{1000}, new int[]{simulatedAmplitude}, 0));
         } else {
+            long pwmPeriod = 20;
+            long onTime = (long) ((simulatedAmplitude / 255.0) * pwmPeriod);
+            long offTime = pwmPeriod - onTime;
             AudioAttributes audioAttributes = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_GAME)
                     .build();

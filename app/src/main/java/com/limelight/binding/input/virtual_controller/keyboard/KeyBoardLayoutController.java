@@ -5,9 +5,11 @@
 package com.limelight.binding.input.virtual_controller.keyboard;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Vibrator;
 import android.text.TextUtils;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -28,10 +30,10 @@ public class KeyBoardLayoutController {
 
     private final Context context;
     private final PreferenceConfiguration prefConfig;
-    private Vibrator vibrator;
     private FrameLayout frame_layout = null;
 
-    private LinearLayout keyboardView;private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
+    private LinearLayout keyboardView;
+    private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
     static {
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_LEFT);
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_RIGHT);
@@ -57,8 +59,7 @@ public class KeyBoardLayoutController {
         this.frame_layout = layout;
         this.context = context;
         this.prefConfig = prefConfig;
-        this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        this.keyboardView= (LinearLayout) LayoutInflater.from(context).inflate(R.layout.layout_axixi_keyboard,null);
+        this.keyboardView = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.layout_axixi_keyboard,null);
         initKeyboard();
     }
 
@@ -68,7 +69,7 @@ public class KeyBoardLayoutController {
             public boolean onTouch(View v, MotionEvent event) {
                 int eventAction = event.getAction();
                 String tag=(String) v.getTag();
-                if(TextUtils.equals("hide",tag)){
+                if (TextUtils.equals("hide", tag)) {
                     if (eventAction == MotionEvent.ACTION_UP || eventAction == MotionEvent.ACTION_CANCEL) {
                         hide();
                     }
@@ -104,8 +105,18 @@ public class KeyBoardLayoutController {
                 sendKeyEvent(keyEvent);
 
                 if (keyAction == KeyEvent.ACTION_DOWN) {
+                    if (prefConfig.enableKeyboardVibrate) {
+                        keyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                    }
                     v.setBackgroundResource(R.drawable.bg_ax_keyboard_button_confirm);
                 } else {
+                    if (prefConfig.enableKeyboardVibrate) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                            keyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
+                        } else {
+                            keyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                        }
+                    }
                     v.setBackgroundResource(R.drawable.bg_ax_keyboard_button);
                 }
                 return true;
@@ -120,6 +131,13 @@ public class KeyBoardLayoutController {
     }
 
     public void hide() {
+        if (prefConfig.enableKeyboardVibrate) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                keyboardView.performHapticFeedback(HapticFeedbackConstants.REJECT);
+            } else {
+                keyboardView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            }
+        }
         keyboardView.setVisibility(View.GONE);
     }
 
@@ -164,8 +182,5 @@ public class KeyBoardLayoutController {
         } else {
             Game.instance.onKey(null, keyEvent.getKeyCode(), keyEvent);
         }
-//        if (PreferenceConfiguration.readPreferences(context).enableKeyboardVibrate && vibrator.hasVibrator()) {
-//            vibrator.vibrate(10);
-//        }
     }
 }

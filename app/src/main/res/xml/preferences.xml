@@ -537,6 +537,12 @@
             android:summary="@string/summary_show_virtual_key"
             android:defaultValue="false"/>
 
+        <CheckBoxPreference
+            android:key="checkbox_vibrate_keyboard"
+            android:title="@string/title_checkbox_vibrate_osc"
+            android:summary="@string/summary_vibrate_keyboard"
+            android:defaultValue="false" />
+
         <ListPreference
             android:key="keyboard_axi_list"
             android:title="@string/title_default_layout_scheme"
@@ -545,13 +551,6 @@
             android:entries="@array/keyboard_axi_names"
             android:entryValues="@array/keyboard_axi_values"
             android:defaultValue="OSC_Keyboard" />
-
-        <CheckBoxPreference
-            android:key="checkbox_vibrate_keyboard"
-            android:dependency="checkbox_enable_keyboard"
-            android:title="@string/title_checkbox_vibrate_osc"
-            android:summary="@string/summary_vibrate_keyboard"
-            android:defaultValue="false" />
 
         <CheckBoxPreference
             android:key="checkbox_enable_keyboard_square"
