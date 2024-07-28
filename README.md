@@ -1,27 +1,31 @@
 # Moonlight Android Noir
 
-Based on https://github.com/Axixi2233/moonlight-android
+An open source client for [Sunshine](https://github.com/LizardByte/Sunshine).
 
-As I heard that the original fork had some [dark history](https://www.bilibili.com/read/cv35787801), as it is open sourced now, there's no issue continue improving based on that fork.
+Moonlight for Android will allow you to stream your collection of games from your Windows PC to your Android device,
+whether in your own home or over the internet.
 
-Citing @TrueZhuangJia for several [very useful modifications](https://github.com/moonlight-stream/moonlight-android/issues/1348#issuecomment-2236344729)! Thanks for all the contributions made by wonderful people!
+# Features
 
-This project version mainly implements the following features:
+Mostly based on https://github.com/Axixi2233/moonlight-android
+
+If you switch back to the main stream version, you'll be missing the following awesome features which are very unlikely to be added there:
+
 1. Custom virtual buttons with import and export support.
-2. Custom resolutions.
+2. [Custom resolutions](https://github.com/moonlight-stream/moonlight-android/pull/1349).
 3. Custom bitrates.
-4. Multiple mouse mode switching (normal mouse, multi-touch, touchpad, disable touch operations, local mouse mode).
+4. [Multiple mouse mode switching](https://github.com/moonlight-stream/moonlight-android/pull/1304) (normal mouse, [multi-touch](https://github.com/moonlight-stream/moonlight-android/pull/1364), touchpad, disabled, local mouse mode).
 5. Optimized virtual gamepad skins and free joystick.
 6. External monitor mode.
 7. Joycon D-pad support.
 8. Simplified performance information display.
-9. Game shortcut menu options.
+9. [Game back menu](https://github.com/moonlight-stream/moonlight-android/pull/1171).
 10. Custom shortcut commands.
 11. Easy soft keyboard switching.
 12. Portrait mode.
-13. Topmost display for the screen, useful for foldable screens.
+13. Display on top mode, useful for foldable screens.
 14. Virtual touchpad space and sensitivity adjustment for playing right-click view games, such as Warcraft.
-15. Force the use of the device's own vibration motor (in case your gamepad's vibration is not effective).
+15. Force use device's own vibration motor (in case your gamepad's vibration is not effective).
 16. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
 17. Trackpad tap/scrolling support
 18. Natural track pad mode with touch screen
@@ -34,25 +38,24 @@ This project version mainly implements the following features:
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
-# Moonlight Android
+# Disclaimer
 
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/232a8tadrrn8jv0k/branch/master?svg=true)](https://ci.appveyor.com/project/cgutman/moonlight-android/branch/master)
-[![Translation Status](https://hosted.weblate.org/widgets/moonlight/-/moonlight-android/svg-badge.svg)](https://hosted.weblate.org/projects/moonlight/moonlight-android/)
+This is the `go away` version of Moonlight Android.
 
-[Moonlight for Android](https://moonlight-stream.org) is an open source client for NVIDIA GameStream and [Sunshine](https://github.com/LizardByte/Sunshine).
+I got kicked from Moonlight and Sunshine's Discord server literally for helping people out.
 
-Moonlight for Android will allow you to stream your full collection of games from your Windows PC to your Android device,
-whether in your own home or over the internet.
+![image](https://github.com/user-attachments/assets/f01fc57f-5199-4495-9b96-68cfa017b7ff)
 
-Moonlight also has a [PC client](https://github.com/moonlight-stream/moonlight-qt) and [iOS/tvOS client](https://github.com/moonlight-stream/moonlight-ios).
+This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else.
 
-You can follow development on our [Discord server](https://moonlight-stream.org/discord) and help translate Moonlight into your language on [Weblate](https://hosted.weblate.org/projects/moonlight/moonlight-android/).
+Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either.
+
+The main repo had been dead for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others. The funniest thing is, the repo starts updating after they got me banned!
+
+**PRs for feature improvements are welcomed here unlike the main repo, your ideas are more likely to be appreciated and your efforts are actually being respected. We welcome people who can and willing to share their efforts, helping yourselves and other people in need.**
 
 ## Downloads
-* [Google Play Store](https://play.google.com/store/apps/details?id=com.limelight)
-* [Amazon App Store](https://www.amazon.com/gp/product/B00JK4MFN2)
-* [F-Droid](https://f-droid.org/packages/com.limelight)
-* [APK](https://github.com/moonlight-stream/moonlight-android/releases)
+* [APK](https://github.com/ClassicOldSong/moonlight-android/releases)
 
 ## Building
 * Install Android Studio and the Android NDK
