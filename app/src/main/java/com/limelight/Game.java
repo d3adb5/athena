@@ -3023,6 +3023,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         super.onBackPressed();
     }
 
+    public boolean isZoomModeEnabled() {
+        return isPanZoomMode;
+    }
     public void toggleZoomMode() {
         this.isPanZoomMode = !this.isPanZoomMode;
     }

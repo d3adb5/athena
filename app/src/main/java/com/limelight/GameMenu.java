@@ -254,44 +254,55 @@ public class GameMenu {
         showMenuDialog(getString(R.string.game_menu_send_keys), options.toArray(new MenuOption[options.size()]));
     }
 
-    private void showMenu() {
+    private void showAdvancedMenu() {
         List<MenuOption> options = new ArrayList<>();
 
-        options.add(new MenuOption(getString(R.string.game_menu_disconnect), () -> game.disconnect()));
-
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
-                () -> game.toggleKeyboard()));
-
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_zoom_mode), true,
-                () -> game.toggleZoomMode()));
-
-        if (game.presentation == null) {
-            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
-                    () -> game.selectMouseModeModal()));
-        }
-
-        options.add(new MenuOption(getString(R.string.game_menu_rotate_screen), true,
-                () -> game.rotateScreen()));
-
         options.add(new MenuOption(getString(R.string.game_menu_hud), true,
-                () -> game.showHUD()));
+                game::showHUD));
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true,
-                () -> game.showHideKeyboardController()));
+                game::showHideKeyboardController));
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_model), true,
-                () -> game.showHideVirtualController()));
+                game::showHideVirtualController));
         options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_keyboard_model), true,
-                () -> game.showHidekeyBoardLayoutController()));
+                game::showHidekeyBoardLayoutController));
 
-        options.add(new MenuOption(getString(R.string.game_menu_send_keys), () -> showSpecialKeysMenu()));
+        options.add(new MenuOption(getString(R.string.game_menu_send_keys), this::showSpecialKeysMenu));
 
         options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true,
-                () -> game.switchTouchSensitivity()));
+                game::switchTouchSensitivity));
 
         if (device != null) {
             options.addAll(device.getGameMenuOptions());
         }
+
+        options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
+
+        showMenuDialog(getString(R.string.game_menu_advanced), options.toArray(new MenuOption[options.size()]));
+    }
+
+    private void showMenu() {
+        List<MenuOption> options = new ArrayList<>();
+
+        options.add(new MenuOption(getString(R.string.game_menu_disconnect), game::disconnect));
+
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
+                game::toggleKeyboard));
+
+        if (game.presentation == null) {
+            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
+                    game::selectMouseModeModal));
+        }
+
+        options.add(new MenuOption(getString(game.isZoomModeEnabled() ? R.string.game_menu_disable_zoom_mode : R.string.game_menu_enable_zoom_mode), true,
+                game::toggleZoomMode));
+
+        options.add(new MenuOption(getString(R.string.game_menu_rotate_screen), true,
+                game::rotateScreen));
+
+        options.add(new MenuOption(getString(R.string.game_menu_advanced), true,
+                this::showAdvancedMenu));
 
         options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
 

@@ -291,7 +291,8 @@
     <string name="game_menu_toggle_keyboard">弹出软键盘</string>
     <string name="game_menu_hud">(显示/隐藏)性能信息</string>
     <string name="game_menu_select_mouse_mode">选择鼠标模式</string>
-    <string name="game_menu_toggle_zoom_mode">切换平移/缩放</string>
+    <string name="game_menu_enable_zoom_mode">启用平移/缩放</string>
+    <string name="game_menu_disable_zoom_mode">禁用平移/缩放</string>
     <string name="game_menu_rotate_screen">旋转屏幕</string>
     <string name="game_menu_toggle_keyboard_model">(显示/隐藏)特殊按键</string>
     <string name="game_menu_toggle_virtual_model">(显示/隐藏)虚拟手柄</string>
@@ -465,4 +466,5 @@
     <string name="pref_empty_file">文件为空！</string>
     <string name="pref_import_success">导入成功！</string>
     <string name="pref_error_occurred">出错啦~</string>
+    <string name="game_menu_advanced">高级菜单</string>
 </resources>
