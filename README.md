@@ -5,6 +5,8 @@ An open source client for [Sunshine](https://github.com/LizardByte/Sunshine).
 Moonlight for Android will allow you to stream your collection of games from your Windows PC to your Android device,
 whether in your own home or over the internet.
 
+Moonlight Noir is currently the best fork with loads of optimizations for office usage.
+
 # Features
 
 Mostly based on https://github.com/Axixi2233/moonlight-android
