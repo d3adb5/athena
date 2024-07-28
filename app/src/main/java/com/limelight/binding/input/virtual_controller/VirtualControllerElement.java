@@ -37,8 +37,8 @@ public abstract class VirtualControllerElement extends View {
     public static final int EID_RS = 13;
     public static final int EID_LSB = 14;
     public static final int EID_RSB = 15;
-    //触控板
-    public static final int EID_TOUCHPAD = 16;
+    public static final int EID_GDB = 16;
+    public static final int EID_TOUCHPAD = 65;
 
     protected VirtualController virtualController;
     protected final int elementId;

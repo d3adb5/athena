@@ -24,7 +24,7 @@ public class SecondaryDisplayPresentation extends Presentation {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        view= (FrameLayout) View.inflate(getContext(),R.layout.activity_game_display,null);
+        view = (FrameLayout) View.inflate(getContext(),R.layout.activity_game_display,null);
         setContentView(view);
     }
 
