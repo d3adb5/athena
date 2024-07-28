@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 
 public class ServerHelper {
     public static final String CONNECTION_TEST_SERVER = "android.conntest.moonlight-stream.org";
@@ -117,25 +118,30 @@ public class ServerHelper {
     }
 
     public static void doQuit(final Activity parent,
-                              final ComputerDetails computer,
-                              final NvApp app,
-                              final ComputerManagerService.ComputerManagerBinder managerBinder,
-                              final Runnable onComplete) {
-        Toast.makeText(parent, parent.getResources().getString(R.string.applist_quit_app) + " " + app.getAppName() + "...", Toast.LENGTH_SHORT).show();
+                              final ComputerDetails.AddressTuple address,
+                              final int httpsPort,
+                              final X509Certificate cert,
+                              final String appName,
+                              final String uniqueId,
+                              final Runnable onComplete,
+                              final Runnable onFail) {
+        parent.runOnUiThread(() -> Toast.makeText(parent, parent.getResources().getString(R.string.applist_quit_app) + " " + appName + "...", Toast.LENGTH_SHORT).show());
         new Thread(new Runnable() {
             @Override
             public void run() {
                 NvHTTP httpConn;
                 String message;
+                boolean failed = false;
                 try {
-                    httpConn = new NvHTTP(ServerHelper.getCurrentAddressFromComputer(computer), computer.httpsPort,
-                            managerBinder.getUniqueId(), computer.serverCert, PlatformBinding.getCryptoProvider(parent));
+                    httpConn = new NvHTTP(address, httpsPort,
+                            uniqueId, cert, PlatformBinding.getCryptoProvider(parent));
                     if (httpConn.quitApp()) {
-                        message = parent.getResources().getString(R.string.applist_quit_success) + " " + app.getAppName();
+                        message = parent.getResources().getString(R.string.applist_quit_success) + " " + appName;
                     } else {
-                        message = parent.getResources().getString(R.string.applist_quit_fail) + " " + app.getAppName();
+                        message = parent.getResources().getString(R.string.applist_quit_fail) + " " + appName;
                     }
                 } catch (HostHttpResponseException e) {
+                    failed = true;
                     if (e.getErrorCode() == 599) {
                         message = "This session wasn't started by this device," +
                                 " so it cannot be quit. End streaming on the original " +
@@ -145,26 +151,55 @@ public class ServerHelper {
                         message = e.getMessage();
                     }
                 } catch (UnknownHostException e) {
+                    failed = true;
                     message = parent.getResources().getString(R.string.error_unknown_host);
                 } catch (FileNotFoundException e) {
+                    failed = true;
                     message = parent.getResources().getString(R.string.error_404);
                 } catch (IOException | XmlPullParserException e) {
+                    failed = true;
                     message = e.getMessage();
                     e.printStackTrace();
                 } finally {
-                    if (onComplete != null) {
-                        onComplete.run();
+                    if (failed) {
+                        if (onFail != null) {
+                            onFail.run();
+                        }
+                    } else {
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
                     }
                 }
 
                 final String toastMessage = message;
-                parent.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(parent, toastMessage, Toast.LENGTH_LONG).show();
-                    }
-                });
+                parent.runOnUiThread(() -> Toast.makeText(parent, toastMessage, Toast.LENGTH_LONG).show());
             }
         }).start();
+
+    }
+
+    public static void doQuit(final Activity parent,
+                              final ComputerDetails computer,
+                              final NvApp app,
+                              final ComputerManagerService.ComputerManagerBinder managerBinder,
+                              final Runnable onComplete) {
+        try {
+            doQuit(
+                    parent,
+                    ServerHelper.getCurrentAddressFromComputer(computer),
+                    computer.httpsPort,
+                    computer.serverCert,
+                    app.getAppName(),
+                    managerBinder.getUniqueId(),
+                    onComplete,
+                    null
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            final String toastMessage = e.getMessage();
+            parent.runOnUiThread(() -> Toast.makeText(parent, toastMessage, Toast.LENGTH_LONG).show());
+        }
     }
 }

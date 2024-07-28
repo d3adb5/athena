@@ -257,6 +257,11 @@ public class GameMenu {
     private void showAdvancedMenu() {
         List<MenuOption> options = new ArrayList<>();
 
+        if (game.presentation == null) {
+            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
+                    game::selectMouseModeModal));
+        }
+
         options.add(new MenuOption(getString(R.string.game_menu_hud), true,
                 game::showHUD));
 
@@ -287,13 +292,10 @@ public class GameMenu {
 
         options.add(new MenuOption(getString(R.string.game_menu_disconnect), game::disconnect));
 
+        options.add(new MenuOption(game.getString(R.string.game_menu_quit_session), game::quit));
+
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 game::toggleKeyboard));
-
-        if (game.presentation == null) {
-            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
-                    game::selectMouseModeModal));
-        }
 
         options.add(new MenuOption(getString(game.isZoomModeEnabled() ? R.string.game_menu_disable_zoom_mode : R.string.game_menu_enable_zoom_mode), true,
                 game::toggleZoomMode));

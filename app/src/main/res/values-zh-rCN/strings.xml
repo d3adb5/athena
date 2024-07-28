@@ -467,4 +467,7 @@
     <string name="pref_import_success">导入成功！</string>
     <string name="pref_error_occurred">出错啦~</string>
     <string name="game_menu_advanced">高级菜单</string>
+    <string name="game_dialog_title_quit_confirm">确定要退出吗？</string>
+    <string name="game_dialog_message_quit_confirm">请确保当前没有未保存的进度。终止会话会导致当前运行的程序被强行停止。</string>
+    <string name="game_menu_quit_session">终止会话</string>
 </resources>

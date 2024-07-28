@@ -168,6 +168,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private float lastAbsTouchUpX, lastAbsTouchUpY;
     private float lastAbsTouchDownX, lastAbsTouchDownY;
 
+    private boolean quitOnStop = false;
     private boolean orientationOverriden = false;
     private boolean isHidingOverlays;
     private TextView notificationOverlayView;
@@ -211,6 +212,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_PC_NAME = "PcName";
     public static final String EXTRA_APP_HDR = "HDR";
     public static final String EXTRA_SERVER_CERT = "ServerCert";
+
+    private String host;
+    private int port;
+    private int httpsPort;
+    private int appId;
+    private String uniqueId;
+    private X509Certificate serverCert;
 
     private ViewParent rootView;
 
@@ -374,17 +382,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         appName = Game.this.getIntent().getStringExtra(EXTRA_APP_NAME);
         pcName = Game.this.getIntent().getStringExtra(EXTRA_PC_NAME);
 
-        String host = Game.this.getIntent().getStringExtra(EXTRA_HOST);
-        int port = Game.this.getIntent().getIntExtra(EXTRA_PORT, NvHTTP.DEFAULT_HTTP_PORT);
-        int httpsPort = Game.this.getIntent().getIntExtra(EXTRA_HTTPS_PORT, 0); // 0 is treated as unknown
-        int appId = Game.this.getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
-        String uniqueId = Game.this.getIntent().getStringExtra(EXTRA_UNIQUEID);
+        host = Game.this.getIntent().getStringExtra(EXTRA_HOST);
+        port = Game.this.getIntent().getIntExtra(EXTRA_PORT, NvHTTP.DEFAULT_HTTP_PORT);
+        httpsPort = Game.this.getIntent().getIntExtra(EXTRA_HTTPS_PORT, 0); // 0 is treated as unknown
+        appId = Game.this.getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
+        uniqueId = Game.this.getIntent().getStringExtra(EXTRA_UNIQUEID);
         boolean appSupportsHdr = Game.this.getIntent().getBooleanExtra(EXTRA_APP_HDR, false);
         byte[] derCertData = Game.this.getIntent().getByteArrayExtra(EXTRA_SERVER_CERT);
 
         app = new NvApp(appName != null ? appName : "app", appId, appSupportsHdr);
 
-        X509Certificate serverCert = null;
         try {
             if (derCertData != null) {
                 serverCert = (X509Certificate) CertificateFactory.getInstance("X.509")
@@ -2550,6 +2557,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             new Thread() {
                 public void run() {
                     conn.stop();
+                    if (quitOnStop) {
+                        ServerHelper.doQuit(Game.this, new ComputerDetails.AddressTuple(host, port), httpsPort, serverCert, appName, uniqueId, null, null);
+                    }
                 }
             }.start();
         }
@@ -3135,9 +3145,26 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         finish();
     }
 
+    public void quit() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.game_dialog_title_quit_confirm);
+        builder.setMessage(R.string.game_dialog_message_quit_confirm);
+
+        builder.setPositiveButton(getString(R.string.yes), (dialog, which) -> {
+            quitOnStop = true;
+            dialog.dismiss();
+            finish();
+        });
+
+        builder.setNegativeButton(getString(R.string.no), (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     @Override
     public void showGameMenu(GameInputDevice device) {
-        new GameMenu(this,conn,device);
+        new GameMenu(this, conn, device);
     }
 
 
