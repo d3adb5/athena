@@ -16,7 +16,7 @@ If you switch back to the main stream version, you'll be missing the following a
 1. Custom virtual buttons with import and export support.
 2. [Custom resolutions](https://github.com/moonlight-stream/moonlight-android/pull/1349).
 3. Custom bitrates.
-4. [Multiple mouse mode switching](https://github.com/moonlight-stream/moonlight-android/pull/1304) (normal mouse, [multi-touch](https://github.com/moonlight-stream/moonlight-android/pull/1364), touchpad, disabled, local mouse mode).
+4. [Multiple mouse mode switching](https://github.com/moonlight-stream/moonlight-android/pull/1304) (normal mouse, [multi-touch](https://github.com/moonlight-stream/moonlight-android/pull/1364), touchpad, disabled, local cursor mode).
 5. Optimized virtual gamepad skins and free joystick.
 6. External monitor mode.
 7. Joycon D-pad support.
@@ -25,8 +25,8 @@ If you switch back to the main stream version, you'll be missing the following a
 10. Custom shortcut commands.
 11. Easy soft keyboard switching.
 12. Portrait mode.
-13. Display on top mode, useful for foldable screens.
-14. Virtual touchpad space and sensitivity adjustment for playing right-click view games, such as Warcraft.
+13. Display on top mode, useful for foldable phones.
+14. [Virtual touchpad space and sensitivity adjustment](https://github.com/moonlight-stream/moonlight-android/issues/1348#issuecomment-2236344729) for playing right-click view games, such as Warcraft.
 15. Force use device's own vibration motor (in case your gamepad's vibration is not effective).
 16. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
 17. Trackpad tap/scrolling support
@@ -37,6 +37,7 @@ If you switch back to the main stream version, you'll be missing the following a
 22. Video scale mode: Fit/Fill/Stretch
 23. View pan/zoom support
 24. Rotate screen in-game
+25. Add option to quit app directly
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
@@ -48,11 +49,11 @@ I got kicked from Moonlight and Sunshine's Discord server literally for helping 
 
 ![image](https://github.com/user-attachments/assets/f01fc57f-5199-4495-9b96-68cfa017b7ff)
 
-This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else.
+This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else during the maintainance gap.
 
 Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either.
 
-The main repo had been dead for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others. The funniest thing is, the repo starts updating after they got me banned!
+The main repo had stayed silent for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others. The funniest thing is, the repo starts updating after they got me banned!
 
 **PRs for feature improvements are welcomed here unlike the main repo, your ideas are more likely to be appreciated and your efforts are actually being respected. We welcome people who can and willing to share their efforts, helping yourselves and other people in need.**
 
