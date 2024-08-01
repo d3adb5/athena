@@ -160,9 +160,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private boolean grabbedInput = true;
     private boolean cursorVisible = false;
     private boolean isPanZoomMode = false;
+    private boolean synthClickPending = false;
+    private boolean pointerSwiping = false;
     private boolean waitingForAllModifiersUp = false;
     private int specialKeyCode = KeyEvent.KEYCODE_UNKNOWN;
     private StreamView streamView;
+    private long synthTouchDownTime = 0;
     private long lastAbsTouchUpTime = 0;
     private long lastAbsTouchDownTime = 0;
     private float lastAbsTouchUpX, lastAbsTouchUpY;
@@ -227,7 +230,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        instance=this;
+        instance = this;
 
         UiHelper.setLocale(this);
 
@@ -2072,26 +2075,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 int buttonState = event.getButtonState();
                 int changedButtons = buttonState ^ lastButtonState;
 
-                // The DeX touchpad on the Fold 4 sends proper right click events using BUTTON_SECONDARY,
-                // but doesn't send BUTTON_PRIMARY for a regular click. Instead it sends ACTION_DOWN/UP,
-                // so we need to fix that up to look like a sane input event to process it correctly.
-                if (eventSource == 12290) {
-                    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                        buttonState |= MotionEvent.BUTTON_PRIMARY;
-                    }
-                    else if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-                        buttonState &= ~MotionEvent.BUTTON_PRIMARY;
-                    }
-                    else {
-                        // We may be faking the primary button down from a previous event,
-                        // so be sure to add that bit back into the button state.
-                        buttonState |= (lastButtonState & MotionEvent.BUTTON_PRIMARY);
-                    }
-
-                    changedButtons = buttonState ^ lastButtonState;
-                }
                 // Two finger click
-                else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 &&
+                if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0 &&
                         event.getPointerCount() == 2 &&
                         (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && event.getActionButton() == MotionEvent.BUTTON_PRIMARY)) {
                     if (event.getActionMasked() == MotionEvent.ACTION_BUTTON_PRESS) {
@@ -2165,8 +2150,67 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     return true;
                 }
                 else if (view != null) {
-                    // Otherwise send absolute position based on the view for SOURCE_CLASS_POINTER
-                    updateMousePosition(view, event);
+                    if (event.getToolType(0) == MotionEvent.TOOL_TYPE_FINGER) {
+                        // Handle trackpad when pointer is not captured by synthesizing a trackpad movement
+                        int eventAction = event.getActionMasked();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && event.getClassification() == MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE) {
+                            if (!pointerSwiping) {
+                                pointerSwiping = true;
+                                handleTouchInput(event, trackpadContextMap, false, MotionEvent.ACTION_POINTER_DOWN, 1, 2);
+                            }
+                            return handleTouchInput(event, trackpadContextMap, false, MotionEvent.ACTION_MOVE, 1, 2);
+                        } else if (pointerSwiping && eventAction == MotionEvent.ACTION_UP) {
+                            pointerSwiping = false;
+                            synthClickPending = false;
+                            handleTouchInput(event, trackpadContextMap, false, MotionEvent.ACTION_POINTER_UP, 1, 2);
+                            return true;
+                        }
+
+                        switch (eventAction) {
+                            case MotionEvent.ACTION_HOVER_MOVE:
+                            case MotionEvent.ACTION_MOVE:
+                                updateMousePosition(view, event);
+                                return true;
+                            case MotionEvent.ACTION_HOVER_EXIT:
+                            case MotionEvent.ACTION_DOWN:
+                                synthTouchDownTime = System.currentTimeMillis();
+                                synthClickPending = true;
+                                return true;
+                            case MotionEvent.ACTION_HOVER_ENTER:
+                            case MotionEvent.ACTION_UP:
+                                if (synthClickPending) {
+                                    long timeDiff = System.currentTimeMillis() - synthTouchDownTime;
+
+                                    if (eventSource == 12290) {
+                                        // Special handle for DeX
+                                        // DeX reports button secondary when tapping with two fingers
+                                        // So there's no need to distinguish left/right click by time difference
+                                        if (timeDiff < 120) {
+                                            conn.sendMouseButtonDown(MouseButtonPacket.BUTTON_LEFT);
+                                            conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_LEFT);
+                                        }
+                                    } else {
+                                        if (timeDiff < 20) {
+                                            conn.sendMouseButtonDown(MouseButtonPacket.BUTTON_LEFT);
+                                            conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_LEFT);
+                                        } else if (timeDiff < 120) {
+                                            conn.sendMouseButtonDown(MouseButtonPacket.BUTTON_RIGHT);
+                                            conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_RIGHT);
+                                        }
+                                    }
+
+                                    synthClickPending = false;
+                                }
+                                return true;
+                            case MotionEvent.ACTION_BUTTON_PRESS:
+                            case MotionEvent.ACTION_BUTTON_RELEASE:
+                                synthClickPending = false;
+                            default:
+                                break;
+                        }
+                    } else {
+                        updateMousePosition(view, event);
+                    }
                 }
 
                 if (event.getActionMasked() == MotionEvent.ACTION_SCROLL) {
@@ -2326,10 +2370,17 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private boolean handleTouchInput(MotionEvent event, TouchContext[] inputContextMap, boolean isTouchScreen) {
-        int actionIndex = event.getActionIndex();
+        return handleTouchInput(event, inputContextMap, isTouchScreen, event.getActionMasked(), event.getActionIndex(), event.getPointerCount());
+    }
 
-        int eventX = (int)event.getX(actionIndex);
-        int eventY = (int)event.getY(actionIndex);
+    private boolean handleTouchInput(MotionEvent event, TouchContext[] inputContextMap, boolean isTouchScreen, int eventAction, int actionIndex, int pointerCount) {
+        int actualActionIndex = event.getActionIndex();
+        int actualPointerCount = event.getPointerCount();
+
+        boolean shouldDuplicateMovement = actualPointerCount < pointerCount;
+
+        int eventX = (int)event.getX(actualActionIndex);
+        int eventY = (int)event.getY(actualActionIndex);
 
         // Handle view scaling
         if (isTouchScreen) {
@@ -2343,12 +2394,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             return false;
         }
 
-        switch (event.getActionMasked())
+        switch (eventAction)
         {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
                 for (TouchContext touchContext : inputContextMap) {
-                    touchContext.setPointerCount(event.getPointerCount());
+                    touchContext.setPointerCount(pointerCount);
                 }
                 context.touchDownEvent(eventX, eventY, event.getEventTime(), true);
                 break;
@@ -2356,7 +2407,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             case MotionEvent.ACTION_UP:
                 //是触控板模式 三点呼出软键盘
                 if(prefConfig.touchscreenTrackpad){
-                    if (event.getPointerCount() == 1 &&
+                    if (pointerCount == 1 &&
                             (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || (event.getFlags() & MotionEvent.FLAG_CANCELED) == 0)) {
                         // All fingers up
                         if (event.getEventTime() - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
@@ -2374,9 +2425,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 }
 
                 for (TouchContext touchContext : inputContextMap) {
-                    touchContext.setPointerCount(event.getPointerCount() - 1);
+                    touchContext.setPointerCount(pointerCount - 1);
                 }
-                if (actionIndex == 0 && event.getPointerCount() > 1 && !context.isCancelled()) {
+                if (actionIndex == 0 && pointerCount > 1 && !context.isCancelled()) {
                     // The original secondary touch now becomes primary
                     int pointer1X = (int)event.getX(1);
                     int pointer1Y = (int)event.getY(1);
@@ -2398,10 +2449,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 // First process the historical events
                 for (int i = 0; i < event.getHistorySize(); i++) {
                     for (TouchContext aTouchContextMap : inputContextMap) {
-                        if (aTouchContextMap.getActionIndex() < event.getPointerCount())
+                        if (aTouchContextMap.getActionIndex() < pointerCount)
                         {
-                            int historicalX = (int)event.getHistoricalX(aTouchContextMap.getActionIndex(), i);
-                            int historicalY = (int)event.getHistoricalY(aTouchContextMap.getActionIndex(), i);
+                            int aActionIndex = shouldDuplicateMovement ? 0 : aTouchContextMap.getActionIndex();
+                            int historicalX = (int)event.getHistoricalX(aActionIndex, i);
+                            int historicalY = (int)event.getHistoricalY(aActionIndex, i);
                             if (isTouchScreen) {
                                 float[] normalizedCoords = getNormalizedCoordinates(streamView, historicalX, historicalY);
                                 historicalX = (int)normalizedCoords[0];
@@ -2417,10 +2469,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                 // Now process the current values
                 for (TouchContext aTouchContextMap : inputContextMap) {
-                    if (aTouchContextMap.getActionIndex() < event.getPointerCount())
+                    if (aTouchContextMap.getActionIndex() < pointerCount)
                     {
-                        int currentX = (int)event.getX(aTouchContextMap.getActionIndex());
-                        int currentY = (int)event.getY(aTouchContextMap.getActionIndex());
+                        int aActionIndex = shouldDuplicateMovement ? 0 : aTouchContextMap.getActionIndex();
+                        int currentX = (int)event.getX(aActionIndex);
+                        int currentY = (int)event.getY(aActionIndex);
                         if (isTouchScreen) {
                             float[] normalizedCoords = getNormalizedCoordinates(streamView, currentX, currentY);
                             currentX = (int)normalizedCoords[0];
