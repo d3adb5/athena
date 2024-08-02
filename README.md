@@ -38,6 +38,8 @@ If you switch back to the main stream version, you'll be missing the following a
 23. View pan/zoom support
 24. Rotate screen in-game
 25. Add option to quit app directly
+26. Samsung DeX scrolling support
+27. Proper click/scroll/right-click for trackpad on generic Android tablet when using local cursor
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
 
@@ -51,7 +53,7 @@ I got kicked from Moonlight and Sunshine's Discord server literally for helping 
 
 This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else during the maintainance gap.
 
-Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either.
+Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either. I have also started [a fork of Sunshine called Apollo](https://github.com/ClassicOldSong/Apollo) and will add useful features that will never get merged by the main repo shortly. [Apollo](https://github.com/ClassicOldSong/Apollo) and [Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android) will no longer be compatible with OG Sunshine and OG Moonlight eventually, but they'll work even better with much more carefully designed features.
 
 The main repo had stayed silent for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others. The funniest thing is, the repo starts updating after they got me banned!
 
