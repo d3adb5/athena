@@ -51,6 +51,7 @@ import com.limelight.LimeLog;
 import com.limelight.nvstream.ConnectionContext;
 import com.limelight.nvstream.http.PairingManager.PairState;
 import com.limelight.nvstream.jni.MoonBridge;
+import com.limelight.utils.DeviceUtils;
 
 import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
@@ -62,6 +63,7 @@ import okhttp3.ResponseBody;
 
 public class NvHTTP {
     private String uniqueId;
+    private String deviceName;
     private PairingManager pm;
 
     private static final int DEFAULT_HTTPS_PORT = 47984;
@@ -200,9 +202,9 @@ public class NvHTTP {
     }
     
     public NvHTTP(ComputerDetails.AddressTuple address, int httpsPort, String uniqueId, X509Certificate serverCert, LimelightCryptoProvider cryptoProvider) throws IOException {
-        // Use the same UID for all Moonlight clients so we can quit games
-        // started by other Moonlight clients.
-        this.uniqueId = "0123456789ABCDEF";
+        this.uniqueId = uniqueId;
+
+        this.deviceName = DeviceUtils.getModel();
 
         this.serverCert = serverCert;
 
