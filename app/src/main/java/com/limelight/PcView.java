@@ -644,7 +644,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                     return true;
                 }
 
-                ServerHelper.doStart(this, new NvApp("app", computer.details.runningGameId, false), computer.details, managerBinder);
+                ServerHelper.doStart(this, new NvApp("app", computer.details.runningGameId, false), computer.details, managerBinder, false);
                 return true;
 
             case QUIT_ID:

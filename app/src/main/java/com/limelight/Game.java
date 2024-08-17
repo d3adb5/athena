@@ -215,6 +215,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_PC_NAME = "PcName";
     public static final String EXTRA_APP_HDR = "HDR";
     public static final String EXTRA_SERVER_CERT = "ServerCert";
+    public static final String EXTRA_VDISPLAY = "VirtualDisplay";
 
     private String host;
     private int port;
@@ -222,6 +223,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private int appId;
     private String uniqueId;
     private X509Certificate serverCert;
+    private boolean vDisplay;
 
     private ViewParent rootView;
 
@@ -390,6 +392,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         httpsPort = Game.this.getIntent().getIntExtra(EXTRA_HTTPS_PORT, 0); // 0 is treated as unknown
         appId = Game.this.getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
         uniqueId = Game.this.getIntent().getStringExtra(EXTRA_UNIQUEID);
+        vDisplay = Game.this.getIntent().getBooleanExtra(EXTRA_VDISPLAY, false);
         boolean appSupportsHdr = Game.this.getIntent().getBooleanExtra(EXTRA_APP_HDR, false);
         byte[] derCertData = Game.this.getIntent().getByteArrayExtra(EXTRA_SERVER_CERT);
 
@@ -551,6 +554,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 )
                 .setLaunchRefreshRate(prefConfig.fps)
                 .setRefreshRate(chosenFrameRate)
+                .setVirtualDisplay(vDisplay)
                 .setApp(app)
                 .setBitrate(prefConfig.bitrate)
                 .setEnableSops(prefConfig.enableSops)

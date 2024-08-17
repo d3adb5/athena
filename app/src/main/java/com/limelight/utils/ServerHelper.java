@@ -54,7 +54,8 @@ public class ServerHelper {
     }
 
     public static Intent createStartIntent(Activity parent, NvApp app, ComputerDetails computer,
-                                           ComputerManagerService.ComputerManagerBinder managerBinder) {
+                                           ComputerManagerService.ComputerManagerBinder managerBinder,
+                                           boolean withVDisplay) {
 
         Intent intent = new Intent(parent, Game.class);
         intent.putExtra(Game.EXTRA_HOST, computer.activeAddress.address);
@@ -66,6 +67,7 @@ public class ServerHelper {
         intent.putExtra(Game.EXTRA_UNIQUEID, managerBinder.getUniqueId());
         intent.putExtra(Game.EXTRA_PC_UUID, computer.uuid);
         intent.putExtra(Game.EXTRA_PC_NAME, computer.name);
+        intent.putExtra(Game.EXTRA_VDISPLAY, withVDisplay);
         try {
             if (computer.serverCert != null) {
                 intent.putExtra(Game.EXTRA_SERVER_CERT, computer.serverCert.getEncoded());
@@ -77,12 +79,12 @@ public class ServerHelper {
     }
 
     public static void doStart(Activity parent, NvApp app, ComputerDetails computer,
-                               ComputerManagerService.ComputerManagerBinder managerBinder) {
+                               ComputerManagerService.ComputerManagerBinder managerBinder, boolean withVDisplay) {
         if (computer.state == ComputerDetails.State.OFFLINE || computer.activeAddress == null) {
             Toast.makeText(parent, parent.getResources().getString(R.string.pair_pc_offline), Toast.LENGTH_SHORT).show();
             return;
         }
-        parent.startActivity(createStartIntent(parent, app, computer, managerBinder));
+        parent.startActivity(createStartIntent(parent, app, computer, managerBinder, withVDisplay));
     }
 
     public static void doNetworkTest(final Activity parent) {

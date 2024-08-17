@@ -58,7 +58,7 @@
     <string name="conn_error_title"> 连接错误 </string>
     <string name="conn_error_msg"> 启动失败 </string>
     <string name="conn_terminated_title"> 连接终结 </string>
-    <string name="conn_terminated_msg">连接已被终结.</string>
+    <string name="conn_terminated_msg">连接已被终结。</string>
     <!-- General strings -->
     <string name="ip_hint">串流电脑的IP地址</string>
     <string name="searching_pc">在你的本地网络中搜索串流主机PC...
@@ -80,8 +80,10 @@
     <!-- AppList activity -->
     <string name="applist_connect_msg"> 正在连接电脑…… </string>
     <string name="applist_menu_resume"> 恢复串流 </string>
+    <string name="applist_menu_start_vdisplay"> 在虚拟屏幕中启动 </string>
     <string name="applist_menu_quit"> 退出串流 </string>
-    <string name="applist_menu_quit_and_start"> 退出当前游戏并开始这个游戏 </string>
+    <string name="applist_menu_quit_and_start"> 退出当前应用并启动 </string>
+    <string name="applist_menu_quit_and_start_vdisplay"> 退出当前应用并在虚拟屏幕中启动 </string>
     <string name="applist_menu_cancel"> 取消 </string>
     <string name="applist_menu_details"> 查看详情 </string>
     <string name="applist_menu_scut"> 创建快捷方式 </string>
