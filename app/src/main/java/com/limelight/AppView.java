@@ -464,17 +464,17 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
             case START_WITH_QUIT:
             case START_WITH_QUIT_VDISPLAY: {
                 boolean withVDiaplay = itemId == START_WITH_QUIT_VDISPLAY;
-                if (withVDiaplay && (!computer.vDisplaySupported || !computer.vDisplayDriverReady)) {
+                if (withVDiaplay && !(computer.vDisplaySupported && computer.vDisplayDriverReady)) {
                     UiHelper.displayVdisplayConfirmationDialog(
-                            AppView.this,
-                            computer,
-                            () -> UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
-                                @Override
-                                public void run() {
-                                    ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true);
-                                }
-                            }, null),
-                            null
+                        AppView.this,
+                        computer,
+                        () -> UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
+                            @Override
+                            public void run() {
+                                ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true);
+                            }
+                        }, null),
+                        null
                     );
                 } else {
                     // Display a confirmation dialog first
@@ -491,7 +491,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
             case START_OR_RESUME_ID:
             case START_WITH_VDISPLAY: {
                 boolean withVDiaplay = itemId == START_WITH_VDISPLAY;
-                if (withVDiaplay && (!computer.vDisplaySupported || !computer.vDisplayDriverReady)) {
+                if (withVDiaplay && !(computer.vDisplaySupported && computer.vDisplayDriverReady)) {
                     UiHelper.displayVdisplayConfirmationDialog(
                             AppView.this,
                             computer,
@@ -690,7 +690,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 if (lastRunningAppId != 0) {
                     openContextMenu(arg1);
                 } else {
-                    if (prefConfig.useVirtualDisplay && (!computer.vDisplaySupported || !computer.vDisplayDriverReady)) {
+                    if (prefConfig.useVirtualDisplay && !(computer.vDisplaySupported && computer.vDisplayDriverReady)) {
                         UiHelper.displayVdisplayConfirmationDialog(
                                 AppView.this,
                                 computer,

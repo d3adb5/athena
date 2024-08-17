@@ -150,6 +150,9 @@ public class ComputerDetails {
         this.runningGameId = details.runningGameId;
         this.nvidiaServer = details.nvidiaServer;
         this.rawAppList = details.rawAppList;
+
+        this.vDisplayDriverReady = details.vDisplayDriverReady;
+        this.vDisplaySupported = details.vDisplaySupported;
     }
 
     @Override

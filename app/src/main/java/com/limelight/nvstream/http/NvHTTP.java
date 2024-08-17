@@ -494,11 +494,7 @@ public class NvHTTP {
             return false;
         }
 
-        if (supportVdisplay != "true") {
-            return false;
-        }
-
-        return true;
+        return supportVdisplay.equals("true");
     }
 
     public boolean getServerVDisplayDriverReady(String serverInfo) throws XmlPullParserException, IOException {
@@ -507,11 +503,7 @@ public class NvHTTP {
             return false;
         }
 
-        if (driverReady != "true") {
-            return false;
-        }
-
-        return true;
+        return driverReady.equals("true");
     }
 
     public PairingManager.PairState getPairState() throws IOException, XmlPullParserException {
