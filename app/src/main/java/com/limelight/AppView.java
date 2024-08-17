@@ -64,6 +64,8 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
     private boolean showHiddenApps;
     private HashSet<Integer> hiddenAppIds = new HashSet<>();
 
+    private PreferenceConfiguration prefConfig;
+
     private final static int START_OR_RESUME_ID = 1;
     private final static int QUIT_ID = 2;
     private final static int START_WITH_QUIT = 4;
@@ -163,11 +165,13 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
+        this.prefConfig = PreferenceConfiguration.readPreferences(this);
+
         // If appGridAdapter is initialized, let it know about the configuration change.
         // If not, it will pick it up when it initializes.
         if (appGridAdapter != null) {
             // Update the app grid adapter to create grid items with the correct layout
-            appGridAdapter.updateLayoutWithPreferences(this, PreferenceConfiguration.readPreferences(this));
+            appGridAdapter.updateLayoutWithPreferences(this, this.prefConfig);
 
             try {
                 // Reinflate the app grid itself to pick up the layout change
@@ -316,6 +320,8 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
         setTitle(computerName);
         label.setText(computerName);
 
+        this.prefConfig = PreferenceConfiguration.readPreferences(this);
+
         // Bind to the computer manager service
         bindService(new Intent(this, ComputerManagerService.class), serviceConnection,
                 Service.BIND_AUTO_CREATE);
@@ -400,15 +406,24 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
         menu.setHeaderTitle(selectedApp.app.getAppName());
 
         if (lastRunningAppId == 0) {
-            menu.add(Menu.NONE, START_WITH_VDISPLAY, 1, getResources().getString(R.string.applist_menu_start_vdisplay));
+            if (prefConfig.useVirtualDisplay) {
+                menu.add(Menu.NONE, START_OR_RESUME_ID, 1, getResources().getString(R.string.applist_menu_start_primarydisplay));
+            } else {
+                menu.add(Menu.NONE, START_WITH_VDISPLAY, 1, getResources().getString(R.string.applist_menu_start_vdisplay));
+            }
         } else {
             if (lastRunningAppId == selectedApp.app.getAppId()) {
                 menu.add(Menu.NONE, START_OR_RESUME_ID, 1, getResources().getString(R.string.applist_menu_resume));
                 menu.add(Menu.NONE, QUIT_ID, 2, getResources().getString(R.string.applist_menu_quit));
             }
             else {
-                menu.add(Menu.NONE, START_WITH_QUIT, 1, getResources().getString(R.string.applist_menu_quit_and_start));
-                menu.add(Menu.NONE, START_WITH_QUIT_VDISPLAY, 2, getResources().getString(R.string.applist_menu_quit_and_start_vdisplay));
+                if (prefConfig.useVirtualDisplay) {
+                    menu.add(Menu.NONE, START_WITH_QUIT_VDISPLAY, 1, getResources().getString(R.string.applist_menu_quit_and_start));
+                    menu.add(Menu.NONE, START_WITH_QUIT, 2, getResources().getString(R.string.applist_menu_quit_and_start_primarydisplay));
+                } else{
+                    menu.add(Menu.NONE, START_WITH_QUIT, 1, getResources().getString(R.string.applist_menu_quit_and_start));
+                    menu.add(Menu.NONE, START_WITH_QUIT_VDISPLAY, 2, getResources().getString(R.string.applist_menu_quit_and_start_vdisplay));
+                }
             }
         }
 
@@ -449,21 +464,44 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
             case START_WITH_QUIT:
             case START_WITH_QUIT_VDISPLAY: {
                 boolean withVDiaplay = itemId == START_WITH_QUIT_VDISPLAY;
-                // Display a confirmation dialog first
-                UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
-                    @Override
-                    public void run() {
-                        ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, withVDiaplay);
-                    }
-                }, null);
+                if (withVDiaplay && (!computer.vDisplaySupported || !computer.vDisplayDriverReady)) {
+                    UiHelper.displayVdisplayConfirmationDialog(
+                            AppView.this,
+                            computer,
+                            () -> UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
+                                @Override
+                                public void run() {
+                                    ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true);
+                                }
+                            }, null),
+                            null
+                    );
+                } else {
+                    // Display a confirmation dialog first
+                    UiHelper.displayQuitConfirmationDialog(this, new Runnable() {
+                        @Override
+                        public void run() {
+                            ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, withVDiaplay);
+                        }
+                    }, null);
+                }
                 return true;
             }
 
             case START_OR_RESUME_ID:
             case START_WITH_VDISPLAY: {
                 boolean withVDiaplay = itemId == START_WITH_VDISPLAY;
-                // Resume is the same as start for us
-                ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, withVDiaplay);
+                if (withVDiaplay && (!computer.vDisplaySupported || !computer.vDisplayDriverReady)) {
+                    UiHelper.displayVdisplayConfirmationDialog(
+                            AppView.this,
+                            computer,
+                            () -> ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true),
+                            null
+                    );
+                } else {
+                    // Resume is the same as start for us
+                    ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, withVDiaplay);
+                }
                 return true;
             }
 
@@ -652,7 +690,16 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 if (lastRunningAppId != 0) {
                     openContextMenu(arg1);
                 } else {
-                    ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, false);
+                    if (prefConfig.useVirtualDisplay && (!computer.vDisplaySupported || !computer.vDisplayDriverReady)) {
+                        UiHelper.displayVdisplayConfirmationDialog(
+                                AppView.this,
+                                computer,
+                                () -> ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, true),
+                                null
+                        );
+                    } else {
+                        ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
+                    }
                 }
             }
         });

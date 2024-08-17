@@ -381,6 +381,11 @@ public class NvHTTP {
         details.externalPort = getExternalPort(serverInfo);
         details.remoteAddress = makeTuple(getXmlString(serverInfo, "ExternalIP", false), details.externalPort);
 
+        details.vDisplaySupported = getServerSupportsVDisplay(serverInfo);
+        if (details.vDisplaySupported) {
+            details.vDisplayDriverReady = getServerVDisplayDriverReady(serverInfo);
+        }
+
         details.pairState = getPairState(serverInfo);
         details.runningGameId = getCurrentGame(serverInfo);
 
@@ -481,6 +486,32 @@ public class NvHTTP {
     public String getServerVersion(String serverInfo) throws XmlPullParserException, IOException {
         // appversion is present in all supported GFE versions
         return getXmlString(serverInfo, "appversion", true);
+    }
+
+    public boolean getServerSupportsVDisplay(String serverInfo) throws XmlPullParserException, IOException {
+        String supportVdisplay = getXmlString(serverInfo, "VirtualDisplayCapable", false);
+        if (supportVdisplay == null) {
+            return false;
+        }
+
+        if (supportVdisplay != "true") {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean getServerVDisplayDriverReady(String serverInfo) throws XmlPullParserException, IOException {
+        String driverReady = getXmlString(serverInfo, "VirtualDisplayDriverReady", false);
+        if (driverReady == null) {
+            return false;
+        }
+
+        if (driverReady != "true") {
+            return false;
+        }
+
+        return true;
     }
 
     public PairingManager.PairState getPairState() throws IOException, XmlPullParserException {

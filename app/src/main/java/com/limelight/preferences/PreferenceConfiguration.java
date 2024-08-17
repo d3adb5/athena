@@ -38,6 +38,7 @@ public class PreferenceConfiguration {
     static final String BITRATE_PREF_STRING = "seekbar_bitrate_kbps";
     private static final String BITRATE_PREF_OLD_STRING = "seekbar_bitrate";
     private static final String ENFORCE_DISPLAY_MODE_PREF_STRING = "checkbox_enforce_display_mode";
+    private static final String USE_VIRTUAL_DISPLAY_PREF_STRING = "checkbox_use_virtual_display";
     private static final String INVERT_VIDEO_RESOLUTION_PREF_STRING = "checkbox_invert_video_resolution";
     private static final String VIDEO_SCALE_MODE_PREF_STRING = "list_video_scale_mode";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
@@ -104,6 +105,7 @@ public class PreferenceConfiguration {
     static final String DEFAULT_RESOLUTION = "1280x720";
     static final String DEFAULT_FPS = "60";
     private static final boolean DEFAULT_ENFORCE_DISPLAY_MODE = false;
+    private static final boolean DEFAULT_USE_VIRTUAL_DISPLAY = false;
     private static final String DEFAULT_VIDEO_SCALE_MODE = "fit";
     private static final boolean DEFAULT_INVERT_VIDEO_RESOLUTION = false;
     private static final boolean DEFAULT_SOPS = true;
@@ -167,7 +169,7 @@ public class PreferenceConfiguration {
     public int oscOpacity;
     public int oscKeyboardOpacity;
     public int oscKeyboardHeight;
-    public boolean enforceDisplayMode, enableSops, playHostAudio, disableWarnings;
+    public boolean enforceDisplayMode, useVirtualDisplay, enableSops, playHostAudio, disableWarnings;
     public ScaleMode videoScaleMode;
     public String language;
     public boolean smallIconMode, multiController, usbDriver, flipFaceButtons;
@@ -719,6 +721,7 @@ public class PreferenceConfiguration {
         // Checkbox preferences
         config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS);
         config.enforceDisplayMode = prefs.getBoolean(ENFORCE_DISPLAY_MODE_PREF_STRING, DEFAULT_ENFORCE_DISPLAY_MODE);
+        config.useVirtualDisplay = prefs.getBoolean(USE_VIRTUAL_DISPLAY_PREF_STRING, DEFAULT_USE_VIRTUAL_DISPLAY);
         config.enableSops = prefs.getBoolean(SOPS_PREF_STRING, DEFAULT_SOPS);
         config.playHostAudio = prefs.getBoolean(HOST_AUDIO_PREF_STRING, DEFAULT_HOST_AUDIO);
         config.smallIconMode = prefs.getBoolean(SMALL_ICONS_PREF_STRING, getDefaultSmallMode(context));

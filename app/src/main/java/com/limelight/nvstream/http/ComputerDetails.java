@@ -77,6 +77,10 @@ public class ComputerDetails {
     public String rawAppList;
     public boolean nvidiaServer;
 
+    // VDisplay info
+    public boolean vDisplaySupported = false;
+    public boolean vDisplayDriverReady = false;
+
     public ComputerDetails() {
         // Use defaults
         state = State.UNKNOWN;
