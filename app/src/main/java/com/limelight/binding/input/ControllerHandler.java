@@ -64,6 +64,8 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
 
     private static final int MINIMUM_BUTTON_DOWN_TIME_MS = 25;
 
+    private static final int QUICK_MENU_FIRST_STAGE_MS = 200;
+
     private static final int EMULATING_SPECIAL = 0x1;
     private static final int EMULATING_SELECT = 0x2;
     private static final int EMULATING_TOUCHPAD = 0x4;
@@ -2431,16 +2433,18 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             break;
         case KeyEvent.KEYCODE_BUTTON_START:
         case KeyEvent.KEYCODE_MENU:
+            context.startUpTime = event.getEventTime();
             // Sometimes we'll get a spurious key up event on controller disconnect.
             // Make sure it's real by checking that the key is actually down before taking
             // any action.
             if ((context.inputMap & ControllerPacket.PLAY_FLAG) != 0 &&
-                    event.getEventTime() - context.startDownTime > ControllerHandler.START_DOWN_TIME_MOUSE_MODE_MS &&
+                    context.startUpTime - context.startDownTime > ControllerHandler.START_DOWN_TIME_MOUSE_MODE_MS &&
                     prefConfig.mouseEmulation) {
-                if(prefConfig.enableQtDialog){
+                if (prefConfig.enableQtDialog && context.quickMenuPending){
                     //todo 展示快捷菜单
+                    context.quickMenuPending = false;
                     gestures.showGameMenu(context);
-                }else{
+                } else {
                     context.toggleMouseEmulation();
                 }
             }
@@ -2656,6 +2660,11 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         case KeyEvent.KEYCODE_MENU:
             if (event.getRepeatCount() == 0) {
                 context.startDownTime = event.getEventTime();
+                if (context.startDownTime - context.startUpTime <= ControllerHandler.QUICK_MENU_FIRST_STAGE_MS) {
+                    context.quickMenuPending = true;
+                } else {
+                    context.quickMenuPending = false;
+                }
             }
             context.inputMap |= ControllerPacket.PLAY_FLAG;
             break;
@@ -3087,6 +3096,8 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         public long lastRbUpTime = 0;
 
         public long startDownTime = 0;
+        public long startUpTime = 0;
+        public boolean quickMenuPending = false;
 
         public final Runnable batteryStateUpdateRunnable = new Runnable() {
             @Override
