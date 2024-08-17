@@ -1,11 +1,13 @@
-# Moonlight Android Noir
+# Artemis Android
 
-An open source client for [Sunshine](https://github.com/LizardByte/Sunshine).
+Previously named Moonlight Noir
 
-Moonlight for Android will allow you to stream your collection of games from your Windows PC to your Android device,
+An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine).
+
+Artemis Android will allow you to stream your collection of games from your Windows PC to your Android device,
 whether in your own home or over the internet.
 
-Moonlight Noir is currently the best fork with loads of optimizations for office usage.
+Artemis is currently the best fork of Moonlight with loads of optimizations for office usage.
 
 # Features
 
@@ -40,8 +42,11 @@ If you switch back to the main stream version, you'll be missing the following a
 25. Add option to quit app directly
 26. Samsung DeX scrolling support
 27. Proper click/scroll/right-click for trackpad on generic Android tablet when using local cursor
+28. Virtual Display integration with (Apollo)[https://github.com/ClassicOldSong/Apollo]
 
 Also checkout https://github.com/ClassicOldSong/Widecar if you want a seamless experience like Apple Sidecar for your Windows PC with Sunshine and Moonlight.
+
+A more seamless experience with virtual display will be Artemis paired with [Apollo](https://github.com/ClassicOldSong/Apollo).
 
 # Disclaimer
 
