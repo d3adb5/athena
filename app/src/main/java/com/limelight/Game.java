@@ -555,6 +555,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 .setLaunchRefreshRate(prefConfig.fps)
                 .setRefreshRate(chosenFrameRate)
                 .setVirtualDisplay(vDisplay)
+                .setResolutionScaleFactor(prefConfig.resolutionScaleFactor)
                 .setApp(app)
                 .setBitrate(prefConfig.bitrate)
                 .setEnableSops(prefConfig.enableSops)

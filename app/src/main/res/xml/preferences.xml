@@ -71,6 +71,19 @@
             android:summary="@string/summary_checkbox_invert_video_resolution"
             android:defaultValue="false"/>
 
+        <com.limelight.preferences.SeekBarPreference
+            android:key="seekbar_resolution_scale_factor"
+            android:dialogMessage=""
+            seekbar:min="20"
+            android:max="200"
+            seekbar:step="1"
+            seekbar:keyStep="0"
+            seekbar:divisor="1"
+            android:defaultValue="100"
+            android:summary="@string/summary_resolution_scale_factor"
+            android:text="%"
+            android:title="@string/title_resolution_scale_factor" />
+
         <ListPreference
             android:key="list_video_scale_mode"
             android:title="@string/title_video_scale_mode"

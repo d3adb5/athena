@@ -805,6 +805,7 @@ public class NvHTTP {
         String xmlStr = openHttpConnectionToString(httpClientLongConnectNoReadTimeout, getHttpsUrl(true), verb,
             "appid=" + appId +
             "&mode=" + context.negotiatedWidth + "x" + context.negotiatedHeight + "x" + fps +
+            "&scaleFactor=" + context.streamConfig.getResolutionScaleFactor() +
             "&additionalStates=1&sops=" + (enableSops ? 1 : 0) +
             "&rikey="+bytesToHex(context.riKey.getEncoded()) +
             "&rikeyid="+context.riKeyId +

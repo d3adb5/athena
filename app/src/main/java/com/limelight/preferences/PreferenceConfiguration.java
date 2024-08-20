@@ -40,6 +40,7 @@ public class PreferenceConfiguration {
     private static final String ENFORCE_DISPLAY_MODE_PREF_STRING = "checkbox_enforce_display_mode";
     private static final String USE_VIRTUAL_DISPLAY_PREF_STRING = "checkbox_use_virtual_display";
     private static final String INVERT_VIDEO_RESOLUTION_PREF_STRING = "checkbox_invert_video_resolution";
+    private static final String RESOLUTION_SCALE_FACTOR_PREF_STRING = "seekbar_resolution_scale_factor";
     private static final String VIDEO_SCALE_MODE_PREF_STRING = "list_video_scale_mode";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
     private static final String DISABLE_TOASTS_PREF_STRING = "checkbox_disable_warnings";
@@ -108,6 +109,7 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_USE_VIRTUAL_DISPLAY = false;
     private static final String DEFAULT_VIDEO_SCALE_MODE = "fit";
     private static final boolean DEFAULT_INVERT_VIDEO_RESOLUTION = false;
+    private static final int DEFAULT_RESOLUTION_SCALE_FACTOR = 100;
     private static final boolean DEFAULT_SOPS = true;
     private static final boolean DEFAULT_DISABLE_TOASTS = false;
     private static final boolean DEFAULT_HOST_AUDIO = false;
@@ -192,6 +194,7 @@ public class PreferenceConfiguration {
     public boolean enableQtDialog;
     //Invert video width/height
     public boolean invertVideoResolution;
+    public int resolutionScaleFactor;
     //竖屏模式
     public boolean enablePortrait;
     //虚拟屏幕键盘按键
@@ -747,7 +750,8 @@ public class PreferenceConfiguration {
         //软键盘
         config.enableQtDialog = prefs.getBoolean(CHECKBOX_ENABLE_QUIT_DIALOG,false);
         config.enablePortrait = prefs.getBoolean(CHECKBOX_ENABLE_PORTRAIT,false);
-        config.invertVideoResolution = prefs.getBoolean(INVERT_VIDEO_RESOLUTION_PREF_STRING,DEFAULT_INVERT_VIDEO_RESOLUTION);
+        config.invertVideoResolution = prefs.getBoolean(INVERT_VIDEO_RESOLUTION_PREF_STRING, DEFAULT_INVERT_VIDEO_RESOLUTION);
+        config.resolutionScaleFactor = prefs.getInt(RESOLUTION_SCALE_FACTOR_PREF_STRING, DEFAULT_RESOLUTION_SCALE_FACTOR);
 
         config.enableKeyboard = prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD,false);
 
