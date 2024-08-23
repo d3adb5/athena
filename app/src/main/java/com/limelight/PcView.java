@@ -119,6 +119,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
     private final static int FULL_APP_LIST_ID = 9;
     private final static int TEST_NETWORK_ID = 10;
     private final static int GAMESTREAM_EOL_ID = 11;
+    private final static int OPEN_MANAGEMENT_PAGE_ID = 20;
 
     private void initializeViews() {
         setContentView(R.layout.activity_pc_view);
@@ -364,6 +365,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
             menu.add(Menu.NONE, PAIR_ID, 1, getResources().getString(R.string.pcview_menu_pair_pc));
             if (computer.details.nvidiaServer) {
                 menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 2, getResources().getString(R.string.pcview_menu_eol));
+            } else {
+                menu.add(Menu.NONE, OPEN_MANAGEMENT_PAGE_ID, 2, getResources().getString(R.string.pcview_menu_open_management_page));
             }
         }
         else {
@@ -374,6 +377,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
             if (computer.details.nvidiaServer) {
                 menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 3, getResources().getString(R.string.pcview_menu_eol));
+            } else {
+                menu.add(Menu.NONE, OPEN_MANAGEMENT_PAGE_ID, 3, getResources().getString(R.string.pcview_menu_open_management_page));
             }
 
             menu.add(Menu.NONE, FULL_APP_LIST_ID, 4, getResources().getString(R.string.pcview_menu_app_list));
@@ -675,6 +680,14 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                 HelpLauncher.launchGameStreamEolFaq(PcView.this);
                 return true;
 
+            case OPEN_MANAGEMENT_PAGE_ID:
+                String managementUrl = computer.guessManagementUrl();
+                if (managementUrl == null) {
+                    Toast.makeText(PcView.this, getResources().getString(R.string.pcview_error_no_management_url), Toast.LENGTH_LONG).show();
+                } else {
+                    HelpLauncher.launchUrl(PcView.this, managementUrl);
+                }
+
             default:
                 return super.onContextItemSelected(item);
         }
@@ -783,6 +796,10 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         @Override
         public String toString() {
             return details.name;
+        }
+        public String guessManagementUrl() {
+            if (details.activeAddress == null) return null;
+            return "https://" + details.activeAddress.address + ":" + (details.guessExternalPort() + 1);
         }
     }
 }
