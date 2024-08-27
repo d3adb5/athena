@@ -11,7 +11,7 @@
     <string name="help_loading_msg"> 正在加载帮助页面…… </string>
     <!-- PC view menu entries -->
     <string name="pcview_menu_app_list"> 浏览游戏列表 </string>
-    <string name="pcview_menu_pair_pc"> 和电脑配对 </string>
+    <string name="pcview_menu_pair_pc"> 普通配对 </string>
     <string name="pcview_menu_pair_pc_otp"> OTP配对 </string>
     <string name="pcview_menu_unpair_pc"> 取消配对 </string>
     <string name="pcview_menu_send_wol"> 发送 Wake-On-LAN 请求 </string>
@@ -27,7 +27,7 @@
     <string name="pair_pairing_msg"> 请在目标电脑上输入以下PIN码： </string>
     <string name="pair_otp_pairing_msg">正在配对，请稍候…</string>
     <string name="pair_otp_pairing_help">OTP 配对仅支持 Apollo，其他服务端请在 WebUI 上手动输入刚刚提供的PIN码。</string>
-    <string name="pair_incorrect_pin"> PIN码错误 </string>
+    <string name="pair_incorrect_pin"> PIN码或口令错误 </string>
     <string name="pair_fail"> 配对失败 </string>
     <string name="pair_already_in_progress"> 配对中，请稍候 </string>
     <string name="pair_passphrase_hint">口令</string>
@@ -314,6 +314,7 @@
     <string name="game_menu_switch_touch_sensitivity_model">触控灵敏度切换</string>
     <string name="game_menu_disconnect">断开连接</string>
     <string name="game_menu_cancel">取消</string>
+    <string name="game_menu_task_manager">打开任务管理器</string>
     <string name="game_menu_send_keys">发送特殊按键</string>
     <string name="game_menu_send_keys_ctrl_v">发送 Ctrl + V (粘贴剪切板)</string>
     <string name="game_menu_send_keys_win">发送 Win (打开Windows开始菜单)</string>

@@ -542,7 +542,13 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         dialogBuilder.setTitle(R.string.pcview_menu_pair_pc_otp);
         dialogBuilder.setView(layout);
 
-        dialogBuilder.setPositiveButton(getString(R.string.proceed), (dialog, which) -> {
+        dialogBuilder.setPositiveButton(getString(R.string.proceed), null);
+
+        dialogBuilder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String pin = otpInput.getText().toString();
             String passphrase = passphraseInput.getText().toString();
             if (pin.length() != 4) {
@@ -554,10 +560,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                 return;
             }
             doPair(computer, pin, passphrase);
+            dialog.dismiss(); // Manually dismiss the dialog if the input is valid
         });
-
-        dialogBuilder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> dialog.dismiss());
-        dialogBuilder.create().show();
     }
 
     private void doWakeOnLan(final ComputerDetails computer) {

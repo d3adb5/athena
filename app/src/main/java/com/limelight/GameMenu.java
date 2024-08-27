@@ -273,6 +273,9 @@ public class GameMenu {
         options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_keyboard_model), true,
                 game::showHidekeyBoardLayoutController));
 
+        options.add(new MenuOption(getString(R.string.game_menu_task_manager), true,
+                () -> sendKeys(new short[]{KeyboardTranslator.VK_LCONTROL, KeyboardTranslator.VK_LSHIFT, KeyboardTranslator.VK_ESCAPE})));
+
         options.add(new MenuOption(getString(R.string.game_menu_send_keys), this::showSpecialKeysMenu));
 
         options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true,
