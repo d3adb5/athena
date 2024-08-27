@@ -12,6 +12,7 @@
     <!-- PC view menu entries -->
     <string name="pcview_menu_app_list"> 浏览游戏列表 </string>
     <string name="pcview_menu_pair_pc"> 和电脑配对 </string>
+    <string name="pcview_menu_pair_pc_otp"> OTP配对 </string>
     <string name="pcview_menu_unpair_pc"> 取消配对 </string>
     <string name="pcview_menu_send_wol"> 发送 Wake-On-LAN 请求 </string>
     <string name="pcview_menu_delete_pc"> 删除电脑 </string>
@@ -24,9 +25,14 @@
     <string name="pair_pc_ingame">电脑正在游戏中，在配对之前你必须先退出游戏。</string>
     <string name="pair_pairing_title"> 配对中 </string>
     <string name="pair_pairing_msg"> 请在目标电脑上输入以下PIN码： </string>
+    <string name="pair_otp_pairing_msg">正在配对，请稍候…</string>
+    <string name="pair_otp_pairing_help">OTP 配对仅支持 Apollo，其他服务端请在 WebUI 上手动输入刚刚提供的PIN码。</string>
     <string name="pair_incorrect_pin"> PIN码错误 </string>
     <string name="pair_fail"> 配对失败 </string>
     <string name="pair_already_in_progress"> 配对中，请稍候 </string>
+    <string name="pair_passphrase_hint">口令</string>
+    <string name="pair_pin_length_msg">Pin必须为4个数字</string>
+    <string name="pair_passphrase_length_msg">口令至少需要4位</string>
     <!-- WOL messages -->
     <string name="wol_pc_online"> 电脑在线中 </string>
     <string name="wol_no_mac">无法唤醒电脑，因为没有存储的 MAC 地址</string>

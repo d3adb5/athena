@@ -30,8 +30,10 @@ import com.limelight.utils.UiHelper;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
@@ -40,6 +42,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +53,9 @@ import android.view.View.OnClickListener;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -120,6 +126,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
     private final static int TEST_NETWORK_ID = 10;
     private final static int GAMESTREAM_EOL_ID = 11;
     private final static int OPEN_MANAGEMENT_PAGE_ID = 20;
+    private final static int PAIR_ID_OTP = 21;
 
     private void initializeViews() {
         setContentView(R.layout.activity_pc_view);
@@ -362,11 +369,12 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
             menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 2, getResources().getString(R.string.pcview_menu_eol));
         }
         else if (computer.details.pairState != PairState.PAIRED) {
-            menu.add(Menu.NONE, PAIR_ID, 1, getResources().getString(R.string.pcview_menu_pair_pc));
+            menu.add(Menu.NONE, PAIR_ID_OTP, 1, getResources().getString(R.string.pcview_menu_pair_pc_otp));
+            menu.add(Menu.NONE, PAIR_ID, 2, getResources().getString(R.string.pcview_menu_pair_pc));
             if (computer.details.nvidiaServer) {
-                menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 2, getResources().getString(R.string.pcview_menu_eol));
+                menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 3, getResources().getString(R.string.pcview_menu_eol));
             } else {
-                menu.add(Menu.NONE, OPEN_MANAGEMENT_PAGE_ID, 2, getResources().getString(R.string.pcview_menu_open_management_page));
+                menu.add(Menu.NONE, OPEN_MANAGEMENT_PAGE_ID, 3, getResources().getString(R.string.pcview_menu_open_management_page));
             }
         }
         else {
@@ -397,7 +405,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         startComputerUpdates();
     }
 
-    private void doPair(final ComputerDetails computer) {
+    private void doPair(final ComputerDetails computer, String otp, String passphrase) {
         if (computer.state == ComputerDetails.State.OFFLINE || computer.activeAddress == null) {
             Toast.makeText(PcView.this, getResources().getString(R.string.pair_pc_offline), Toast.LENGTH_SHORT).show();
             return;
@@ -427,16 +435,25 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                         success = true;
                     }
                     else {
-                        final String pinStr = PairingManager.generatePinString();
+                        String pinStr = otp;
+                        if (pinStr == null) {
+                            pinStr = PairingManager.generatePinString();
+                        }
 
                         // Spin the dialog off in a thread because it blocks
-                        Dialog.displayDialog(PcView.this, getResources().getString(R.string.pair_pairing_title),
-                                getResources().getString(R.string.pair_pairing_msg)+" "+pinStr+"\n\n"+
-                                getResources().getString(R.string.pair_pairing_help), false);
+                        if (passphrase == null) {
+                            Dialog.displayDialog(PcView.this, getResources().getString(R.string.pair_pairing_title),
+                                    getResources().getString(R.string.pair_pairing_msg)+" "+pinStr+"\n\n"+
+                                            getResources().getString(R.string.pair_pairing_help), false);
+                        } else {
+                            Dialog.displayDialog(PcView.this, getResources().getString(R.string.pair_pairing_title),
+                                    getResources().getString(R.string.pair_otp_pairing_msg)+"\n\n"+
+                                            getResources().getString(R.string.pair_otp_pairing_help), false);
+                        }
 
                         PairingManager pm = httpConn.getPairingManager();
 
-                        PairState pairState = pm.pair(httpConn.getServerInfo(true), pinStr);
+                        PairState pairState = pm.pair(httpConn.getServerInfo(true), pinStr, passphrase);
                         if (pairState == PairState.PIN_WRONG) {
                             message = getResources().getString(R.string.pair_incorrect_pin);
                         }
@@ -500,6 +517,47 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                 });
             }
         }).start();
+    }
+
+    private void doOTPPair(final ComputerDetails computer) {
+        Context context = PcView.this;
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(50, 40, 50, 40);
+
+        final EditText otpInput = new EditText(context);
+        otpInput.setHint("PIN");
+        otpInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        otpInput.setFilters(new InputFilter[] { new InputFilter.LengthFilter(4) });
+
+        final EditText passphraseInput = new EditText(context);
+        passphraseInput.setHint(getString(R.string.pair_passphrase_hint));
+        passphraseInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        layout.addView(otpInput);
+        layout.addView(passphraseInput);
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setTitle(R.string.pcview_menu_pair_pc_otp);
+        dialogBuilder.setView(layout);
+
+        dialogBuilder.setPositiveButton(getString(R.string.proceed), (dialog, which) -> {
+            String pin = otpInput.getText().toString();
+            String passphrase = passphraseInput.getText().toString();
+            if (pin.length() != 4) {
+                Toast.makeText(context, getString(R.string.pair_pin_length_msg), Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (passphrase.length() < 4 ) {
+                Toast.makeText(context, getString(R.string.pair_passphrase_length_msg), Toast.LENGTH_SHORT).show();
+                return;
+            }
+            doPair(computer, pin, passphrase);
+        });
+
+        dialogBuilder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> dialog.dismiss());
+        dialogBuilder.create().show();
     }
 
     private void doWakeOnLan(final ComputerDetails computer) {
@@ -611,7 +669,11 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         final ComputerObject computer = (ComputerObject) pcGridAdapter.getItem(info.position);
         switch (item.getItemId()) {
             case PAIR_ID:
-                doPair(computer.details);
+                doPair(computer.details, null, null);
+                return true;
+
+            case PAIR_ID_OTP:
+                doOTPPair(computer.details);
                 return true;
 
             case UNPAIR_ID:
@@ -773,7 +835,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                     openContextMenu(arg1);
                 } else if (computer.details.pairState != PairState.PAIRED) {
                     // Pair an unpaired machine by default
-                    doPair(computer.details);
+                    doPair(computer.details, null, null);
                 } else {
                     doAppList(computer.details, false, false);
                 }

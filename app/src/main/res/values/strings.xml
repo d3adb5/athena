@@ -17,6 +17,7 @@
     <string name="pcview_menu_header_unknown">Refreshing</string>
     <string name="pcview_menu_app_list">View All Apps</string>
     <string name="pcview_menu_pair_pc">Pair with PC</string>
+    <string name="pcview_menu_pair_pc_otp">OTP Pair</string>
     <string name="pcview_menu_unpair_pc">Unpair</string>
     <string name="pcview_menu_send_wol">Send Wake-On-LAN request</string>
     <string name="pcview_menu_delete_pc">Delete PC</string>
@@ -42,9 +43,14 @@
     <string name="pair_pairing_title">Pairing</string>
     <string name="pair_pairing_msg">Please enter the following PIN on the target PC:</string>
     <string name="pair_pairing_help">If your host PC is running Sunshine, navigate to the Sunshine web UI to enter the PIN.</string>
+    <string name="pair_otp_pairing_msg">Pairing, please wait…</string>
+    <string name="pair_otp_pairing_help">OTP pairing is only available with Apollo, enter the PIN you just provided on the web UI manually if you\'re using other host software.</string>
     <string name="pair_incorrect_pin">Incorrect PIN</string>
     <string name="pair_fail">Pairing failed</string>
     <string name="pair_already_in_progress">Pairing already in progress</string>
+    <string name="pair_passphrase_hint">Passphrase</string>
+    <string name="pair_pin_length_msg">Pin must be 4 digits long</string>
+    <string name="pair_passphrase_length_msg">Passphrase must be at least 4 characters long</string>
 
     <!-- WOL messages -->
     <string name="wol_pc_online">Computer is online</string>
