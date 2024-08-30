@@ -71,6 +71,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
     private ShortcutHelper shortcutHelper;
     private ComputerManagerService.ComputerManagerBinder managerBinder;
     private boolean freezeUpdates, runningPolling, inForeground, completeOnCreateCalled;
+    private ComputerDetails.AddressTuple pendingPairingAddress;
+    private String pendingPairingPin, pendingPairingPassphrase;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder binder) {
             final ComputerManagerService.ComputerManagerBinder localBinder =
@@ -235,6 +237,20 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
             LimeLog.info("Cached GL Renderer: " + glPrefs.glRenderer);
             completeOnCreate();
         }
+
+        Intent intent = getIntent();
+
+        String hostname = intent.getStringExtra("hostname");
+        int port = intent.getIntExtra("port", NvHTTP.DEFAULT_HTTP_PORT);
+        pendingPairingPin = intent.getStringExtra("pin");
+        pendingPairingPassphrase = intent.getStringExtra("passphrase");
+
+        if (hostname != null && pendingPairingPin != null && pendingPairingPassphrase != null) {
+            pendingPairingAddress = new ComputerDetails.AddressTuple(hostname, port);
+        } else {
+            pendingPairingPin = null;
+            pendingPairingPassphrase = null;
+        }
     }
 
     private void completeOnCreate() {
@@ -272,6 +288,20 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                         // Add a launcher shortcut for this PC (off the main thread to prevent ANRs)
                         if (details.pairState == PairState.PAIRED) {
                             shortcutHelper.createAppViewShortcutForOnlineHost(details);
+//                        } else
+                        }
+                            if (pendingPairingAddress != null) {
+                            if (
+                                details.state == ComputerDetails.State.ONLINE &&
+                                details.activeAddress.equals(pendingPairingAddress)
+                            ) {
+                                PcView.this.runOnUiThread(() -> {
+                                    doPair(details, pendingPairingPin, pendingPairingPassphrase);
+                                    pendingPairingAddress = null;
+                                    pendingPairingPin = null;
+                                    pendingPairingPassphrase = null;
+                                });
+                            }
                         }
                     }
                 }
@@ -617,9 +647,9 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                     httpConn = new NvHTTP(ServerHelper.getCurrentAddressFromComputer(computer),
                             computer.httpsPort, managerBinder.getUniqueId(), computer.serverCert,
                             PlatformBinding.getCryptoProvider(PcView.this));
-                    if (httpConn.getPairState() == PairingManager.PairState.PAIRED) {
+                    if (httpConn.getPairState() == PairState.PAIRED) {
                         httpConn.unpair();
-                        if (httpConn.getPairState() == PairingManager.PairState.NOT_PAIRED) {
+                        if (httpConn.getPairState() == PairState.NOT_PAIRED) {
                             message = getResources().getString(R.string.unpair_success);
                         }
                         else {
