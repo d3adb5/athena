@@ -2616,6 +2616,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 public void run() {
                     conn.stop();
                     if (quitOnStop) {
+                        try {
+                            sleep(1000);
+                        } catch (InterruptedException ignored) {
+                            // do nothing
+                        }
                         ServerHelper.doQuit(Game.this, new ComputerDetails.AddressTuple(host, port), httpsPort, serverCert, appName, uniqueId, null, null);
                     }
                 }

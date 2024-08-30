@@ -295,7 +295,7 @@ public class GameMenu {
 
         options.add(new MenuOption(getString(R.string.game_menu_disconnect), game::disconnect));
 
-        options.add(new MenuOption(game.getString(R.string.game_menu_quit_session), game::quit));
+        options.add(new MenuOption(getString(R.string.game_menu_quit_session), game::quit));
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 game::toggleKeyboard));
