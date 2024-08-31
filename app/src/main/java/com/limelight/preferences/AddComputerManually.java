@@ -26,6 +26,7 @@ import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -332,7 +333,29 @@ public class AddComputerManually extends Activity {
 
         hostText.setText(server);
 
-        computersToAdd.add(server + '?' + query);
+        if (query != null && !query.isEmpty()) {
+            String hostName = data.getQueryParameter("name");
+            if (hostName != null && !hostName.isEmpty()) {
+                hostName = hostName + " (" + server + ")";
+            } else {
+                hostName = server;
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.pair_pc_confirm_title);
+            builder.setMessage(getString(R.string.pair_pc_confirm_message, hostName));
+
+            builder.setPositiveButton(getString(R.string.proceed), (dialog, which) -> {
+                dialog.dismiss();
+                finish();
+                computersToAdd.add(server + '?' + query);
+            });
+
+            builder.setNegativeButton(getString(R.string.cancel), (dialog, which) -> dialog.dismiss());
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 
     // Returns true if the event should be eaten
