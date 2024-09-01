@@ -3,33 +3,43 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="110dp"
     android:layout_height="143dp"
-    android:padding="5dp">
+    android:elevation="10dp">
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardCornerRadius="6dp">
+        android:layout_margin="5dp"
+        app:cardCornerRadius="6dp"
+        app:cardElevation="4dp"
+        app:cardMaxElevation="4dp">
+
         <ImageView
             android:id="@+id/grid_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:cropToPadding="false"
-            android:scaleType="centerCrop"/>
-        <ImageView
-            android:id="@+id/grid_overlay"
-            android:layout_width="33dp"
-            android:layout_height="33dp"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"/>
+            android:scaleType="centerCrop" />
 
-        <TextView
-            android:id="@+id/grid_text"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/grid_overlay"
-            android:layout_margin="5dp"
-            android:gravity="center|center_vertical"
-            android:textAlignment="center"
-            android:textSize="14sp" />
+            android:layout_height="match_parent">
+            <ImageView
+                android:id="@+id/grid_overlay"
+                android:layout_width="33dp"
+                android:layout_height="33dp"
+                android:layout_marginTop="33dp"
+                android:layout_centerHorizontal="true" />
+
+            <TextView
+                android:id="@+id/grid_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/grid_overlay"
+                android:layout_margin="5dp"
+                android:gravity="center|center_vertical"
+                android:textAlignment="center"
+                android:textSize="14sp" />
+        </RelativeLayout>
+
     </androidx.cardview.widget.CardView>
 </RelativeLayout>
