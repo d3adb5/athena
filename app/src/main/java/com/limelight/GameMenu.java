@@ -186,6 +186,9 @@ public class GameMenu {
             options.add(new MenuOption(getString(R.string.game_menu_send_keys_win_g),
                     () -> sendKeys(new short[]{KeyboardTranslator.VK_LWIN, KeyboardTranslator.VK_G})));
 
+            options.add(new MenuOption(getString(R.string.game_menu_send_keys_ctrl_alt_tab),
+                    () -> sendKeys(new short[]{KeyboardTranslator.VK_LCONTROL, KeyboardTranslator.VK_LMENU, KeyboardTranslator.VK_TAB})));
+
             options.add(new MenuOption(getString(R.string.game_menu_send_keys_shift_tab),
                     () -> sendKeys(new short[]{KeyboardTranslator.VK_LSHIFT, KeyboardTranslator.VK_TAB})));
 

@@ -353,6 +353,7 @@
     <string name="game_menu_send_keys_win_x_u_u">Send Win + X ~ U + U (Power Off)</string>
     <string name="game_menu_send_keys_win_x_u_i">Send Win + X ~ U + I (Log Out)</string>
     <string name="game_menu_send_keys_win_g">Send Win + G (Xbox Game Bar)</string>
+    <string name="game_menu_send_keys_ctrl_alt_tab">Send Ctrl + Alt + Tab</string>
     <string name="game_menu_send_keys_shift_tab">Send Shift + Tab (Steam Overlay)</string>
     <string name="game_menu_send_keys_alt_enter">Send Alt + Enter</string>
     <string name="game_menu_send_keys_win_shift_left">Send Win + shift + left (Switch Desktop)</string>

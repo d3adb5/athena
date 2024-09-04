@@ -327,6 +327,7 @@
     <string name="game_menu_send_keys_win_x_u_u">发送 Win + X ~ U + U (关机)</string>
     <string name="game_menu_send_keys_win_x_u_i">发送 Win + X ~ U + I (注销)</string>
     <string name="game_menu_send_keys_win_g">发送 Win + G (打开Xbox Game Bar)</string>
+    <string name="game_menu_send_keys_ctrl_alt_tab">发送 Ctrl + Alt + Tab</string>
     <string name="game_menu_send_keys_shift_tab">发送 Shift + Tab (打开Steam Overlay)</string>
     <string name="game_menu_send_keys_win_shift_left">发送 Win + shift + left (切换桌面)</string>
     <string name="game_menu_send_keys_ctrl_alt_shift_q">发送 Ctrl+Alt+Shift+Q (PC退出串流)</string>
