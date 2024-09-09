@@ -21,14 +21,16 @@
             android:scaleType="centerCrop" />
 
         <RelativeLayout
+            android:id="@+id/grid_mask"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <ImageView
                 android:id="@+id/grid_overlay"
                 android:layout_width="33dp"
                 android:layout_height="33dp"
-                android:layout_marginTop="33dp"
-                android:layout_centerHorizontal="true" />
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="33dp" />
 
             <TextView
                 android:id="@+id/grid_text"
