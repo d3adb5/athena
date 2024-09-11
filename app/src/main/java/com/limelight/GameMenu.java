@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provide options for ongoing Game Stream.
@@ -279,7 +280,7 @@ public class GameMenu {
         options.add(new MenuOption(getString(R.string.game_menu_task_manager), true,
                 () -> sendKeys(new short[]{KeyboardTranslator.VK_LCONTROL, KeyboardTranslator.VK_LSHIFT, KeyboardTranslator.VK_ESCAPE})));
 
-        options.add(new MenuOption(getString(R.string.game_menu_send_keys), this::showSpecialKeysMenu));
+        options.add(new MenuOption(getString(R.string.game_menu_send_keys), true, this::showSpecialKeysMenu));
 
         options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true,
                 game::switchTouchSensitivity));
@@ -299,6 +300,13 @@ public class GameMenu {
         options.add(new MenuOption(getString(R.string.game_menu_disconnect), game::disconnect));
 
         options.add(new MenuOption(getString(R.string.game_menu_quit_session), game::quit));
+
+        ArrayList<String> serverCmds = game.getServerCmds();
+        AtomicInteger index = new AtomicInteger(0);
+        for (String str : serverCmds) {
+            final int finalI = index.getAndIncrement();
+            options.add(new MenuOption("[ " + str + " ]", true, () -> game.sendExecServerCmd(finalI)));
+        };
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 game::toggleKeyboard));

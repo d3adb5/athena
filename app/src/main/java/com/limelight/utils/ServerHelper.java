@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 
 public class ServerHelper {
     public static final String CONNECTION_TEST_SERVER = "android.conntest.moonlight-stream.org";
@@ -68,6 +69,7 @@ public class ServerHelper {
         intent.putExtra(Game.EXTRA_PC_UUID, computer.uuid);
         intent.putExtra(Game.EXTRA_PC_NAME, computer.name);
         intent.putExtra(Game.EXTRA_VDISPLAY, withVDisplay);
+        intent.putExtra(Game.EXTRA_SERVER_COMMANDS, (ArrayList<String>) computer.serverCommands);
         try {
             if (computer.serverCert != null) {
                 intent.putExtra(Game.EXTRA_SERVER_CERT, computer.serverCert.getEncoded());

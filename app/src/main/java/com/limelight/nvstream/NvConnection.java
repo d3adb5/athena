@@ -449,6 +449,14 @@ public class NvConnection {
             }
         }).start();
     }
+
+    public void sendExecServerCmd(final int cmdId) {
+        LimeLog.info("sendExecServerCmd: " + cmdId);
+
+        if (!isMonkey) {
+            MoonBridge.sendExecServerCmd(cmdId);
+        }
+    }
     
     public void sendMouseMove(final short deltaX, final short deltaY)
     {

@@ -96,6 +96,7 @@ import java.lang.reflect.Method;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
@@ -216,6 +217,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_APP_HDR = "HDR";
     public static final String EXTRA_SERVER_CERT = "ServerCert";
     public static final String EXTRA_VDISPLAY = "VirtualDisplay";
+    public static final String EXTRA_SERVER_COMMANDS = "ServerCommands";
 
     private String host;
     private int port;
@@ -224,6 +226,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private String uniqueId;
     private X509Certificate serverCert;
     private boolean vDisplay;
+    private ArrayList<String> serverCommands;
 
     private ViewParent rootView;
 
@@ -393,6 +396,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         appId = Game.this.getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
         uniqueId = Game.this.getIntent().getStringExtra(EXTRA_UNIQUEID);
         vDisplay = Game.this.getIntent().getBooleanExtra(EXTRA_VDISPLAY, false);
+        serverCommands = Game.this.getIntent().getStringArrayListExtra(EXTRA_SERVER_COMMANDS);
         boolean appSupportsHdr = Game.this.getIntent().getBooleanExtra(EXTRA_APP_HDR, false);
         byte[] derCertData = Game.this.getIntent().getByteArrayExtra(EXTRA_SERVER_CERT);
 
@@ -3094,6 +3098,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             return;
         }
         super.onBackPressed();
+    }
+
+    public void sendExecServerCmd(int cmdId) {
+        conn.sendExecServerCmd(cmdId);
+    }
+
+    public ArrayList<String> getServerCmds() {
+        return serverCommands;
     }
 
     public boolean isZoomModeEnabled() {

@@ -1,6 +1,7 @@
 package com.limelight.nvstream.http;
 
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -81,6 +82,9 @@ public class ComputerDetails {
     public boolean vDisplaySupported = false;
     public boolean vDisplayDriverReady = false;
 
+    // Server commands
+    public List<String> serverCommands;
+
     public ComputerDetails() {
         // Use defaults
         state = State.UNKNOWN;
@@ -153,6 +157,8 @@ public class ComputerDetails {
 
         this.vDisplayDriverReady = details.vDisplayDriverReady;
         this.vDisplaySupported = details.vDisplaySupported;
+
+        this.serverCommands = details.serverCommands;
     }
 
     @Override

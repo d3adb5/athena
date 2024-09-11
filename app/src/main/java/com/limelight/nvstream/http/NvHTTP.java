@@ -22,7 +22,9 @@ import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
 import java.util.UUID;
@@ -281,6 +283,45 @@ public class NvHTTP {
     static String getXmlString(String str, String tagname, boolean throwIfMissing) throws XmlPullParserException, IOException {
         return getXmlString(new StringReader(str), tagname, throwIfMissing);
     }
+
+    static List<String> getXmlArray(Reader r, String tagname, boolean throwIfMissing) throws XmlPullParserException, IOException {
+        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+        factory.setNamespaceAware(true);
+        XmlPullParser xpp = factory.newPullParser();
+
+        xpp.setInput(r);
+        int eventType = xpp.getEventType();
+        Stack<String> currentTag = new Stack<>();
+
+        List<String> array = new ArrayList<>();
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            switch (eventType) {
+            case (XmlPullParser.START_TAG):
+                currentTag.push(xpp.getName());
+                break;
+            case (XmlPullParser.END_TAG):
+                currentTag.pop();
+                break;
+            case (XmlPullParser.TEXT):
+                if (currentTag.peek().equals(tagname)) {
+                    array.add(xpp.getText());
+                }
+                break;
+            }
+            eventType = xpp.next();
+        }
+
+        if (throwIfMissing && array.isEmpty()) {
+            throw new XmlPullParserException("Missing mandatory field in host response: "+tagname);
+        }
+
+        return array;
+    }
+
+    static List<String> getXmlArray(String str, String tagname, boolean throwIfMissing) throws XmlPullParserException, IOException {
+        return getXmlArray(new StringReader(str), tagname, throwIfMissing);
+    }
     
     private static void verifyResponseStatus(XmlPullParser xpp) throws HostHttpResponseException {
         // We use Long.parseLong() because in rare cases GFE can send back a status code of
@@ -385,6 +426,8 @@ public class NvHTTP {
         if (details.vDisplaySupported) {
             details.vDisplayDriverReady = getServerVDisplayDriverReady(serverInfo);
         }
+
+        details.serverCommands = getServerCmds(serverInfo);
 
         details.pairState = getPairState(serverInfo);
         details.runningGameId = getCurrentGame(serverInfo);
@@ -504,6 +547,10 @@ public class NvHTTP {
         }
 
         return driverReady.equals("true");
+    }
+
+    public List<String> getServerCmds(String serverInfo) throws XmlPullParserException, IOException {
+        return getXmlArray(serverInfo, "ServerCommand", false);
     }
 
     public PairingManager.PairState getPairState() throws IOException, XmlPullParserException {
