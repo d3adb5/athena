@@ -1,7 +1,5 @@
 package com.limelight.nvstream.http;
 
-import android.os.Build;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,8 +35,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
@@ -410,6 +406,15 @@ public class NvHTTP {
 
         // UUID is mandatory to determine which machine is responding
         details.uuid = getXmlString(serverInfo, "uniqueid", true);
+
+        String permStr = getXmlString(serverInfo, "Permission", false);
+        if (permStr != null) {
+            try {
+                details.permission = Integer.parseInt(permStr);
+            } catch (Exception ignored) {
+                details.permission = -1;
+            }
+        }
 
         details.httpsPort = getHttpsPort(serverInfo);
 
