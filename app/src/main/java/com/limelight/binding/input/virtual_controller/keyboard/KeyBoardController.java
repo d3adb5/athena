@@ -19,8 +19,6 @@ import com.limelight.Game;
 import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.binding.input.ControllerHandler;
-import com.limelight.binding.input.virtual_controller.VirtualControllerConfigurationLoader;
-import com.limelight.binding.input.virtual_controller.VirtualControllerElement;
 import com.limelight.preferences.PreferenceConfiguration;
 
 import java.util.ArrayList;
@@ -36,6 +34,8 @@ public class KeyBoardController {
         ResizeButtons,
         DisableEnableButtons
     }
+
+    public boolean shown = false;
 
     private static final boolean _PRINT_DEBUG_INFORMATION = false;
 
@@ -104,18 +104,25 @@ public class KeyBoardController {
         return handler;
     }
 
-    public void hide() {
+    public void hide(boolean temporary) {
         for (keyBoardVirtualControllerElement element : elements) {
             element.setVisibility(View.GONE);
         }
 
         buttonConfigure.setVisibility(View.GONE);
+        if (!temporary) {
+            shown = false;
+        };
+    }
+
+    public void hide() {
+        hide(false);
     }
 
     public void show() {
         showEnabledElements();
-
         buttonConfigure.setVisibility(View.VISIBLE);
+        shown = true;
     }
 
     public void showElements() {
@@ -130,7 +137,7 @@ public class KeyBoardController {
         }
     }
 
-    public void switchShowHide() {
+    public void toggleVisibility() {
         if (buttonConfigure.getVisibility() == View.VISIBLE) {
             hide();
         } else {

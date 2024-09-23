@@ -6,7 +6,6 @@ package com.limelight.binding.input.virtual_controller.keyboard;
 
 import android.content.Context;
 import android.os.Build;
-import android.os.Vibrator;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -31,6 +30,7 @@ public class KeyBoardLayoutController {
     private final Context context;
     private final PreferenceConfiguration prefConfig;
     private FrameLayout frame_layout = null;
+    public boolean shown = false;
 
     private LinearLayout keyboardView;
     private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
@@ -130,7 +130,7 @@ public class KeyBoardLayoutController {
         }
     }
 
-    public void hide() {
+    public void hide(boolean temporary) {
         if (prefConfig.enableKeyboardVibrate) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 keyboardView.performHapticFeedback(HapticFeedbackConstants.REJECT);
@@ -139,13 +139,21 @@ public class KeyBoardLayoutController {
             }
         }
         keyboardView.setVisibility(View.GONE);
+        if (!temporary) {
+            shown = false;
+        }
+    }
+
+    public void hide() {
+        hide(false);
     }
 
     public void show() {
         keyboardView.setVisibility(View.VISIBLE);
+        shown = true;
     }
 
-    public void switchShowHide() {
+    public void toggleVisibility() {
         if (keyboardView.getVisibility() == View.VISIBLE) {
             hide();
         } else {

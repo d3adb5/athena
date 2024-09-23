@@ -658,7 +658,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             initKeyboardController();
             return;
         }
-        keyBoardController.switchShowHide();
+        keyBoardController.toggleVisibility();
     }
 
     public void showHidekeyBoardLayoutController(){
@@ -666,7 +666,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             initkeyBoardLayoutController();
             return;
         }
-        keyBoardLayoutController.switchShowHide();
+        keyBoardLayoutController.toggleVisibility();
     }
 
     //显示隐藏虚拟手柄控制器
@@ -761,11 +761,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 }
 
                 if (keyBoardController != null) {
-                    keyBoardController.hide();
+                    keyBoardController.hide(true);
                 }
 
                 if(keyBoardLayoutController!=null){
-                    keyBoardLayoutController.hide();
+                    keyBoardLayoutController.hide(true);
                 }
 
                 performanceOverlayView.setVisibility(View.GONE);
@@ -786,11 +786,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     virtualController.show();
                 }
 
-                if (keyBoardController != null) {
+                if (keyBoardController != null && keyBoardController.shown) {
                     keyBoardController.show();
                 }
 
-                if(keyBoardLayoutController!=null){
+                if(keyBoardLayoutController!=null && keyBoardLayoutController.shown){
                     keyBoardLayoutController.show();
                 }
 
@@ -3129,10 +3129,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         String[] strings=getResources().getStringArray(R.array.mouse_model_names_axi);
         String[] items =Arrays.copyOf(strings,strings.length+1);
         items[items.length-1]=getString(R.string.toggle_local_mouse_cursor);
-//        {"多点触控模式","普通鼠标模式","触控板模式","禁用鼠标/触控","普通鼠标模式（左右键互换）","切换本地鼠标(需外接物理鼠标)"}
         new AlertDialog.Builder(this).setItems(items, (dialog, which) -> {
             dialog.dismiss();
-            //切换本地鼠标
             if(which==strings.length){
                 toggleMouseLocalCursor();
                 return;
