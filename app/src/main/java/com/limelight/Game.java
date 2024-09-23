@@ -1566,7 +1566,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             // We'll send it as a raw key event if we have a key mapping, otherwise we'll send it
             // as UTF-8 text (if it's a printable character).
-            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getDeviceId());
+            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getScanCode(), event.getDeviceId());
             if (translated == 0) {
                 if (prefConfig.backAsMeta && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                     translated = 0x5b; // Meta key
@@ -1647,7 +1647,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return false;
             }
 
-            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getDeviceId());
+            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getScanCode(), event.getDeviceId());
             if (translated == 0) {
                 if (prefConfig.backAsMeta && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                     translated = 0x5b; // Meta key
@@ -3017,7 +3017,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public void keyboardEvent(boolean buttonDown, short keyCode) {
-        short keyMap = keyboardTranslator.translate(keyCode, -1);
+        short keyMap = keyboardTranslator.translate(keyCode, 0, -1);
         if (keyMap != 0) {
             // handleSpecialKeys() takes the Android keycode
             if (handleSpecialKeys(keyCode, buttonDown)) {

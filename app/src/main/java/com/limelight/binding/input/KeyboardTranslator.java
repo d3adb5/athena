@@ -7,7 +7,9 @@ import android.util.SparseArray;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 
+import com.limelight.LimeLog;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.utils.KeyMapper;
 
 import java.util.Arrays;
 
@@ -162,7 +164,7 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
      * @param deviceId InputDevice.getId() or -1 if unknown
      * @return a GFE keycode for the given keycode
      */
-    public short translate(int keycode, int deviceId) {
+    public short translate(int keycode, int scancode, int deviceId) {
         int translated;
 
         // If a device ID was provided, look up the keyboard mapping
@@ -387,7 +389,15 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
                 break;
 
             default:
-                return 0;
+                translated = 0;
+            }
+        }
+
+        // Fall back to scancode translation
+        if (translated == 0) {
+            translated = KeyMapper.getWindowsKeyCode(scancode);
+            if (translated < 0) {
+                translated = 0;
             }
         }
         
