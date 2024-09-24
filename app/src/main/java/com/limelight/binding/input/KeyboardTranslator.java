@@ -393,8 +393,13 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
             }
         }
 
-        // Fall back to scancode translation
         if (translated == 0) {
+            // Do not translate with scan code if we have a normalized mapping
+            if (hasNormalizedMapping(keycode, deviceId)) {
+                return 0;
+            }
+
+            // Fall back to scancode translation
             translated = KeyMapper.getWindowsKeyCode(scancode);
             if (translated < 0) {
                 return 0;
