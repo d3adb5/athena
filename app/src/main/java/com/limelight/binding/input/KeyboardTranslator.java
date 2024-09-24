@@ -397,10 +397,10 @@ public class KeyboardTranslator implements InputManager.InputDeviceListener {
         if (translated == 0) {
             translated = KeyMapper.getWindowsKeyCode(scancode);
             if (translated < 0) {
-                translated = 0;
+                return 0;
             }
         }
-        
+
         return (short) ((KEY_PREFIX << 8) | translated);
     }
 

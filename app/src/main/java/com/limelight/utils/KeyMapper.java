@@ -972,7 +972,6 @@ public class KeyMapper {
         linuxToWindowsKeyMap[KEY_LEFTBRACE] = VK_OEM_4;
         linuxToWindowsKeyMap[KEY_RIGHTBRACE] = VK_OEM_6;
         linuxToWindowsKeyMap[KEY_ENTER] = VK_RETURN;
-        linuxToWindowsKeyMap[KEY_LEFTCTRL] = VK_LCONTROL;
         linuxToWindowsKeyMap[KEY_A] = VK_A;
         linuxToWindowsKeyMap[KEY_S] = VK_S;
         linuxToWindowsKeyMap[KEY_D] = VK_D;
@@ -985,7 +984,14 @@ public class KeyMapper {
         linuxToWindowsKeyMap[KEY_SEMICOLON] = VK_OEM_1;
         linuxToWindowsKeyMap[KEY_APOSTROPHE] = VK_OEM_7;
         linuxToWindowsKeyMap[KEY_GRAVE] = VK_OEM_3;
+        linuxToWindowsKeyMap[KEY_LEFTCTRL] = VK_LCONTROL;
+        linuxToWindowsKeyMap[KEY_RIGHTCTRL] = VK_RCONTROL;
         linuxToWindowsKeyMap[KEY_LEFTSHIFT] = VK_LSHIFT;
+        linuxToWindowsKeyMap[KEY_RIGHTSHIFT] = VK_RSHIFT;
+        linuxToWindowsKeyMap[KEY_LEFTALT] = VK_LMENU;
+        linuxToWindowsKeyMap[KEY_RIGHTALT] = VK_RMENU;
+        linuxToWindowsKeyMap[KEY_LEFTMETA] = VK_LWIN;
+        linuxToWindowsKeyMap[KEY_RIGHTMETA] = VK_RWIN;
         linuxToWindowsKeyMap[KEY_BACKSLASH] = VK_OEM_5;
         linuxToWindowsKeyMap[KEY_Z] = VK_Z;
         linuxToWindowsKeyMap[KEY_X] = VK_X;
@@ -997,9 +1003,7 @@ public class KeyMapper {
         linuxToWindowsKeyMap[KEY_COMMA] = VK_OEM_COMMA;
         linuxToWindowsKeyMap[KEY_DOT] = VK_OEM_PERIOD;
         linuxToWindowsKeyMap[KEY_SLASH] = VK_OEM_2;
-        linuxToWindowsKeyMap[KEY_RIGHTSHIFT] = VK_RSHIFT;
         linuxToWindowsKeyMap[KEY_KPASTERISK] = VK_MULTIPLY;
-        linuxToWindowsKeyMap[KEY_LEFTALT] = VK_LMENU;
         linuxToWindowsKeyMap[KEY_SPACE] = VK_SPACE;
         linuxToWindowsKeyMap[KEY_CAPSLOCK] = VK_CAPITAL;
         linuxToWindowsKeyMap[KEY_F1] = VK_F1;
@@ -1053,6 +1057,8 @@ public class KeyMapper {
         linuxToWindowsKeyMap[KEY_KP3] = VK_NUMPAD3;
         linuxToWindowsKeyMap[KEY_KP0] = VK_NUMPAD0;
         linuxToWindowsKeyMap[KEY_KPDOT] = VK_DECIMAL;
+        linuxToWindowsKeyMap[KEY_102ND] = VK_OEM_102;
+        linuxToWindowsKeyMap[KEY_COMPOSE] = VK_PROCESSKEY;
     }
 
     public static int getWindowsKeyCode(int linuxKeyCode) {
@@ -1060,5 +1066,11 @@ public class KeyMapper {
             return linuxToWindowsKeyMap[linuxKeyCode];
         }
         return -1; // Return -1 for out-of-range or unmapped keys
+    }
+
+    public static void setKeyMapping(int linuxKeyCode, int windowsKeyCode) {
+        if (linuxKeyCode >= 0 && linuxKeyCode < KEY_CNT) {
+            linuxToWindowsKeyMap[linuxKeyCode] = windowsKeyCode;
+        }
     }
 }
