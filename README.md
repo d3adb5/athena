@@ -51,8 +51,6 @@ This is the `go away` version of Moonlight Android.
 
 I got kicked from Moonlight and Sunshine's Discord server literally for helping people out.
 
-![image](https://github.com/user-attachments/assets/f01fc57f-5199-4495-9b96-68cfa017b7ff)
-
 This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else during the maintainance gap.
 
 Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either. I have also started [a fork of Sunshine called Apollo](https://github.com/ClassicOldSong/Apollo) and will add useful features that will never get merged by the main repo shortly. [Apollo](https://github.com/ClassicOldSong/Apollo) and [Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android) will no longer be compatible with OG Sunshine and OG Moonlight eventually, but they'll work even better with much more carefully designed features.
