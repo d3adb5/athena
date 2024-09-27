@@ -44,6 +44,7 @@ If you switch back to the main stream version, you'll be missing the following a
 27. Proper click/scroll/right-click for trackpad on generic Android tablet when using local cursor
 28. Virtual Display integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
 29. Server Command integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
+30. Clipboard sync (requires Apollo)
 
 # Disclaimer
 
