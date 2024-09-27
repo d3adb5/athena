@@ -283,7 +283,7 @@
 \n尝试禁用 HDR 模式、更改流分辨率或更改主机 PC 的显示分辨率。</string>
     <string name="summary_full_range">如果你的设备无法正确显示全范围视频内容，这会导致明暗区域的细节丢失。</string>
     <string name="title_full_range">强制完全动态范围视频 (实验性)</string>
-    <string name="pair_pairing_help">如果你的主机运行的是 Sunshine，那请前往Sunshine的网页界面输入PIN码。</string>
+    <string name="pair_pairing_help">如果你的主机运行的是 Sunshine，请前往Sunshine的网页界面输入PIN码。</string>
     <string name="pcview_menu_eol">NVIDIA GameStream 终止服务</string>
     <string name="perf_overlay_hostprocessinglatency">主机处理延迟最小值/最大值/平均值: %1$.1f/%2$.1f/%3$.1f ms</string>
     <string name="fps_suffix_fps">FPS</string>
@@ -358,7 +358,7 @@
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">代替返回键逻辑，弹出游戏快捷菜单。</string>
     <string name="title_additional_settings">附加设置</string>
     <string name="title_quit_dialog">快捷选项</string>
-    <string name="summary_quit_dialog">开启后，串流界面点击手机物理返回键 展示相关选项！
+    <string name="summary_quit_dialog">开启后，串流界面点击手机返回键 展示相关选项！
             \n软键盘、性能信息、触控模式切换、发送特殊按键</string>
     <string name="dialog_custom_resolution">设置完分辨率后，退出设置页面 重新打开生效！</string>
     <string name="summary_custom_resolution">添加一个自定义分辨率,x号分割,比较奇怪的分辨率可能无法生效。
@@ -419,12 +419,14 @@
     <string name="title_checkbox_force_qwerty">强制使用 QWERTY 布局</string>
     <string name="summary_checkbox_force_qwerty">强制使用 QWERTY 键盘布局。GFE必须使用。\n如果你希望使用其他键盘布局的话，请关闭此选项。</string>
     <string name="title_checkbox_back_as_meta">使用返回键作为 Meta</string>
-    <string name="game_menu_send_keys_esc">发送 ESC</string>
-    <string name="game_menu_send_keys_f11">发送 F11</string>
-    <string name="game_menu_send_keys_alt_f4">发送 Alt + F4</string>
-    <string name="game_menu_send_keys_alt_enter">发送 Alt + Enter</string>
-    <string name="game_menu_send_keys_ctrl_alt_shift_f12">发送 Ctrl+Alt+Shift+F12 (切换显示器)</string>
     <string name="summary_back_as_meta">在按下物理返回键时发送 Meta(Win) 键</string>
+    <string name="title_smart_clipboard_sync">智能剪贴板同步（实验特性）</string>
+    <string name="summary_smart_clipboard_sync">在开始/恢复串流时自动同步本地剪贴板至服务端，在客户端按下 Ctrl/CMD+C 时自动同步服务端剪贴板至本地（需要Apollo）</string>
+    <string name="game_menu_send_keys_esc">ESC</string>
+    <string name="game_menu_send_keys_f11">F11</string>
+    <string name="game_menu_send_keys_alt_f4">Alt + F4</string>
+    <string name="game_menu_send_keys_alt_enter">Alt + Enter</string>
+    <string name="game_menu_send_keys_ctrl_alt_shift_f12">Ctrl+Alt+Shift+F12 (切换显示器)</string>
     <string name="perf_overlay_lite_bandwidth">带宽</string>
     <string name="perf_overlay_lite_network_decoding_delay">网络/解码延迟</string>
     <string name="perf_overlay_lite_packet_loss">丢包率</string>
@@ -490,8 +492,18 @@
     <string name="game_dialog_title_quit_confirm">确定要退出吗？</string>
     <string name="game_dialog_message_quit_confirm">请确保当前没有未保存的进度。终止会话会导致当前运行的程序被强行停止。</string>
     <string name="game_menu_quit_session">终止会话</string>
+    <string name="game_menu_server_cmd">服务端命令</string>
+    <string name="game_menu_fetch_clipboard">获取剪贴板</string>
+    <string name="game_menu_upload_clipboard">上传剪贴板</string>
+    <string name="game_dialog_title_server_cmd_empty">无服务端命令</string>
+    <string name="game_dialog_message_server_cmd_empty">请确保你的服务端为 Apollo，并已授予此客户端“服务端命令”权限。</string>
     <string name="vdisplay_not_ready">服务端虚拟显示器驱动未就绪。请确保 SudoVDA 驱动已正确安装并启用。</string>
     <string name="vdisplay_not_supported"><![CDATA[此服务端不支持虚拟显示器。请使用 <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> 作为服务端串流软件。]]></string>
+    <string name="clipboard_sync_unsupported">此服务器不支持剪贴板同步，请安装或升级服务端至最新的 Apollo。</string>
+    <string name="send_clipboard_failed">上传剪贴板失败：</string>
+    <string name="get_clipboard_failed">获取剪贴板失败：</string>
+    <string name="send_clipboard_success">上传剪贴板成功</string>
+    <string name="get_clipboard_success">获取剪贴板成功</string>
     <string name="proceed">继续</string>
     <string name="cancel">取消</string>
 </resources>

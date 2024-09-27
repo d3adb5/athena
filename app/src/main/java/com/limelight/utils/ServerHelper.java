@@ -122,23 +122,18 @@ public class ServerHelper {
     }
 
     public static void doQuit(final Activity parent,
-                              final ComputerDetails.AddressTuple address,
-                              final int httpsPort,
-                              final X509Certificate cert,
+                              final NvHTTP httpConn,
                               final String appName,
-                              final String uniqueId,
                               final Runnable onComplete,
-                              final Runnable onFail) {
+                              final Runnable onFail
+    ) {
         parent.runOnUiThread(() -> Toast.makeText(parent, parent.getResources().getString(R.string.applist_quit_app) + " " + appName + "...", Toast.LENGTH_SHORT).show());
         new Thread(new Runnable() {
             @Override
             public void run() {
-                NvHTTP httpConn;
                 String message;
                 boolean failed = false;
                 try {
-                    httpConn = new NvHTTP(address, httpsPort,
-                            uniqueId, cert, PlatformBinding.getCryptoProvider(parent));
                     if (httpConn.quitApp()) {
                         message = parent.getResources().getString(R.string.applist_quit_success) + " " + appName;
                     } else {
@@ -187,15 +182,20 @@ public class ServerHelper {
                               final ComputerDetails computer,
                               final NvApp app,
                               final ComputerManagerService.ComputerManagerBinder managerBinder,
-                              final Runnable onComplete) {
+                              final Runnable onComplete
+    ) {
         try {
-            doQuit(
-                    parent,
+            NvHTTP httpConn = new NvHTTP(
                     ServerHelper.getCurrentAddressFromComputer(computer),
                     computer.httpsPort,
-                    computer.serverCert,
-                    app.getAppName(),
                     managerBinder.getUniqueId(),
+                    computer.serverCert,
+                    PlatformBinding.getCryptoProvider(parent)
+            );
+            doQuit(
+                    parent,
+                    httpConn,
+                    app.getAppName(),
                     onComplete,
                     null
             );

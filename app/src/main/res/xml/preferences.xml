@@ -243,6 +243,11 @@
             android:key="checkbox_back_as_meta"
             android:summary="@string/summary_back_as_meta"
             android:title="@string/title_checkbox_back_as_meta" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="checkbox_smart_clipboard_sync"
+            android:summary="@string/summary_smart_clipboard_sync"
+            android:title="@string/title_smart_clipboard_sync" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_on_screen_controls_settings"
         android:key="category_onscreen_controls">

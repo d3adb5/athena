@@ -46,6 +46,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
 import android.app.Service;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -99,6 +101,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -219,6 +222,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_VDISPLAY = "VirtualDisplay";
     public static final String EXTRA_SERVER_COMMANDS = "ServerCommands";
 
+    public static final String CLIPBOARD_LABEL = "ArtemisStreaming";
+
     private String host;
     private int port;
     private int httpsPort;
@@ -229,6 +234,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private ArrayList<String> serverCommands;
 
     private ViewParent rootView;
+    private ClipboardManager clipboardManager;
+
+    private NvHTTP httpConn;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -262,6 +270,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // Inflate the content
         setContentView(R.layout.activity_game);
+
+        clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 
         // Start the spinner
         spinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.conn_establishing_title),
@@ -406,8 +416,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             if (derCertData != null) {
                 serverCert = (X509Certificate) CertificateFactory.getInstance("X.509")
                         .generateCertificate(new ByteArrayInputStream(derCertData));
+
+                httpConn = new NvHTTP(new ComputerDetails.AddressTuple(host, port), httpsPort, uniqueId, serverCert, PlatformBinding.getCryptoProvider(this));
             }
-        } catch (CertificateException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -1593,6 +1605,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             conn.sendKeyboardInput(translated, KeyboardPacket.KEY_DOWN, getModifierState(event),
                     keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+
+            if (prefConfig.smartClipboardSync && (event.isCtrlPressed() || event.isMetaPressed()) && (event.getKeyCode() == KeyEvent.KEYCODE_C)) {
+                getClipboard(100);
+            }
         }
 
         return true;
@@ -1686,6 +1702,94 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         conn.sendUtf8Text(event.getCharacters());
         return true;
+    }
+
+    public boolean handleFocusChange(boolean hasFocus) {
+        if (prefConfig.smartClipboardSync && hasFocus) {
+            return sendClipboard(false);
+        }
+
+        return false;
+    }
+
+    // Method to get clipboard content
+    private String getClipboardContent(boolean force) {
+        // Check if there is any clipboard data
+        if (clipboardManager.hasPrimaryClip()) {
+            ClipData clipData = clipboardManager.getPrimaryClip();
+
+            if (clipData != null && clipData.getItemCount() > 0) {
+                String clipLabel = (String) clipData.getDescription().getLabel();
+                if (!force && CLIPBOARD_LABEL.equals(clipLabel)) {
+                    // We're getting the clipboard data we just set a while ago
+                    return null;
+                }
+                // Get the first item from the clipboard data
+                ClipData.Item item = clipData.getItemAt(0);
+
+                // Get the text data from the clipboard item
+                String clipboardText = item.getText().toString();
+
+                // Mark the data as already read
+                ClipData newClipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardText);
+                clipboardManager.setPrimaryClip(newClipData);
+
+                return clipboardText;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean sendClipboard(boolean force) {
+        if (httpConn == null) {
+            LimeLog.warning("httpConn not ready, cannot send clipboard!");
+            return false;
+        }
+
+        String clipboardText = getClipboardContent(force);
+        if (clipboardText != null) {
+            new Thread() {
+                public void run() {
+                    try {
+                        if (!httpConn.sendClipboard(clipboardText)) {
+                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.clipboard_sync_unsupported), Toast.LENGTH_SHORT).show());
+                        } else {
+                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.send_clipboard_success), Toast.LENGTH_SHORT).show());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.send_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    }
+                }
+            }.start();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void getClipboard(int delay) {
+        if (httpConn == null) {
+            LimeLog.warning("httpConn not ready, cannot get clipboard!");
+            return;
+        }
+
+        new Thread() {
+            public void run() {
+                try {
+                    sleep(delay);
+                    String clipboardContent = httpConn.getClipboard();
+                    ClipData clipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardContent);
+                    clipboardManager.setPrimaryClip(clipData);
+                    Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_success), Toast.LENGTH_SHORT).show());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+            }
+        }.start();
     }
 
     private TouchContext getTouchContext(int actionIndex, TouchContext[] inputContextMap)
@@ -2619,13 +2723,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             new Thread() {
                 public void run() {
                     conn.stop();
-                    if (quitOnStop) {
+                    if (httpConn != null && quitOnStop) {
                         try {
                             sleep(1000);
-                        } catch (InterruptedException ignored) {
-                            // do nothing
+                            httpConn.quitApp();
+                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, Game.this.getResources().getString(R.string.applist_quit_success) + " " + appName, Toast.LENGTH_LONG).show());
+                        } catch (Exception e) {
+                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, e.getMessage(), Toast.LENGTH_LONG).show());
                         }
-                        ServerHelper.doQuit(Game.this, new ComputerDetails.AddressTuple(host, port), httpsPort, serverCert, appName, uniqueId, null, null);
                     }
                 }
             }.start();

@@ -53,8 +53,10 @@ import com.limelight.utils.DeviceUtils;
 
 import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -466,7 +468,7 @@ public class NvHTTP {
 
     private HttpUrl getCompleteUrl(HttpUrl baseUrl, String path, String query) {
         return baseUrl.newBuilder()
-                .addPathSegment(path)
+                .addPathSegments(path)
                 .query(query)
                 .addQueryParameter("devicename", deviceName)
                 .addQueryParameter("uniqueid", uniqueId)
@@ -474,17 +476,17 @@ public class NvHTTP {
                 .build();
     }
 
-    private ResponseBody openHttpConnection(OkHttpClient client, HttpUrl baseUrl, String path) throws IOException {
-        return openHttpConnection(client, baseUrl, path, null);
-    }
-
     // Read timeout should be enabled for any HTTP query that requires no outside action
     // on the GFE server. Examples of queries that DO require outside action are launch, resume, and quit.
     // The initial pair query does require outside action (user entering a PIN) but subsequent pairing
     // queries do not.
-    private ResponseBody openHttpConnection(OkHttpClient client, HttpUrl baseUrl, String path, String query) throws IOException {
+    private ResponseBody openHttpConnection(OkHttpClient client, HttpUrl baseUrl, String path, String query, RequestBody requestBody) throws IOException {
         HttpUrl completeUrl = getCompleteUrl(baseUrl, path, query);
-        Request request = new Request.Builder().url(completeUrl).get().build();
+        Request.Builder _builder = new Request.Builder().url(completeUrl);
+        Request request;
+        if (requestBody == null) request = _builder.get().build();
+        else request = _builder.post(requestBody).build();
+
         Response response = performAndroidTlsHack(client).newCall(request).execute();
 
         ResponseBody body = response.body();
@@ -507,12 +509,16 @@ public class NvHTTP {
     }
 
     private String openHttpConnectionToString(OkHttpClient client, HttpUrl baseUrl, String path) throws IOException {
-        return openHttpConnectionToString(client, baseUrl, path, null);
+        return openHttpConnectionToString(client, baseUrl, path, null, null);
     }
 
     private String openHttpConnectionToString(OkHttpClient client, HttpUrl baseUrl, String path, String query) throws IOException {
+        return openHttpConnectionToString(client, baseUrl, path, query, null);
+    }
+
+    private String openHttpConnectionToString(OkHttpClient client, HttpUrl baseUrl, String path, String query, RequestBody requestBody) throws IOException {
         try {
-            ResponseBody resp = openHttpConnection(client, baseUrl, path, query);
+            ResponseBody resp = openHttpConnection(client, baseUrl, path, query, requestBody);
             String respString = resp.string();
             resp.close();
 
@@ -775,7 +781,7 @@ public class NvHTTP {
             return getAppListByReader(new StringReader(getAppListRaw()));
         }
         else {
-            try (final ResponseBody resp = openHttpConnection(httpClientLongConnectTimeout, getHttpsUrl(true), "applist")) {
+            try (final ResponseBody resp = openHttpConnection(httpClientLongConnectTimeout, getHttpsUrl(true), "applist", null, null)) {
                 return getAppListByReader(new InputStreamReader(resp.byteStream()));
             }
         }
@@ -796,7 +802,7 @@ public class NvHTTP {
     }
     
     public InputStream getBoxArt(NvApp app) throws IOException {
-        ResponseBody resp = openHttpConnection(httpClientLongConnectTimeout, getHttpsUrl(true), "appasset", "appid=" + app.getAppId() + "&AssetType=2&AssetIdx=0");
+        ResponseBody resp = openHttpConnection(httpClientLongConnectTimeout, getHttpsUrl(true), "appasset", "appid=" + app.getAppId() + "&AssetType=2&AssetIdx=0", null);
         return resp.byteStream();
     }
     
@@ -895,5 +901,22 @@ public class NvHTTP {
         }
 
         return true;
+    }
+
+    public String getClipboard() throws IOException {
+        // Add type for future-proof
+        // Might return arbitrary type from host if not set
+        return openHttpConnectionToString(httpClientLongConnectTimeout, getHttpsUrl(true), "actions/clipboard", "type=text");
+    }
+
+    // We currently only support plain text
+    public Boolean sendClipboard(String content) throws IOException {
+        String resp = openHttpConnectionToString(httpClientLongConnectTimeout, getHttpsUrl(true), "actions/clipboard", "type=text", RequestBody.create(content, MediaType.parse("text/plain")));
+        // For handling the 200ed 404 from Sunshine
+        if (resp.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

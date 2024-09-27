@@ -95,7 +95,6 @@ public class GameMenu {
         }
 
         new Handler().postDelayed((() -> {
-
             for (int pos = keys.length - 1; pos >= 0; pos--) {
                 short key = keys[pos];
 
@@ -294,6 +293,20 @@ public class GameMenu {
         showMenuDialog(getString(R.string.game_menu_advanced), options.toArray(new MenuOption[options.size()]));
     }
 
+    private void showServerCmd(ArrayList<String> serverCmds) {
+        List<MenuOption> options = new ArrayList<>();
+
+        AtomicInteger index = new AtomicInteger(0);
+        for (String str : serverCmds) {
+            final int finalI = index.getAndIncrement();
+            options.add(new MenuOption("> " + str, true, () -> game.sendExecServerCmd(finalI)));
+        };
+
+        options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
+
+        showMenuDialog(getString(R.string.game_menu_server_cmd), options.toArray(new MenuOption[options.size()]));
+    }
+
     private void showMenu() {
         List<MenuOption> options = new ArrayList<>();
 
@@ -301,12 +314,27 @@ public class GameMenu {
 
         options.add(new MenuOption(getString(R.string.game_menu_quit_session), game::quit));
 
-        ArrayList<String> serverCmds = game.getServerCmds();
-        AtomicInteger index = new AtomicInteger(0);
-        for (String str : serverCmds) {
-            final int finalI = index.getAndIncrement();
-            options.add(new MenuOption("[ " + str + " ]", true, () -> game.sendExecServerCmd(finalI)));
-        };
+        options.add(new MenuOption(getString(R.string.game_menu_upload_clipboard), true,
+                () -> game.sendClipboard(true)));
+
+        options.add(new MenuOption(getString(R.string.game_menu_fetch_clipboard), true,
+                () -> game.getClipboard(0)));
+
+        options.add(new MenuOption(getString(R.string.game_menu_server_cmd), true,
+                () -> {
+                    ArrayList<String> serverCmds = game.getServerCmds();
+
+                    if (serverCmds.isEmpty()) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(game);
+                        builder.setTitle(R.string.game_dialog_title_server_cmd_empty);
+                        builder.setMessage(R.string.game_dialog_message_server_cmd_empty);
+
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    } else {
+                        this.showServerCmd(serverCmds);
+                    }
+                }));
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard), true,
                 game::toggleKeyboard));

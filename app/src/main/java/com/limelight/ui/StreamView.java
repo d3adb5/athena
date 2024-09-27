@@ -1,10 +1,13 @@
 package com.limelight.ui;
 
 import android.annotation.TargetApi;
+import android.content.ClipData;
 import android.content.Context;
+import android.text.ClipboardManager;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 
 public class StreamView extends SurfaceView {
@@ -95,8 +98,17 @@ public class StreamView extends SurfaceView {
         return super.onKeyPreIme(keyCode, event);
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        if (inputCallbacks != null) {
+            inputCallbacks.handleFocusChange(hasWindowFocus);
+        }
+    }
+
     public interface InputCallbacks {
         boolean handleKeyUp(KeyEvent event);
         boolean handleKeyDown(KeyEvent event);
+        boolean handleFocusChange(boolean hasWindowFocus);
     }
 }
