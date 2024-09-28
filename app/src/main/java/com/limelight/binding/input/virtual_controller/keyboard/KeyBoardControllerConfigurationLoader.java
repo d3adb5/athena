@@ -20,10 +20,30 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.util.BitSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class KeyBoardControllerConfigurationLoader {
     public static final String OSC_PREFERENCE = "keyboard_axi_list";
     public static final String OSC_PREFERENCE_VALUE = "OSC_Keyboard";
+
+    private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
+    static {
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_RIGHT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_CTRL_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_CTRL_RIGHT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_SHIFT_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_SHIFT_RIGHT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_META_LEFT);
+        MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_META_RIGHT);
+    }
+
+    public static boolean isModifierKey(int keyCode) {
+        return MODIFIER_KEY_CODES.contains(keyCode);
+    }
 
     // The default controls are specified using a grid of 128*72 cells at 16:9
     private static int screenScale(int units, int height) {
@@ -113,7 +133,6 @@ public class KeyBoardControllerConfigurationLoader {
 
     }
 
-
     private static KeyBoardDigitalButton createDigitalButton(
             final String elementId,
             final int keyShort,
@@ -121,6 +140,7 @@ public class KeyBoardControllerConfigurationLoader {
             final int layer,
             final String text,
             final int icon,
+            final boolean sticky,
             final KeyBoardController controller,
             final Context context) {
         KeyBoardDigitalButton button = new KeyBoardDigitalButton(controller, elementId, layer, context);
@@ -131,26 +151,57 @@ public class KeyBoardControllerConfigurationLoader {
             button.setEnableSwitchDown(true);
         }
 
-        button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
-            @Override
-            public void onClick() {
-                KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyShort);
-                keyEvent.setSource(type);
-                controller.sendKeyEvent(keyEvent);
-            }
+        if (sticky) {
 
-            @Override
-            public void onLongClick() {
-            }
+            button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
+                @Override
+                public void onClick() {
+                    if (button.isSticky()) {
+                        button.setSticky(false);
+                        return;
+                    }
+                    KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyShort);
+                    keyEvent.setSource(type);
+                    controller.sendKeyEvent(keyEvent);
+                }
 
-            @Override
-            public void onRelease() {
-                KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_UP, keyShort);
-                keyEvent.setSource(type);
-                controller.sendKeyEvent(keyEvent);
+                @Override
+                public void onLongClick() {
+                    button.setSticky(true);
+                    controller.vibrate();
+                }
 
-            }
-        });
+                @Override
+                public void onRelease() {
+                    if (button.isSticky()) {
+                        return;
+                    }
+                    KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_UP, keyShort);
+                    keyEvent.setSource(type);
+                    controller.sendKeyEvent(keyEvent);
+                }
+            });
+        } else {
+            button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
+                @Override
+                public void onClick() {
+                    KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyShort);
+                    keyEvent.setSource(type);
+                    controller.sendKeyEvent(keyEvent);
+                }
+
+                @Override
+                public void onLongClick() {
+                }
+
+                @Override
+                public void onRelease() {
+                    KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_UP, keyShort);
+                    keyEvent.setSource(type);
+                    controller.sendKeyEvent(keyEvent);
+                }
+            });
+        }
 
         return button;
     }
@@ -321,7 +372,7 @@ public class KeyBoardControllerConfigurationLoader {
                             w, w
                     );
                 }else{
-                    controller.addElement(createDigitalButton(elementId, code, type, 1, name, -1, controller, context),
+                    controller.addElement(createDigitalButton(elementId, code, type, 1, name, -1, isModifierKey(code), controller, context),
                             x, y,
                             w, w
                     );

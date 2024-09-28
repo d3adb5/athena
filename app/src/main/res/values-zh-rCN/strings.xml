@@ -440,8 +440,6 @@
     <string name="summary_checkbox_enforce_display_mode">强制使用最佳显示模式。\n在某些系统(如ColorOS等)上必须启用才能正确设置刷新率/分辨率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
     <string name="title_checkbox_use_virtual_display">使用虚拟显示器</string>
     <string name="summary_checkbox_use_virtual_display">默认使用虚拟显示器。\n虚拟显示器可以自动匹配设备端的分辨率与刷新率设置，提供无缝的串流体验。\n需要使用 Apollo 作为服务端串流软件。</string>
-    <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">粘滞修饰键</string>
-    <string name="summary_checkbox_enable_sticky_modifier_key_virtual_keyboard">在虚拟全键盘上使用粘滞修饰键。</string>
     <string name="virtual_keyboard_hide">隐藏\n键盘</string>
     <string name="mouse_mode_multi_touch">多点触控</string>
     <string name="mouse_mode_absolute_touch">单点触控</string>
@@ -508,4 +506,8 @@
     <string name="get_clipboard_success">获取剪贴板成功</string>
     <string name="proceed">继续</string>
     <string name="cancel">取消</string>
+    <string name="configuration_mode_disable_enable_buttons">配置模式：启用禁用控件</string>
+    <string name="configuration_mode_move_buttons">配置模式：调整控件位置</string>
+    <string name="configuration_mode_resize_buttons">配置模式：调整控件大小</string>
+    <string name="configuration_mode_exiting">退出配置模式</string>
 </resources>

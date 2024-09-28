@@ -48,7 +48,7 @@ public class KeyBoardDigitalButton extends keyBoardVirtualControllerElement {
     private List<DigitalButtonListener> listeners = new ArrayList<>();
     private String text = "";
     private int icon = -1;
-    private long timerLongClickTimeout = 3000;
+    private long timerLongClickTimeout = 500;
     private final Runnable longClickRunnable = new Runnable() {
         @Override
         public void run() {
@@ -61,6 +61,7 @@ public class KeyBoardDigitalButton extends keyBoardVirtualControllerElement {
 
     private int layer;
     private KeyBoardDigitalButton movingButton = null;
+    private boolean sticky = false;
 
     boolean inRange(float x, float y) {
         return (this.getX() < x && this.getX() + this.getWidth() > x) &&
@@ -137,6 +138,14 @@ public class KeyBoardDigitalButton extends keyBoardVirtualControllerElement {
         invalidate();
     }
 
+    public void setSticky(boolean sticky) {
+        this.sticky = sticky;
+    }
+
+    public boolean isSticky() {
+        return this.sticky;
+    }
+
     @Override
     protected void onElementDraw(Canvas canvas) {
         // set transparent background
@@ -146,9 +155,11 @@ public class KeyBoardDigitalButton extends keyBoardVirtualControllerElement {
         paint.setTextAlign(Paint.Align.CENTER);
         paint.setStrokeWidth(getDefaultStrokeWidth());
 
-        paint.setColor(isPressed() ? pressedColor : getDefaultColor());
+        boolean shouldSetPressed = isPressed() || isSticky();
 
-        paint.setStyle(isPressed() ?Paint.Style.FILL_AND_STROKE: Paint.Style.STROKE);
+        paint.setColor(shouldSetPressed ? pressedColor : getDefaultColor());
+
+        paint.setStyle(shouldSetPressed ? Paint.Style.FILL_AND_STROKE: Paint.Style.STROKE);
 
         rect.left = rect.top = paint.getStrokeWidth();
         rect.right = getWidth() - rect.left;

@@ -438,12 +438,6 @@
             android:title="@string/title_keyboard_height" />
 
         <CheckBoxPreference
-            android:key="checkbox_enable_sticky_modifier_key_virtual_keyboard"
-            android:title="@string/title_checkbox_enable_sticky_modifier_key_virtual_keyboard"
-            android:summary="@string/summary_checkbox_enable_sticky_modifier_key_virtual_keyboard"
-            android:defaultValue="true"/>
-
-        <CheckBoxPreference
             android:key="checkbox_enable_analog_stick_new"
             android:title="@string/title_free_analog_stick"
             android:summary="@string/summary_free_analog_stick"

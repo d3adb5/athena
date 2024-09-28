@@ -95,18 +95,18 @@ public class VirtualController {
                 if (currentMode == ControllerMode.Active) {
                     currentMode = ControllerMode.DisableEnableButtons;
                     showElements();
-                    message = "Entering configuration mode (Disable/Enable buttons)";
+                    message = context.getString(R.string.configuration_mode_disable_enable_buttons);
                 } else if (currentMode == ControllerMode.DisableEnableButtons){
                     currentMode = ControllerMode.MoveButtons;
                     showEnabledElements();
-                    message = "Entering configuration mode (Move buttons)";
+                    message = context.getString(R.string.configuration_mode_move_buttons);
                 } else if (currentMode == ControllerMode.MoveButtons) {
                     currentMode = ControllerMode.ResizeButtons;
-                    message = "Entering configuration mode (Resize buttons)";
+                    message = context.getString(R.string.configuration_mode_resize_buttons);
                 } else {
                     currentMode = ControllerMode.Active;
                     VirtualControllerConfigurationLoader.saveProfile(VirtualController.this, context);
-                    message = "Exiting configuration mode";
+                    message = context.getString(R.string.configuration_mode_exiting);
                 }
 
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show();

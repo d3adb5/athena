@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
+import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -74,18 +75,18 @@ public class KeyBoardController {
                 if (currentMode == ControllerMode.Active) {
                     currentMode = ControllerMode.DisableEnableButtons;
                     showElements();
-                    message = "配置模式：启用禁用控件！";
+                    message = context.getString(R.string.configuration_mode_disable_enable_buttons);
                 } else if (currentMode == ControllerMode.DisableEnableButtons) {
                     currentMode = ControllerMode.MoveButtons;
                     showEnabledElements();
-                    message = "配置模式：调整控件位置！";
+                    message = context.getString(R.string.configuration_mode_move_buttons);
                 } else if (currentMode == ControllerMode.MoveButtons) {
                     currentMode = ControllerMode.ResizeButtons;
-                    message = "配置模式：调整控件大小！";
+                    message = context.getString(R.string.configuration_mode_resize_buttons);
                 } else {
                     currentMode = ControllerMode.Active;
                     KeyBoardControllerConfigurationLoader.saveProfile(KeyBoardController.this, context);
-                    message = "退出配置模式！";
+                    message = context.getString(R.string.configuration_mode_exiting);
                 }
 
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
@@ -211,9 +212,7 @@ public class KeyBoardController {
         } else {
             Game.instance.onKey(null, keyEvent.getKeyCode(), keyEvent);
         }
-        if (PreferenceConfiguration.readPreferences(context).enableKeyboardVibrate && vibrator.hasVibrator()) {
-            vibrator.vibrate(10);
-        }
+        vibrate();
     }
 
     public void sendMouseMove(int x,int y){
@@ -223,4 +222,9 @@ public class KeyBoardController {
         Game.instance.mouseMove(x,y);
     }
 
+    public void vibrate() {
+        if (PreferenceConfiguration.readPreferences(context).enableKeyboardVibrate && vibrator.hasVibrator()) {
+            frame_layout.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+        }
+    }
 }
