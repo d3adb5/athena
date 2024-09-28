@@ -31,7 +31,7 @@ import java.util.Set;
 
 public class KeyBoardLayoutController {
 
-    private final long timerLongClickTimeout = 500;
+    private final long timerLongClickTimeout = 300;
     private final Context context;
     private final PreferenceConfiguration prefConfig;
     private FrameLayout frame_layout = null;

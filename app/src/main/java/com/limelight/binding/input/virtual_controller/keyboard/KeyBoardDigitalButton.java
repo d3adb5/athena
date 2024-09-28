@@ -48,7 +48,7 @@ public class KeyBoardDigitalButton extends keyBoardVirtualControllerElement {
     private List<DigitalButtonListener> listeners = new ArrayList<>();
     private String text = "";
     private int icon = -1;
-    private long timerLongClickTimeout = 500;
+    private long timerLongClickTimeout = 300;
     private final Runnable longClickRunnable = new Runnable() {
         @Override
         public void run() {
