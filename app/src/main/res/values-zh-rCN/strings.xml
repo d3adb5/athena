@@ -420,8 +420,10 @@
     <string name="summary_checkbox_force_qwerty">强制使用 QWERTY 键盘布局。GFE必须使用。\n如果你希望使用其他键盘布局的话，请关闭此选项。</string>
     <string name="title_checkbox_back_as_meta">使用返回键作为 Meta</string>
     <string name="summary_back_as_meta">在按下物理返回键时发送 Meta(Win) 键</string>
-    <string name="title_smart_clipboard_sync">智能剪贴板同步（实验特性）</string>
-    <string name="summary_smart_clipboard_sync">在开始/恢复串流时自动同步本地剪贴板至服务端，在客户端按下 Ctrl/CMD+C 时自动同步服务端剪贴板至本地（需要Apollo）</string>
+    <string name="title_smart_clipboard_sync">智能剪贴板同步（实验性）</string>
+    <string name="summary_smart_clipboard_sync">在开始/恢复串流时自动同步本地剪贴板至服务端，在客户端按下 Ctrl/CMD+C 或失去焦点时自动同步服务端剪贴板至本地（需要Apollo）</string>
+    <string name="title_smart_clipboard_sync_toast">剪贴板同步 Toast</string>
+    <string name="summary_smart_clipboard_sync_toast">以 Toast 形式展示剪贴板同步结果</string>
     <string name="game_menu_send_keys_esc">ESC</string>
     <string name="game_menu_send_keys_f11">F11</string>
     <string name="game_menu_send_keys_alt_f4">Alt + F4</string>

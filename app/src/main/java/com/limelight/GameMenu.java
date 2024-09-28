@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * Shown on back action in game activity.
  */
-public class GameMenu {
+public class GameMenu implements Game.GameMenuCallbacks {
 
     private static final long TEST_GAME_FOCUS_DELAY = 10;
     private static final long KEY_UP_DELAY = 25;
@@ -54,14 +54,12 @@ public class GameMenu {
 
     private final Game game;
     private final NvConnection conn;
-    private final GameInputDevice device;
 
-    public GameMenu(Game game, NvConnection conn, GameInputDevice device) {
+    private AlertDialog currentDialog;
+
+    public GameMenu(Game game, NvConnection conn) {
         this.game = game;
         this.conn = conn;
-        this.device = device;
-
-        showMenu();
     }
 
     private String getString(int id) {
@@ -155,7 +153,10 @@ public class GameMenu {
             }
         });
 
-        builder.show();
+        if (currentDialog != null) {
+            currentDialog.hide();
+        }
+        currentDialog = builder.show();
     }
 
     private void showSpecialKeysMenu() {
@@ -257,7 +258,7 @@ public class GameMenu {
         showMenuDialog(getString(R.string.game_menu_send_keys), options.toArray(new MenuOption[options.size()]));
     }
 
-    private void showAdvancedMenu() {
+    private void showAdvancedMenu(GameInputDevice device) {
         List<MenuOption> options = new ArrayList<>();
 
         if (game.presentation == null) {
@@ -307,7 +308,7 @@ public class GameMenu {
         showMenuDialog(getString(R.string.game_menu_server_cmd), options.toArray(new MenuOption[options.size()]));
     }
 
-    private void showMenu() {
+    public void showMenu(GameInputDevice device) {
         List<MenuOption> options = new ArrayList<>();
 
         options.add(new MenuOption(getString(R.string.game_menu_disconnect), game::disconnect));
@@ -346,10 +347,17 @@ public class GameMenu {
                 game::rotateScreen));
 
         options.add(new MenuOption(getString(R.string.game_menu_advanced), true,
-                this::showAdvancedMenu));
+                () -> showAdvancedMenu(device)));
 
         options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
 
         showMenuDialog(getString(R.string.quick_menu_title), options.toArray(new MenuOption[options.size()]));
+    }
+
+    public void hideMenu() {
+        if (currentDialog != null) {
+            currentDialog.dismiss();
+            currentDialog = null;
+        }
     }
 }

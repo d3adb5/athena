@@ -238,6 +238,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private NvHTTP httpConn;
 
+    public interface GameMenuCallbacks {
+        void showMenu(GameInputDevice devic);
+        void hideMenu();
+    }
+
+    public GameMenuCallbacks gameMenuCallbacks;
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -643,10 +650,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             showSecondScreen();
         }
 
+        gameMenuCallbacks = new GameMenu(this, conn);
     }
 
     private void initKeyboardController(){
-        keyBoardController=new KeyBoardController(controllerHandler,(FrameLayout)rootView, this);
+        keyBoardController = new KeyBoardController(controllerHandler,(FrameLayout)rootView, this);
         keyBoardController.refreshLayout();
         keyBoardController.show();
     }
@@ -659,7 +667,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private void initkeyBoardLayoutController(){
-        keyBoardLayoutController=new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
+        keyBoardLayoutController = new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
         keyBoardLayoutController.refreshLayout();
         keyBoardLayoutController.show();
     }
@@ -772,13 +780,15 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     virtualController.hide();
                 }
 
-                if (keyBoardController != null) {
+                if (keyBoardController != null && keyBoardController.shown) {
                     keyBoardController.hide(true);
                 }
 
-                if(keyBoardLayoutController!=null){
+                if (keyBoardLayoutController!=null && keyBoardLayoutController.shown) {
                     keyBoardLayoutController.hide(true);
                 }
+
+                hideGameMenu();
 
                 performanceOverlayView.setVisibility(View.GONE);
                 notificationOverlayView.setVisibility(View.GONE);
@@ -1705,8 +1715,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     public boolean handleFocusChange(boolean hasFocus) {
-        if (prefConfig.smartClipboardSync && hasFocus) {
-            return sendClipboard(false);
+        if (prefConfig.smartClipboardSync) {
+            if (hasFocus) {
+                return sendClipboard(false);
+            } else {
+                return getClipboard(0);
+            }
         }
 
         return false;
@@ -1753,13 +1767,19 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 public void run() {
                     try {
                         if (!httpConn.sendClipboard(clipboardText)) {
-                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.clipboard_sync_unsupported), Toast.LENGTH_SHORT).show());
+                            if (prefConfig.smartClipboardSyncToast) {
+                                Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.clipboard_sync_unsupported), Toast.LENGTH_SHORT).show());
+                            }
                         } else {
-                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.send_clipboard_success), Toast.LENGTH_SHORT).show());
+                            if (prefConfig.smartClipboardSyncToast) {
+                                Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.send_clipboard_success), Toast.LENGTH_SHORT).show());
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
-                        Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.send_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        if (prefConfig.smartClipboardSyncToast) {
+                            Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.send_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        }
                     }
                 }
             }.start();
@@ -1770,10 +1790,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return false;
     }
 
-    public void getClipboard(int delay) {
+    public boolean getClipboard(int delay) {
         if (httpConn == null) {
             LimeLog.warning("httpConn not ready, cannot get clipboard!");
-            return;
+            return false;
         }
 
         new Thread() {
@@ -1783,13 +1803,19 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     String clipboardContent = httpConn.getClipboard();
                     ClipData clipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardContent);
                     clipboardManager.setPrimaryClip(clipData);
-                    Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_success), Toast.LENGTH_SHORT).show());
+                    if (prefConfig.smartClipboardSyncToast) {
+                        Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_success), Toast.LENGTH_SHORT).show());
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    if (prefConfig.smartClipboardSyncToast) {
+                        Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    }
                 }
             }
         }.start();
+
+        return true;
     }
 
     private TouchContext getTouchContext(int actionIndex, TouchContext[] inputContextMap)
@@ -3342,9 +3368,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public void showGameMenu(GameInputDevice device) {
-        new GameMenu(this, conn, device);
+        if (gameMenuCallbacks != null) {
+            gameMenuCallbacks.showMenu(device);
+        }
     }
 
+    public void hideGameMenu() {
+        if (gameMenuCallbacks != null) {
+            gameMenuCallbacks.hideMenu();
+        }
+    }
 
     public SecondaryDisplayPresentation presentation;
     public void showSecondScreen(){
