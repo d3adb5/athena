@@ -402,7 +402,7 @@
     <string name="title_clear_default_special_button">禁用默认的特殊按键指令</string>
     <string name="summary_clear_default_special_button">如果你感觉内置的指令对你没什么用的话，可以禁用，使用自己导入的。</string>
     <string name="title_import_special_button">导入自定义特殊指令配置文件</string>
-    <string name="summary_import_special_button">每次都会覆盖原来的，请注意备份。</string>
+    <string name="summary_import_special_button">在返回菜单及特殊按键中可用。\n注意：导入会覆盖当前配置，请注意备份。</string>
     <string name="title_software_update">软件版本更新</string>
     <string name="summary_software_update">ClassicOldSong 黑月光修改版 - 跳转到github获取更新</string>
     <string name="title_special_key_layout">特殊按键布局</string>
@@ -488,6 +488,7 @@
     <string name="pref_empty_file">文件为空！</string>
     <string name="pref_import_success">导入成功！</string>
     <string name="pref_error_occurred">出错啦~</string>
+    <string name="pref_save_keyboard_profile">保存屏幕键盘配置</string>
     <string name="game_menu_advanced">高级菜单</string>
     <string name="game_dialog_title_quit_confirm">确定要退出吗？</string>
     <string name="game_dialog_message_quit_confirm">请确保当前没有未保存的进度。终止会话会导致当前运行的程序被强行停止。</string>

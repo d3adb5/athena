@@ -4,17 +4,26 @@
 
 package com.limelight.binding.input.virtual_controller.keyboard;
 
+import static com.limelight.GameMenu.getModifier;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
+import com.limelight.GameMenu;
 import com.limelight.LimeLog;
+import com.limelight.R;
+import com.limelight.nvstream.NvConnection;
+import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.preferences.PreferenceConfiguration;
 
+import org.jcodec.common.ArrayUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -152,7 +161,6 @@ public class KeyBoardControllerConfigurationLoader {
         }
 
         if (sticky) {
-
             button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
                 @Override
                 public void onClick() {
@@ -206,6 +214,85 @@ public class KeyBoardControllerConfigurationLoader {
         return button;
     }
 
+    private static KeyBoardDigitalButton createCustomButton(
+            String elementId,
+            final short[] keys,
+            final int type,
+            final int layer,
+            final String text,
+            final int icon,
+            final boolean sticky,
+            final KeyBoardController controller,
+            final NvConnection conn,
+            final Context context
+    ) {
+        KeyBoardDigitalButton button = new KeyBoardDigitalButton(controller, elementId, layer, context);
+        button.setText(text);
+        button.setIcon(icon);
+
+        final byte[] modifier = {(byte) 0};
+
+        if (sticky) {
+            button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
+                @Override
+                public void onClick() {
+                    if (button.isSticky()) {
+                        button.setSticky(false);
+                        return;
+                    }
+                    for (short key : keys) {
+                        conn.sendKeyboardInput(key, KeyboardPacket.KEY_DOWN, modifier[0], (byte) 0);
+                        modifier[0] |= getModifier(key);
+                    }
+                }
+
+                @Override
+                public void onLongClick() {
+                    button.setSticky(true);
+                    controller.vibrate();
+                }
+
+                @Override
+                public void onRelease() {
+                    if (button.isSticky()) {
+                        return;
+                    }
+
+                    for (int pos = keys.length - 1; pos >= 0; pos--) {
+                        short key = keys[pos];
+                        modifier[0] &= (byte) ~getModifier(key);
+                        conn.sendKeyboardInput(key, KeyboardPacket.KEY_UP, modifier[0], (byte) 0);
+                    }
+                }
+            });
+        } else {
+            button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
+                @Override
+                public void onClick() {
+                    for (short key : keys) {
+                        conn.sendKeyboardInput(key, KeyboardPacket.KEY_DOWN, modifier[0], (byte) 0);
+                        modifier[0] |= getModifier(key);
+                    }
+                }
+
+                @Override
+                public void onLongClick() {
+                }
+
+                @Override
+                public void onRelease() {
+                    for (int pos = keys.length - 1; pos >= 0; pos--) {
+                        short key = keys[pos];
+                        modifier[0] &= (byte) ~getModifier(key);
+                        conn.sendKeyboardInput(key, KeyboardPacket.KEY_UP, modifier[0], (byte) 0);
+                    }
+                }
+            });
+        }
+
+        return button;
+    }
+
 
     private static KeyBoardTouchPadButton createDigitalTouchButton(
             final String elementId,
@@ -250,7 +337,7 @@ public class KeyBoardControllerConfigurationLoader {
         return button;
     }
 
-    public static void createDefaultLayout(final KeyBoardController controller, final Context context) {
+    public static void createDefaultLayout(final KeyBoardController controller, final Context context, final NvConnection conn) {
 
         DisplayMetrics screen = context.getResources().getDisplayMetrics();
 
@@ -342,8 +429,10 @@ public class KeyBoardControllerConfigurationLoader {
 
             double buttonSum = 14.0;
 
+            int i;
+
             //普通按键
-            for (int i = 0; i < keystrokeList.length(); i++) {
+            for (i = 0; i < keystrokeList.length(); i++) {
                 JSONObject obj = keystrokeList.getJSONObject(i);
 
                 String name = obj.optString("name");
@@ -352,12 +441,12 @@ public class KeyBoardControllerConfigurationLoader {
 
                 int code = obj.optInt("code");
 
-                int switchButton=obj.optInt("switchButton");
+                int switchButton = obj.optInt("switchButton");
 
                 String elementId = type == 0 ? "key_" + code : "m_" + code;
 
-                if(switchButton==1){
-                    elementId=type == 0 ? "key_s_" + code : "m_s_" + code;
+                if(switchButton == 1){
+                    elementId = type == 0 ? "key_s_" + code : "m_s_" + code;
                 }
 
                 int lastIndex = (int) (i / buttonSum);
@@ -366,7 +455,7 @@ public class KeyBoardControllerConfigurationLoader {
 
                 int y = screenScale(BUTTON_SIZE + lastIndex * BUTTON_SIZE, height);
 
-                if(TextUtils.equals("m_9",elementId)||TextUtils.equals("m_10",elementId)||TextUtils.equals("m_11",elementId)){
+                if(TextUtils.equals("m_9", elementId)||TextUtils.equals("m_10", elementId)||TextUtils.equals("m_11", elementId)){
                     controller.addElement(createDigitalTouchButton(elementId, code, type, 1, name, -1, controller, context),
                             x, y,
                             w, w
@@ -380,6 +469,45 @@ public class KeyBoardControllerConfigurationLoader {
                 LimeLog.info("x:" + x + ",y:" + y + ",W&H:" + w + "," + screenScale(BUTTON_SIZE, height));
             }
 
+            // Custom keys
+            SharedPreferences preferences = context.getSharedPreferences(GameMenu.PREF_NAME, Activity.MODE_PRIVATE);
+            String value = preferences.getString(GameMenu.KEY_NAME,"");
+
+            if(!TextUtils.isEmpty(value)){
+                try {
+                    JSONObject object = new JSONObject(value);
+                    JSONArray keyMapArr = object.optJSONArray("data");
+                    if(keyMapArr != null&&keyMapArr.length()>0){
+                        for (int idx = 0; i < keyMapArr.length(); idx++) {
+                            JSONObject keyMap = keyMapArr.getJSONObject(idx);
+                            String id = keyMap.optString("id", Integer.toString(idx));
+                            String name = keyMap.optString("name");
+                            JSONArray keySequence = keyMap.getJSONArray("data");
+                            short[] vkKeyCodes = new short[keySequence.length()];
+                            for (int j = 0; j < keySequence.length(); j++) {
+                                String code = keySequence.getString(j);
+                                vkKeyCodes[j] = (short) Integer.parseInt(code.substring(2), 16);
+                            }
+
+                            int type = keyMap.optInt("type", 0);
+                            boolean sticky = keyMap.optBoolean("sticky", false);
+
+                            int lastIndex = (int) ((idx + i) / buttonSum);
+
+                            int x = screenScale(1 + (int) ((idx + i) % buttonSum) * BUTTON_SIZE, height);
+                            int y = screenScale(BUTTON_SIZE + lastIndex * BUTTON_SIZE, height);
+
+                            controller.addElement(createCustomButton("custom_" + id, vkKeyCodes, type, 1, name, -1, sticky, controller, conn, context),
+                                x, y,
+                                w, w
+                            );
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(context,context.getString(R.string.wrong_import_format),Toast.LENGTH_SHORT).show();
+                }
+            }
 
         } catch (JSONException e) {
             throw new RuntimeException(e);

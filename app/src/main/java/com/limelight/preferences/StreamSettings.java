@@ -701,7 +701,7 @@ public class StreamSettings extends Activity {
                 public boolean onPreferenceClick(Preference preference) {
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType("text/plain");
+                    intent.setType("application/json");
                     startActivityForResult(intent, READ_REQUEST_CODE);
                     return false;
                 }
@@ -727,7 +727,7 @@ public class StreamSettings extends Activity {
                     }
                     File file1= getJsonContent(getActivity(),file);
                     if(file1==null){
-                        Toast.makeText(getActivity(),"出错啦~",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(),getString(R.string.pref_error_occurred),Toast.LENGTH_SHORT).show();
                         return false;
                     }
                     Uri uri;
@@ -736,8 +736,8 @@ public class StreamSettings extends Activity {
                     String authority= BuildConfig.APPLICATION_ID+".fileprovider";
                     uri= FileProvider.getUriForFile(getActivity(),authority,file1);
                     intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.setType("text/plain");
-                    startActivity(Intent.createChooser(intent,"保存配置文件"));
+                    intent.setType("application/json");
+                    startActivity(Intent.createChooser(intent,getString(R.string.pref_save_keyboard_profile)));
                     return false;
                 }
             });
@@ -835,7 +835,7 @@ public class StreamSettings extends Activity {
             String name = PreferenceManager.getDefaultSharedPreferences(context).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
             SharedPreferences pref = context.getSharedPreferences(name, Activity.MODE_PRIVATE);
             Map<String,?> map = pref.getAll();
-            File file1= new File(file,name+".txt");
+            File file1= new File(file,name+".json");
             String jsonStr=new Gson().toJson(map);
             if(!FileUriUtils.writerFileString(file1,jsonStr)){
                 return null;
@@ -849,7 +849,7 @@ public class StreamSettings extends Activity {
             Map<String,?> map = pref.getAll();
             //获取适配电脑的数据库信息
 //            List<ComputerDetails> map= new ComputerDatabaseManager(context).getAllComputers();
-            File file1= new File(file,"allJSON.txt");
+            File file1= new File(file,"allJSON.json");
             String jsonStr=new Gson().toJson(map);
             if(!FileUriUtils.writerFileString(file1,jsonStr)){
                 return null;

@@ -66,7 +66,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
         return game.getResources().getString(id);
     }
 
-    private static byte getModifier(short key) {
+    public static byte getModifier(short key) {
         switch (key) {
             case KeyboardTranslator.VK_LSHIFT:
                 return KeyboardPacket.MODIFIER_SHIFT;
@@ -97,7 +97,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
                 short key = keys[pos];
 
                 // Remove the keys modifier before releasing the key
-                modifier[0] &= ~getModifier(key);
+                modifier[0] &= (byte) ~getModifier(key);
 
                 conn.sendKeyboardInput(key, KeyboardPacket.KEY_UP, modifier[0], (byte) 0);
             }
@@ -227,24 +227,24 @@ public class GameMenu implements Game.GameMenuCallbacks {
         }
 
         //自定义导入的指令
-        SharedPreferences preferences=game.getSharedPreferences(PREF_NAME, Activity.MODE_PRIVATE);
-        String value=preferences.getString(KEY_NAME,"");
+        SharedPreferences preferences = game.getSharedPreferences(PREF_NAME, Activity.MODE_PRIVATE);
+        String value = preferences.getString(KEY_NAME,"");
 
         if(!TextUtils.isEmpty(value)){
             try {
-                JSONObject object=new JSONObject(value);
-                JSONArray array=object.optJSONArray("data");
-                if(array!=null&&array.length()>0){
+                JSONObject object = new JSONObject(value);
+                JSONArray array = object.optJSONArray("data");
+                if(array != null&&array.length()>0){
                     for (int i = 0; i < array.length(); i++) {
-                        JSONObject object1=array.getJSONObject(i);
-                        String name=object1.optString("name");
-                        JSONArray array1=object1.getJSONArray("data");
-                        short[] datas=new short[array1.length()];
+                        JSONObject object1 = array.getJSONObject(i);
+                        String name = object1.optString("name");
+                        JSONArray array1 = object1.getJSONArray("data");
+                        short[] datas = new short[array1.length()];
                         for (int j = 0; j < array1.length(); j++) {
-                            String code=array1.getString(j);
-                            datas[j]= (short) Integer.parseInt(code.substring(2), 16);
+                            String code = array1.getString(j);
+                            datas[j] = (short) Integer.parseInt(code.substring(2), 16);
                         }
-                        MenuOption option=new MenuOption(name, () -> sendKeys(datas));
+                        MenuOption option = new MenuOption(name, () -> sendKeys(datas));
                         options.add(option);
                     }
                 }

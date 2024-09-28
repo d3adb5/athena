@@ -654,7 +654,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private void initKeyboardController(){
-        keyBoardController = new KeyBoardController(controllerHandler,(FrameLayout)rootView, this);
+        keyBoardController = new KeyBoardController(conn,(FrameLayout)rootView, this);
         keyBoardController.refreshLayout();
         keyBoardController.show();
     }
@@ -910,13 +910,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             else {
                 LimeLog.warning("SemWindowManager.getInstance() returned null");
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
+                 IllegalAccessException e) {
             e.printStackTrace();
         }
     }

@@ -20,6 +20,7 @@ import com.limelight.Game;
 import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.binding.input.ControllerHandler;
+import com.limelight.nvstream.NvConnection;
 import com.limelight.preferences.PreferenceConfiguration;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class KeyBoardController {
 
     private static final boolean _PRINT_DEBUG_INFORMATION = false;
 
-    private final ControllerHandler controllerHandler;
+    private final NvConnection conn;
     private final Context context;
     private final Handler handler;
 
@@ -55,8 +56,8 @@ public class KeyBoardController {
     private Vibrator vibrator;
     private List<keyBoardVirtualControllerElement> elements = new ArrayList<>();
 
-    public KeyBoardController(final ControllerHandler controllerHandler, FrameLayout layout, final Context context) {
-        this.controllerHandler = controllerHandler;
+    public KeyBoardController(final NvConnection conn, FrameLayout layout, final Context context) {
+        this.conn = conn;
         this.frame_layout = layout;
         this.context = context;
         this.handler = new Handler(Looper.getMainLooper());
@@ -192,7 +193,7 @@ public class KeyBoardController {
         frame_layout.addView(buttonConfigure, params);
 
         // Start with the default layout
-        KeyBoardControllerConfigurationLoader.createDefaultLayout(this, context);
+        KeyBoardControllerConfigurationLoader.createDefaultLayout(this, context, conn);
 
         // Apply user preferences onto the default layout
         KeyBoardControllerConfigurationLoader.loadFromPreferences(this, context);

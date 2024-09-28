@@ -401,7 +401,7 @@
     <string name="title_portrait_mode">Portrait Mode</string>
     <string name="summary_portrait_mode">Streaming display will be displayed in portrait.</string>
     <string name="title_import_special_button">Import custom special button configuration file</string>
-    <string name="summary_import_special_button">Each import will overwrite the previous one, please backup accordingly.</string>
+    <string name="summary_import_special_button">Available in back menu and special keys.\nNote: Importing will overwrite current configuration, please backup accordingly.</string>
     <string name="title_software_update">Software Version Update</string>
     <string name="summary_software_update">Moonlight Nior Version by ClassicOldSong - Jump to GitHub to get latest releases</string>
     <string name="title_special_key_layout">Special Key Layout</string>
@@ -514,6 +514,7 @@
     <string name="pref_empty_file">Empty file!</string>
     <string name="pref_import_success">Import successful!</string>
     <string name="pref_error_occurred">An error occurred: </string>
+    <string name="pref_save_keyboard_profile">Save OSK profile</string>
     <string name="game_menu_advanced">Advanced Menu</string>
     <string name="game_dialog_title_quit_confirm">Really want to quit?</string>
     <string name="game_dialog_message_quit_confirm">Please make sure you have no unsaved progress. Quitting the session will terminate your current running application.</string>
