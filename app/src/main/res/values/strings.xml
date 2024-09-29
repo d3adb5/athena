@@ -284,6 +284,8 @@
     <string name="summary_troubleshooting">View tips for diagnosing and fixing common streaming issues</string>
     <string name="title_privacy_policy">Privacy policy</string>
     <string name="summary_privacy_policy">View Moonlight\'s privacy policy</string>
+    <string name="title_special_key_help">Custom Keys help</string>
+    <string name="summary_special_key_help">Instructions about how to setup custom special keys</string>
 
     <!-- Toasts -->
     <string name="toast_controller_type_changed">Gamepad type may be changed due to motion sensor emulation</string>
@@ -393,22 +395,22 @@
     <string name="title_checkbox_enable_perf_overlay_lite_dialog">Lite mode click to pop up quick options</string>
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">Replace the back button logic, pop up the game quick menu.</string>
     <string name="title_additional_settings">Additional Settings</string>
-    <string name="title_quit_dialog">Quick Options</string>
+    <string name="title_quit_dialog">Back Menu</string>
     <string name="summary_quit_dialog">When enabled, clicking the physical back button on the streaming interface will show related options!\nSoft keyboard, performance information, touch mode switching, send special keys</string>
     <string name="dialog_custom_resolution">Set the resolution and exit the settings page to take effect!</string>
     <string name="summary_custom_resolution">Add a custom resolution, separated by x, strange resolutions may not work.\nFor example: 1920x1080\nIf it is a non-native resolution, it may not fill the notch area by default. If the aspect ratio is the same, you can manually set to stretch the screen to fill the full screen</string>
     <string name="title_custom_resolution">Custom Resolution</string>
     <string name="title_portrait_mode">Portrait Mode</string>
     <string name="summary_portrait_mode">Streaming display will be displayed in portrait.</string>
-    <string name="title_import_special_button">Import custom special button configuration file</string>
-    <string name="summary_import_special_button">Available in back menu and special keys.\nNote: Importing will overwrite current configuration, please backup accordingly.</string>
-    <string name="title_software_update">Software Version Update</string>
-    <string name="summary_software_update">Moonlight Nior Version by ClassicOldSong - Jump to GitHub to get latest releases</string>
+    <string name="title_import_special_button">Import Custom Keys</string>
+    <string name="summary_import_special_button">Available in Back Menu and special keys.\nNote: Importing will overwrite current configuration, please backup accordingly.</string>
+    <string name="title_software_update">Software Update</string>
+    <string name="summary_software_update">Moonlight Nior Version by ClassicOldSong - Visit GitHub Release to get latest version</string>
     <string name="title_special_key_layout">Special Key Layout</string>
     <string name="title_show_virtual_key">Display virtual keys on screen</string>
     <string name="summary_show_virtual_key">Display a layer of virtual special keys on the touchscreen.\nKey opacity is shared with the virtual gamepad above.</string>
-    <string name="title_default_layout_scheme">Default layout scheme</string>
-    <string name="summary_default_layout_scheme">Each layout scheme is initially the same (generated based on the keyboards.json file), you can delete and adjust it yourself</string>
+    <string name="title_default_layout_scheme">Default layout profile</string>
+    <string name="summary_default_layout_scheme">Each layout profile is initially the same (generated based on the keyboards.json file), you can delete and adjust it yourself</string>
     <string name="summary_vibrate_keyboard">When you click the screen button, it will trigger the phone motor vibration. This option can also be used for virtual gamepad buttons.</string>
     <string name="title_square_buttons">Normal buttons are square buttons</string>
     <string name="summary_square_buttons">Virtual button shapes are square buttons, by default they are round.</string>
@@ -445,8 +447,8 @@
     <string name="summary_touchpad_sensitivity_y">For mouse touchpad mode and virtual special button touchpad control;\nBoth share a sensitivity value, but the sensitivity performance may be different.\nDoes anyone use both together?</string>
     <string name="title_device_rumble">Force vibration on device</string>
     <string name="summary_device_rumble">If you are not satisfied with the vibration of the connected gamepad, you can enable this option.\nInvalid for forced use of Moonlight\'s built-in USB driver</string>
-    <string name="title_clear_default_special_button">Disable default special button commands</string>
-    <string name="summary_clear_default_special_button">If you feel the built-in commands are useless to you, you can disable them and use your imported ones.</string>
+    <string name="title_clear_default_special_button">Disable default Special Keys</string>
+    <string name="summary_clear_default_special_button">If you feel the built-in commands in the Back Menu are useless, you can disable them and use your imported ones.</string>
     <string name="title_checkbox_force_qwerty">Force QWERTY layout</string>
     <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout.\nRequired by GFE.\nTurn off if you want to use a different keyboard layout.</string>
     <string name="title_checkbox_back_as_meta">Back button as Meta</string>
@@ -455,6 +457,7 @@
     <string name="summary_smart_clipboard_sync">Automatically upload clipboard content to server when the stream starts/resumes, download clipboard from server when pressing Ctrl/CMD+C on the client or losing focus(requires Apollo)</string>
     <string name="title_smart_clipboard_sync_toast">Clipboard Sync Toast</string>
     <string name="summary_smart_clipboard_sync_toast">Show toast for clipboard sync result</string>
+    <string name="title_settings_misc">MISC</string>
     <string name="perf_overlay_lite_bandwidth">Bandwidth</string>
     <string name="perf_overlay_lite_network_decoding_delay">Network/Decoding delay</string>
     <string name="perf_overlay_lite_packet_loss">Packet loss</string>
@@ -473,11 +476,11 @@
     <string name="mouse_mode_track_pad_gaming">Track pad(Gaming/Long press to drag)</string>
     <string name="mouse_mode_disabled">Disabled</string>
     <string name="mouse_mode_absolute_touch_swapped">Absolute touch (left/right click swapped)</string>
-    <string name="keyboard_layout_set_1">Set 1</string>
-    <string name="keyboard_layout_set_2">Set 2</string>
-    <string name="keyboard_layout_set_3">Set 3</string>
-    <string name="keyboard_layout_set_4">Set 4</string>
-    <string name="keyboard_layout_set_5">Set 5</string>
+    <string name="keyboard_layout_set_1">Profile 1</string>
+    <string name="keyboard_layout_set_2">Profile 2</string>
+    <string name="keyboard_layout_set_3">Profile 3</string>
+    <string name="keyboard_layout_set_4">Profile 4</string>
+    <string name="keyboard_layout_set_5">Profile 5</string>
     <string name="toggle_local_mouse_cursor">Toggle local mouse cursor(physical mouse needed)</string>
     <string name="debug_info_android_version">Android Version:</string>
     <string name="debug_info_api_version">API Version:</string>

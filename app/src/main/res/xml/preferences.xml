@@ -71,6 +71,12 @@
             android:summary="@string/summary_checkbox_invert_video_resolution"
             android:defaultValue="false"/>
 
+        <CheckBoxPreference
+            android:key="checkbox_enable_view_top_center"
+            android:title="@string/title_top_center_display"
+            android:summary="@string/summary_top_center_display"
+            android:defaultValue="false"/>
+
         <com.limelight.preferences.SeekBarPreference
             android:key="seekbar_resolution_scale_factor"
             android:dialogMessage=""
@@ -456,18 +462,6 @@
             android:title="@string/title_free_analog_stick_opacity" />
 
         <CheckBoxPreference
-            android:key="checkbox_enable_exdisplay"
-            android:title="@string/title_exdisplay_mode"
-            android:summary="@string/summary_exdisplay_mode"
-            android:defaultValue="false"/>
-
-        <CheckBoxPreference
-            android:key="checkbox_enable_view_top_center"
-            android:title="@string/title_top_center_display"
-            android:summary="@string/summary_top_center_display"
-            android:defaultValue="false"/>
-
-        <CheckBoxPreference
             android:key="checkbox_enable_touch_sensitivity"
             android:title="@string/title_touch_sensitivity"
             android:summary="@string/summary_touch_sensitivity"
@@ -509,12 +503,6 @@
             android:text="%"
             android:title="@string/title_touch_sensitivity_y" />
 
-        <Preference
-            android:key="pref_debug_info"
-            android:title="@string/title_debug_info"
-            android:summary="@string/summary_debug_info"
-            />
-
         <com.limelight.preferences.SeekBarPreference
             android:key="seekbar_touchpad_sensitivity_opacity"
             seekbar:min="10"
@@ -541,10 +529,21 @@
             android:summary="@string/summary_device_rumble"
             android:defaultValue="false"/>
 
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_special_key_layout"
+        android:key="category_special_key_layout">
+
         <CheckBoxPreference
             android:key="checkbox_enable_clear_default_special_button"
             android:title="@string/title_clear_default_special_button"
             android:summary="@string/summary_clear_default_special_button"
+            android:defaultValue="false"/>
+
+        <CheckBoxPreference
+            android:key="checkbox_enable_keyboard"
+            android:title="@string/title_show_virtual_key"
+            android:summary="@string/summary_show_virtual_key"
             android:defaultValue="false"/>
 
         <Preference
@@ -554,20 +553,9 @@
             />
 
         <com.limelight.preferences.WebLauncherPreference
-            android:title="@string/title_software_update"
-            android:summary="@string/summary_software_update"
-            url="https://github.com/ClassicOldSong/moonlight-android/releases"/>
-
-    </PreferenceCategory>
-
-    <PreferenceCategory android:title="@string/title_special_key_layout"
-        android:key="category_special_key_layout">
-
-        <CheckBoxPreference
-            android:key="checkbox_enable_keyboard"
-            android:title="@string/title_show_virtual_key"
-            android:summary="@string/summary_show_virtual_key"
-            android:defaultValue="false"/>
+            android:title="@string/title_special_key_help"
+            android:summary="@string/summary_special_key_help"
+            url="https://github.com/ClassicOldSong/moonlight-android/wiki/Custom-Special-Keys"/>
 
         <CheckBoxPreference
             android:key="checkbox_vibrate_keyboard"
@@ -615,5 +603,26 @@
             android:dependency="checkbox_enable_keyboard"
             />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_settings_misc"
+        android:key="category_settings_misc">
+
+        <CheckBoxPreference
+            android:key="checkbox_enable_exdisplay"
+            android:title="@string/title_exdisplay_mode"
+            android:summary="@string/summary_exdisplay_mode"
+            android:defaultValue="false"/>
+
+        <Preference
+            android:key="pref_debug_info"
+            android:title="@string/title_debug_info"
+            android:summary="@string/summary_debug_info"
+            />
+
+        <com.limelight.preferences.WebLauncherPreference
+            android:title="@string/title_software_update"
+            android:summary="@string/summary_software_update"
+            url="https://github.com/ClassicOldSong/moonlight-android/releases"/>
     </PreferenceCategory>
 </PreferenceScreen>
