@@ -512,7 +512,7 @@
     <string name="pref_enter_value_0_9999">Please enter a value between 0 and 9999.</string>
     <string name="pref_set_success">Settings saved successfully!</string>
     <string name="pref_empty_file">Empty file!</string>
-    <string name="pref_import_success">Import successful!</string>
+    <string name="pref_import_success">Import success!</string>
     <string name="pref_error_occurred">An error occurred: </string>
     <string name="pref_save_keyboard_profile">Save OSK profile</string>
     <string name="game_menu_advanced">Advanced Menu</string>

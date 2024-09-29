@@ -14,10 +14,12 @@ import com.limelight.binding.input.KeyboardTranslator;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.utils.KeyMapper;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -238,11 +240,20 @@ public class GameMenu implements Game.GameMenuCallbacks {
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject object1 = array.getJSONObject(i);
                         String name = object1.optString("name");
-                        JSONArray array1 = object1.getJSONArray("data");
+                        JSONArray array1 = object1.getJSONArray("keys");
                         short[] datas = new short[array1.length()];
                         for (int j = 0; j < array1.length(); j++) {
                             String code = array1.getString(j);
-                            datas[j] = (short) Integer.parseInt(code.substring(2), 16);
+                            int keycode;
+                            if (code.startsWith("0x")) {
+                                keycode = Integer.parseInt(code.substring(2), 16);
+                            } else if (code.startsWith("VK_")) {
+                                Field vkCodeField = KeyMapper.class.getDeclaredField(code);
+                                keycode = vkCodeField.getInt(null);
+                            } else {
+                                throw new Exception("Unknown key code: " + code);
+                            }
+                            datas[j] = (short) keycode;
                         }
                         MenuOption option = new MenuOption(name, () -> sendKeys(datas));
                         options.add(option);

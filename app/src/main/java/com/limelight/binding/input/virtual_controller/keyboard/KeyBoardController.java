@@ -5,6 +5,7 @@
 package com.limelight.binding.input.virtual_controller.keyboard;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
@@ -213,7 +214,10 @@ public class KeyBoardController {
         } else {
             Game.instance.onKey(null, keyEvent.getKeyCode(), keyEvent);
         }
-        vibrate();
+
+        if (keyEvent.getSource() != 2) {
+            vibrate(keyEvent.getAction());
+        }
     }
 
     public void sendMouseMove(int x,int y){
@@ -223,9 +227,22 @@ public class KeyBoardController {
         Game.instance.mouseMove(x,y);
     }
 
-    public void vibrate() {
+    public void vibrate(int action) {
         if (PreferenceConfiguration.readPreferences(context).enableKeyboardVibrate && vibrator.hasVibrator()) {
-            frame_layout.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            switch (action) {
+                case KeyEvent.ACTION_DOWN:
+                    frame_layout.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                    break;
+                case KeyEvent.ACTION_UP:
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                        frame_layout.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY_RELEASE);
+                    } else {
+                        frame_layout.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                    }
+                    break;
+                default:
+                    frame_layout.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            }
         }
     }
 }

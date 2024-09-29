@@ -22,6 +22,7 @@ import com.limelight.R;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.utils.KeyMapper;
 
 import org.jcodec.common.ArrayUtil;
 import org.json.JSONArray;
@@ -29,6 +30,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.List;
@@ -176,7 +178,7 @@ public class KeyBoardControllerConfigurationLoader {
                 @Override
                 public void onLongClick() {
                     button.setSticky(true);
-                    controller.vibrate();
+                    controller.vibrate(-1);
                 }
 
                 @Override
@@ -217,7 +219,6 @@ public class KeyBoardControllerConfigurationLoader {
     private static KeyBoardDigitalButton createCustomButton(
             String elementId,
             final short[] keys,
-            final int type,
             final int layer,
             final String text,
             final int icon,
@@ -240,6 +241,7 @@ public class KeyBoardControllerConfigurationLoader {
                         button.setSticky(false);
                         return;
                     }
+                    controller.vibrate(KeyEvent.ACTION_DOWN);
                     for (short key : keys) {
                         conn.sendKeyboardInput(key, KeyboardPacket.KEY_DOWN, modifier[0], (byte) 0);
                         modifier[0] |= getModifier(key);
@@ -249,7 +251,7 @@ public class KeyBoardControllerConfigurationLoader {
                 @Override
                 public void onLongClick() {
                     button.setSticky(true);
-                    controller.vibrate();
+                    controller.vibrate(-1);
                 }
 
                 @Override
@@ -257,7 +259,7 @@ public class KeyBoardControllerConfigurationLoader {
                     if (button.isSticky()) {
                         return;
                     }
-
+                    controller.vibrate(KeyEvent.ACTION_UP);
                     for (int pos = keys.length - 1; pos >= 0; pos--) {
                         short key = keys[pos];
                         modifier[0] &= (byte) ~getModifier(key);
@@ -269,6 +271,7 @@ public class KeyBoardControllerConfigurationLoader {
             button.addDigitalButtonListener(new KeyBoardDigitalButton.DigitalButtonListener() {
                 @Override
                 public void onClick() {
+                    controller.vibrate(KeyEvent.ACTION_DOWN);
                     for (short key : keys) {
                         conn.sendKeyboardInput(key, KeyboardPacket.KEY_DOWN, modifier[0], (byte) 0);
                         modifier[0] |= getModifier(key);
@@ -281,6 +284,7 @@ public class KeyBoardControllerConfigurationLoader {
 
                 @Override
                 public void onRelease() {
+                    controller.vibrate(KeyEvent.ACTION_UP);
                     for (int pos = keys.length - 1; pos >= 0; pos--) {
                         short key = keys[pos];
                         modifier[0] &= (byte) ~getModifier(key);
@@ -478,18 +482,26 @@ public class KeyBoardControllerConfigurationLoader {
                     JSONObject object = new JSONObject(value);
                     JSONArray keyMapArr = object.optJSONArray("data");
                     if(keyMapArr != null&&keyMapArr.length()>0){
-                        for (int idx = 0; i < keyMapArr.length(); idx++) {
+                        for (int idx = 0; idx < keyMapArr.length(); idx++) {
                             JSONObject keyMap = keyMapArr.getJSONObject(idx);
                             String id = keyMap.optString("id", Integer.toString(idx));
                             String name = keyMap.optString("name");
-                            JSONArray keySequence = keyMap.getJSONArray("data");
+                            JSONArray keySequence = keyMap.getJSONArray("keys");
                             short[] vkKeyCodes = new short[keySequence.length()];
                             for (int j = 0; j < keySequence.length(); j++) {
                                 String code = keySequence.getString(j);
-                                vkKeyCodes[j] = (short) Integer.parseInt(code.substring(2), 16);
+                                int keycode;
+                                if (code.startsWith("0x")) {
+                                    keycode = Integer.parseInt(code.substring(2), 16);
+                                } else if (code.startsWith("VK_")) {
+                                    Field vkCodeField = KeyMapper.class.getDeclaredField(code);
+                                    keycode = vkCodeField.getInt(null);
+                                } else {
+                                    throw new Exception("Unknown key code: " + code);
+                                }
+                                vkKeyCodes[j] = (short) keycode;
                             }
 
-                            int type = keyMap.optInt("type", 0);
                             boolean sticky = keyMap.optBoolean("sticky", false);
 
                             int lastIndex = (int) ((idx + i) / buttonSum);
@@ -497,7 +509,7 @@ public class KeyBoardControllerConfigurationLoader {
                             int x = screenScale(1 + (int) ((idx + i) % buttonSum) * BUTTON_SIZE, height);
                             int y = screenScale(BUTTON_SIZE + lastIndex * BUTTON_SIZE, height);
 
-                            controller.addElement(createCustomButton("custom_" + id, vkKeyCodes, type, 1, name, -1, sticky, controller, conn, context),
+                            controller.addElement(createCustomButton("custom_" + id, vkKeyCodes, 1, name, -1, sticky, controller, conn, context),
                                 x, y,
                                 w, w
                             );
