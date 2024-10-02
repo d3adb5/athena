@@ -1709,7 +1709,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     public boolean handleFocusChange(boolean hasFocus) {
-        if (prefConfig.smartClipboardSync) {
+        if (connected && prefConfig.smartClipboardSync) {
             if (hasFocus) {
                 return sendClipboard(false);
             } else {
@@ -2942,6 +2942,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                 // Update GameManager state to indicate we're in game
                 UiHelper.notifyStreamConnected(Game.this);
+
+                // Sync local clipboard to host
+                handleFocusChange(true);
 
                 hideSystemUi(1000);
             }
