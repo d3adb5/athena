@@ -71,6 +71,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private byte optimalSlicesPerFrame;
     private boolean refFrameInvalidationActive;
     private int initialWidth, initialHeight;
+    private boolean invertResolution;
     private int videoFormat;
     private Surface renderTarget;
     private volatile boolean stopping;
@@ -299,7 +300,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     public MediaCodecDecoderRenderer(Activity activity, PreferenceConfiguration prefs,
                                      CrashListener crashListener, int consecutiveCrashCount,
-                                     boolean meteredData, boolean requestedHdr,
+                                     boolean meteredData, boolean requestedHdr, boolean invertResolution,
                                      String glRenderer, PerfOverlayListener perfListener) {
         //dumpDecoders();
 
@@ -310,6 +311,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         this.consecutiveCrashCount = consecutiveCrashCount;
         this.glRenderer = glRenderer;
         this.perfListener = perfListener;
+        this.invertResolution = invertResolution;
 
         this.activeWindowVideoStats = new VideoStats();
         this.lastWindowVideoStats = new VideoStats();
@@ -707,8 +709,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public int setup(int format, int width, int height, int redrawRate) {
-        this.initialWidth = prefs.invertVideoResolution ? height : width;
-        this.initialHeight = prefs.invertVideoResolution ? width : height;
+        this.initialWidth = invertResolution ? height : width;
+        this.initialHeight = invertResolution ? width : height;
         this.videoFormat = format;
         this.refreshRate = redrawRate;
 

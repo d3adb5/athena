@@ -95,13 +95,11 @@ import android.widget.Toast;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -144,6 +142,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private int displayWidth;
     private int displayHeight;
+    private int currentOrientation;
 
     private NvConnection conn;
     private SpinnerDialog spinner;
@@ -176,7 +175,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private float lastAbsTouchDownX, lastAbsTouchDownY;
 
     private boolean quitOnStop = false;
-    private boolean orientationOverriden = false;
     private boolean isHidingOverlays;
     private TextView notificationOverlayView;
     private int requestedNotificationOverlayVisibility = View.GONE;
@@ -288,8 +286,17 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         prefConfig = PreferenceConfiguration.readPreferences(this);
         tombstonePrefs = Game.this.getSharedPreferences("DecoderTombstone", 0);
 
-        displayWidth = prefConfig.invertVideoResolution ? prefConfig.height : prefConfig.width;
-        displayHeight = prefConfig.invertVideoResolution ? prefConfig.width : prefConfig.height;
+        if (prefConfig.autoOrientation) {
+            currentOrientation = getResources().getConfiguration().orientation;
+        } else {
+            currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
+        }
+
+        boolean portraitMode = currentOrientation == Configuration.ORIENTATION_PORTRAIT;
+        boolean shouldInvertDecoderResolution = portraitMode && prefConfig.autoInvertVideoResolution;
+
+        displayWidth = shouldInvertDecoderResolution ? prefConfig.height : prefConfig.width;
+        displayHeight = shouldInvertDecoderResolution ? prefConfig.width : prefConfig.height;
 
         // Enter landscape unless we're on a square screen
         setPreferredOrientationForCurrentDisplay();
@@ -498,6 +505,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 tombstonePrefs.getInt("CrashCount", 0),
                 connMgr.isActiveNetworkMetered(),
                 willStreamHdr,
+                shouldInvertDecoderResolution,
                 glPrefs.glRenderer,
                 this);
 
@@ -733,19 +741,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         }
         else {
-            //强制竖屏模式
-            if(prefConfig.enablePortrait){
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
-                }
-                else {
-                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
-                }
-                return;
+            // Lock to current orientation
+            if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
             }
-
-            // For regular displays, we always request landscape
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
         }
     }
 
@@ -754,9 +755,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         super.onConfigurationChanged(newConfig);
 
         // Set requested orientation for possible new screen size
-        if (!orientationOverriden) {
-            setPreferredOrientationForCurrentDisplay();
-        }
+        setPreferredOrientationForCurrentDisplay();
 
         if (virtualController != null) {
             // Refresh layout of OSC for possible new screen size
@@ -3242,11 +3241,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     public void rotateScreen() {
-        orientationOverriden = true;
-        int currentOrientation = getResources().getConfiguration().orientation;
         if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            currentOrientation = Configuration.ORIENTATION_PORTRAIT;
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT);
         } else {
+            currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
         }
     }

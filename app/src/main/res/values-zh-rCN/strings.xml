@@ -253,8 +253,8 @@
     <string name="pacing_balanced">平衡</string>
     <string name="pacing_smoothness">优先视频流畅度（可能会显著增大延迟）</string>
     <string name="summary_setup_guide">查看有关如何设置游戏电脑以进行流传输的说明</string>
-    <string name="title_checkbox_invert_video_resolution">反转分辨率</string>
-    <string name="summary_checkbox_invert_video_resolution">反转视频流的宽/高。\n例如: 1920x1080 会变成 1080x1920。\n在竖屏模式下比较有用。</string>
+    <string name="title_checkbox_auto_invert_video_resolution">自动反转分辨率</string>
+    <string name="summary_checkbox_auto_invert_video_resolution">在竖屏时自动反转视频流的宽/高。\n例如: 1920x1080 会变成 1080x1920。</string>
     <string name="title_video_scale_mode">视频缩放模式</string>
     <string name="summary_video_scale_mode">选择适应/填充/拉伸</string>
     <string name="video_scale_mode_fit">适应</string>
@@ -368,8 +368,8 @@
             \n非原生分辨率如果是刘海屏可能不会默认填充刘海区域，
             \n如果画面比例一样，可手动设置拉伸画面来充满全屏</string>
     <string name="title_custom_resolution">自定义分辨率</string>
-    <string name="title_portrait_mode">竖屏模式</string>
-    <string name="summary_portrait_mode">串流画面将以竖屏呈现。</string>
+    <string name="title_auto_orientation">自动屏幕方向</string>
+    <string name="summary_auto_orientation">串流画面将以启动时的设备旋转方向呈现。</string>
     <string name="title_joyconfix">兼容Switch JoyCon手柄</string>
     <string name="summary_joyconfix">如果你的JoyCon无法使用或识别按键有问题，可以尝试开启此功能。适配Android 10及以上</string>
     <string name="title_keyboard_opacity">虚拟全键盘透明度</string>
@@ -382,7 +382,7 @@
     <string name="title_exdisplay_mode">外接显示器模式（Beta）</string>
     <string name="summary_exdisplay_mode">串流画面显示在显示器，虚拟按键及性能信息等控件在手机屏幕。</string>
     <string name="title_top_center_display">画面顶部居中显示</string>
-    <string name="summary_top_center_display">可能对折叠屏手机有点帮助，设置分辨率为上半屏幕分辨率，勾选此选项，则画面在上半屏幕显示而非居中显示。</string>
+    <string name="summary_top_center_display">非原生分辨率时，画面将与顶部对齐而非居中显示。</string>
     <string name="title_touch_sensitivity">触控屏幕灵敏度</string>
     <string name="summary_touch_sensitivity">开启后，可手动调整触控灵敏度。</string>
     <string name="title_global_touch_sensitivity">触控屏幕灵敏度全局生效</string>

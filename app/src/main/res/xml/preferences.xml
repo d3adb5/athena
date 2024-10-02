@@ -60,16 +60,17 @@
             android:title="@string/title_checkbox_use_virtual_display" />
 
         <CheckBoxPreference
-            android:key="checkbox_enable_portrait"
-            android:title="@string/title_portrait_mode"
-            android:summary="@string/summary_portrait_mode"
+            android:key="checkbox_auto_orientation"
+            android:title="@string/title_auto_orientation"
+            android:summary="@string/summary_auto_orientation"
             android:defaultValue="false"/>
 
         <CheckBoxPreference
-            android:key="checkbox_invert_video_resolution"
-            android:title="@string/title_checkbox_invert_video_resolution"
-            android:summary="@string/summary_checkbox_invert_video_resolution"
-            android:defaultValue="false"/>
+            android:key="checkbox_auto_invert_video_resolution"
+            android:dependency="checkbox_auto_orientation"
+            android:title="@string/title_checkbox_auto_invert_video_resolution"
+            android:summary="@string/summary_checkbox_auto_invert_video_resolution"
+            android:defaultValue="true"/>
 
         <CheckBoxPreference
             android:key="checkbox_enable_view_top_center"

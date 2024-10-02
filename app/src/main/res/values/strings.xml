@@ -176,8 +176,8 @@
     <string name="resolution_prefix_native_portrait">(Portrait)</string>
     <string name="fps_suffix_fps">FPS</string>
     <string name="title_native_fps_dialog">Native FPS Warning</string>
-    <string name="title_checkbox_invert_video_resolution">Invert Resolution</string>
-    <string name="summary_checkbox_invert_video_resolution">Invert the width and height of the video stream.\nFor example: 1920x1080 will become 1080x1920.\nUseful with Portrait mode.</string>
+    <string name="title_checkbox_auto_invert_video_resolution">Auto Invert Resolution</string>
+    <string name="summary_checkbox_auto_invert_video_resolution">Automatically invert the width and height of the video stream when in portrait mode.\nFor example: 1920x1080 will become 1080x1920.</string>
     <string name="title_video_scale_mode">Video Scale Mode</string>
     <string name="summary_video_scale_mode">Select between Fit, Fill and Stretch</string>
     <string name="video_scale_mode_fit">Fit</string>
@@ -400,8 +400,8 @@
     <string name="dialog_custom_resolution">Set the resolution and exit the settings page to take effect!</string>
     <string name="summary_custom_resolution">Add a custom resolution, separated by x, strange resolutions may not work.\nFor example: 1920x1080\nIf it is a non-native resolution, it may not fill the notch area by default. If the aspect ratio is the same, you can manually set to stretch the screen to fill the full screen</string>
     <string name="title_custom_resolution">Custom Resolution</string>
-    <string name="title_portrait_mode">Portrait Mode</string>
-    <string name="summary_portrait_mode">Streaming display will be displayed in portrait.</string>
+    <string name="title_auto_orientation">Auto Orientation</string>
+    <string name="summary_auto_orientation">The streaming screen will be displayed according to the device\'s orientation when the stream begins.</string>
     <string name="title_import_special_button">Import Custom Keys</string>
     <string name="summary_import_special_button">Available in Back Menu and special keys.\nNote: Importing will overwrite current configuration, please backup accordingly.</string>
     <string name="title_software_update">Software Update</string>
@@ -427,8 +427,8 @@
     <string name="title_free_analog_stick_opacity">Free Analog Stick Background Opacity</string>
     <string name="title_exdisplay_mode">External Display Mode (Beta)</string>
     <string name="summary_exdisplay_mode">Stream display on the monitor, virtual buttons and performance information and other controls on the phone screen.</string>
-    <string name="title_top_center_display">Top Center Display</string>
-    <string name="summary_top_center_display">May help with foldable phones, set the resolution to the top half screen resolution, select this option, the picture will be displayed on the top half of the screen instead of centered display.</string>
+    <string name="title_top_center_display">Display in Top Center</string>
+    <string name="summary_top_center_display">Streaming picture will be aligned to the top of the screen instead of centered when resolution is not native.</string>
     <string name="title_touch_sensitivity">Touch Screen Sensitivity</string>
     <string name="summary_touch_sensitivity">When enabled, you can manually adjust the touch sensitivity.</string>
     <string name="title_global_touch_sensitivity">Touch Screen Sensitivity Global Effect</string>
