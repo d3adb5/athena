@@ -292,6 +292,12 @@
             android:summary="@string/summary_checkbox_show_onscreen_controls"
             android:title="@string/title_checkbox_show_onscreen_controls" />
         <CheckBoxPreference
+            android:defaultValue="true"
+            android:dependency="checkbox_show_onscreen_controls"
+            android:key="checkbox_hide_osc_when_has_gamepad"
+            android:summary="@string/summary_hide_osc_when_has_gamepad"
+            android:title="@string/title_hide_osc_when_has_gamepad" />
+        <CheckBoxPreference
             android:defaultValue="false"
             android:dependency="checkbox_show_onscreen_controls"
             android:key="checkbox_onscreen_style_official"

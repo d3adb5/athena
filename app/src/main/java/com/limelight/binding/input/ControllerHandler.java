@@ -230,6 +230,10 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         return range;
     }
 
+    public boolean hasController() {
+        return hasGameController;
+    }
+
     @Override
     public void onInputDeviceAdded(int deviceId) {
         // Nothing happening here yet

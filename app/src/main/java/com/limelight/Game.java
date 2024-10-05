@@ -624,7 +624,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         if (prefConfig.onscreenController) {
             // create virtual onscreen controller
-            initVirtualController();
+            if (prefConfig.hideOSCWhenHasGamepad) {
+                if (!controllerHandler.hasController()) {
+                    initVirtualController();
+                }
+            } else {
+                initVirtualController();
+            }
         }
 
         //特殊按键屏幕布局
@@ -762,11 +768,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             virtualController.refreshLayout();
         }
 
-        if(keyBoardController !=null){
+        if(keyBoardController != null){
             keyBoardController.refreshLayout();
         }
 
-        if(keyBoardLayoutController!=null){
+        if(keyBoardLayoutController != null){
             keyBoardLayoutController.refreshLayout();
         }
 
