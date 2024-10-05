@@ -3,7 +3,6 @@ package com.limelight;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
@@ -274,11 +273,11 @@ public class GameMenu implements Game.GameMenuCallbacks {
 
         if (game.presentation == null) {
             options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
-                    game::selectMouseModeModal));
+                    game::selectMouseMode));
         }
 
         options.add(new MenuOption(getString(R.string.game_menu_hud), true,
-                game::showHUD));
+                game::toggleHUD));
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true,
                 game::showHideKeyboardController));

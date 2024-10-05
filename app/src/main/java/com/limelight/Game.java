@@ -614,7 +614,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
 
         // Initialize touch contexts
-        String mouseMode = PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_model_list_axi", "0");
+        String mouseMode = PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_mode_list", "0");
         applyMouseMode(Integer.parseInt(mouseMode));
 
         // Initialize trackpad contexts
@@ -3253,13 +3253,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
-    public void selectMouseModeModal(){
-        String[] strings=getResources().getStringArray(R.array.mouse_model_names_axi);
-        String[] items =Arrays.copyOf(strings,strings.length+1);
-        items[items.length-1]=getString(R.string.toggle_local_mouse_cursor);
+    public void selectMouseMode(){
+        String[] strings = getResources().getStringArray(R.array.mouse_mode_names);
+        String[] items = Arrays.copyOf(strings,strings.length + 1);
+        items[items.length - 1] = getString(R.string.toggle_local_mouse_cursor);
         new AlertDialog.Builder(this).setItems(items, (dialog, which) -> {
             dialog.dismiss();
-            if(which==strings.length){
+            if(which == strings.length){
                 toggleMouseLocalCursor();
                 return;
             }
@@ -3311,10 +3311,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 touchContextMap[i] = null;
             } else if (!prefConfig.touchscreenTrackpad) {
                 touchContextMap[i] = new AbsoluteTouchContext(conn, i, streamView, mode == 5);
+            } else if (mode == 3) {
+                touchContextMap[i] = new RelativeTouchContext(conn, i, REFERENCE_HORIZ_RES, REFERENCE_VERT_RES, streamView, prefConfig);
             } else {
-                touchContextMap[i] = (mode == 3)
-                        ? new RelativeTouchContext(conn, i, REFERENCE_HORIZ_RES, REFERENCE_VERT_RES, streamView, prefConfig)
-                        : new TrackpadContext(conn, i);
+                touchContextMap[i] = new TrackpadContext(conn, i);
             }
         }
 
@@ -3322,8 +3322,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         isPanZoomMode = false;
     }
 
-    public void showHUD(){
-        prefConfig.enablePerfOverlay=!prefConfig.enablePerfOverlay;
+    public void toggleHUD(){
+        prefConfig.enablePerfOverlay = !prefConfig.enablePerfOverlay;
         if(prefConfig.enablePerfOverlay){
             performanceOverlayView.setVisibility(View.VISIBLE);
             if(prefConfig.enablePerfOverlayLite){
@@ -3338,9 +3338,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     //切换触控灵敏度开关
     public void switchTouchSensitivity(){
-        prefConfig.enableTouchSensitivity=!prefConfig.enableTouchSensitivity;
+        prefConfig.enableTouchSensitivity = !prefConfig.enableTouchSensitivity;
     }
-
 
     public void disconnect() {
         finish();
