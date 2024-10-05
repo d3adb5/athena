@@ -417,6 +417,12 @@
     <string name="summary_square_buttons">虚拟按钮形状为方形按钮，默认为圆形。</string>
     <string name="title_reset_keyboard_layout">重置屏幕虚拟按键布局</string>
     <string name="summary_reset_keyboard_layout">初始化特殊按键布局（重置默认选择的那套布局方案）</string>
+    <string name="title_trackpad_sensitivity_x">触摸板 X 轴灵敏度</string>
+    <string name="summary_trackpad_sensitivity_x">触摸板 X 轴灵敏度，负值则反向移动</string>
+    <string name="title_trackpad_sensitivity_y">触摸板 Y 轴灵敏度</string>
+    <string name="summary_trackpad_sensitivity_y">触摸板 Y 轴灵敏度，负值则反向移动</string>
+    <string name="title_trackpad_swap_axis">交换触摸板XY坐标</string>
+    <string name="summary_trackpad_swap_axis">在某些设备上，触摸板输入坐标可能会与当前视图方向不符。开启此选项可能会有用。</string>
     <string name="title_checkbox_force_qwerty">强制使用 QWERTY 布局</string>
     <string name="summary_checkbox_force_qwerty">强制使用 QWERTY 键盘布局。GFE必须使用。\n如果你希望使用其他键盘布局的话，请关闭此选项。</string>
     <string name="title_checkbox_back_as_meta">使用返回键作为 Meta</string>

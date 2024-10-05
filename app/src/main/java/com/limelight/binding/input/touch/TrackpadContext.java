@@ -26,6 +26,10 @@ public class TrackpadContext implements TouchContext {
     private final int actionIndex;
     private final Handler handler;
 
+    private boolean swapAxis = false;
+    private float sensitivityX = 1;
+    private float sensitivityY = 1;
+
     private static final int TAP_MOVEMENT_THRESHOLD = 20;
     private static final int TAP_DISTANCE_THRESHOLD = 25;
     private static final int TAP_TIME_THRESHOLD = 230;
@@ -37,6 +41,13 @@ public class TrackpadContext implements TouchContext {
         this.conn = conn;
         this.actionIndex = actionIndex;
         this.handler = new Handler(Looper.getMainLooper());
+    }
+
+    public TrackpadContext(NvConnection conn, int actionIndex, boolean swapAxis, int sensitivityX, int sensitivityY) {
+        this(conn, actionIndex);
+        this.swapAxis = swapAxis;
+        this.sensitivityX = (float) sensitivityX / 100;
+        this.sensitivityY = (float) sensitivityY / 100;
     }
 
     @Override
@@ -153,16 +164,17 @@ public class TrackpadContext implements TouchContext {
             int absDeltaX = Math.abs(eventX - lastTouchX);
             int absDeltaY = Math.abs(eventY - lastTouchY);
 
-            int deltaX = absDeltaX;
-            int deltaY = absDeltaY;
+            float deltaX, deltaY;
+            if (swapAxis) {
+                deltaY = (eventX < lastTouchX) ? -absDeltaX : absDeltaX;
+                deltaX = (eventY < lastTouchY) ? -absDeltaY : absDeltaY;
+            } else {
+                deltaX = (eventX < lastTouchX) ? -absDeltaX : absDeltaX;
+                deltaY = (eventY < lastTouchY) ? -absDeltaY : absDeltaY;
+            }
 
-            // Fix up the signs
-            if (eventX < lastTouchX) {
-                deltaX = -absDeltaX;
-            }
-            if (eventY < lastTouchY) {
-                deltaY = -absDeltaY;
-            }
+            deltaX *= sensitivityX;
+            deltaY *= sensitivityY;
 
             lastTouchX = eventX;
             lastTouchY = eventY;

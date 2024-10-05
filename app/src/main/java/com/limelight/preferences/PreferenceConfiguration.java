@@ -98,10 +98,13 @@ public class PreferenceConfiguration {
     private static final String CHECKBOX_ENABLE_KEYBOARD_VIBRATE = "checkbox_vibrate_keyboard";
 
     //自动摇杆
-    private static final String CHECKBOX_CHECKBOX_ENABLE_ANALOG_STICK_NEW="checkbox_enable_analog_stick_new";
+    private static final String CHECKBOX_CHECKBOX_ENABLE_ANALOG_STICK_NEW = "checkbox_enable_analog_stick_new";
 
     //触控屏幕灵敏度
-    private static final String TOUCH_SENSITIVITY="seekbar_touch_sensitivity_opacity_x";
+    private static final String SEEKBAR_TOUCH_SENSITIVITY = "seekbar_touch_sensitivity_opacity_x";
+    private static final String SEEKBAR_TRACKPAD_SENSITIVITY_X = "seekbar_trackpad_sensitivity_x";
+    private static final String SEEKBAR_TRACKPAD_SENSITIVITY_Y = "seekbar_trackpad_sensitivity_y";
+    private static final String CHECKBOX_TRACKPAD_SWAP_AXIS = "checkbox_trackpad_swap_axis";
 
     static final String DEFAULT_RESOLUTION = "1280x720";
     static final String DEFAULT_FPS = "60";
@@ -151,6 +154,9 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_SEND_META_ON_PHYSICAL_BACK = false;
     private static final boolean DEFAULT_SMART_CLIPBOARD_SYNC = false;
     private static final boolean DEFAULT_SMART_CLIPBOARD_SYNC_TOAST = true;
+    private static final int DEFAULT_TRACKPAD_SENSITIVITY_X = 100;
+    private static final int DEFAULT_TRACKPAD_SENSITIVITY_Y = 100;
+    private static final boolean DEFAULT_TRACKPAD_SWAP_AXIS = false;
 
     public static final int FRAME_PACING_MIN_LATENCY = 0;
     public static final int FRAME_PACING_BALANCED = 1;
@@ -211,7 +217,7 @@ public class PreferenceConfiguration {
     public boolean enableExDisplay;
 
     //串流画面顶部居中显示
-    public boolean enableDisplayTopCenter;
+    public boolean alignDisplayTopCenter;
 
     //触控屏幕灵敏度
     public int touchSensitivityX;
@@ -250,7 +256,11 @@ public class PreferenceConfiguration {
     public boolean enableOnScreenStyleOfficial;
 
     //自由摇杆背景透明度
-    public int senableNewAnalogStickOpacity;
+    public int enableNewAnalogStickOpacity;
+
+    public int trackpadSensitivityX;
+    public int trackpadSensitivityY;
+    public boolean trackpadSwapAxis;
 
     public boolean bindAllUsb;
     public boolean mouseEmulation;
@@ -764,7 +774,7 @@ public class PreferenceConfiguration {
 
         config.enableOnScreenStyleOfficial=prefs.getBoolean("checkbox_onscreen_style_official",false);
 
-        config.senableNewAnalogStickOpacity=prefs.getInt("seekbar_osc_free_analog_stick_opacity",20);
+        config.enableNewAnalogStickOpacity =prefs.getInt("seekbar_osc_free_analog_stick_opacity",20);
 
         config.oscKeyboardHeight=prefs.getInt("seekbar_keyboard_axi_height",200);
 
@@ -772,9 +782,9 @@ public class PreferenceConfiguration {
 
         config.enableExDisplay=prefs.getBoolean("checkbox_enable_exdisplay",false);
 
-        config.enableDisplayTopCenter=prefs.getBoolean("checkbox_enable_view_top_center",false);
+        config.alignDisplayTopCenter =prefs.getBoolean("checkbox_enable_view_top_center",false);
 
-        config.touchSensitivityX =prefs.getInt(TOUCH_SENSITIVITY,100);
+        config.touchSensitivityX =prefs.getInt(SEEKBAR_TOUCH_SENSITIVITY,100);
 
         config.touchSensitivityY=prefs.getInt("seekbar_touch_sensitivity_opacity_y",100);
 
@@ -797,6 +807,10 @@ public class PreferenceConfiguration {
         config.touchPadSensitivity=prefs.getInt("seekbar_touchpad_sensitivity_opacity",100);
 
         config.touchPadYSensitity=prefs.getInt("seekbar_touchpad_sensitivity_y_opacity",100);
+
+        config.trackpadSensitivityX = prefs.getInt(SEEKBAR_TRACKPAD_SENSITIVITY_X, DEFAULT_TRACKPAD_SENSITIVITY_X);
+        config.trackpadSensitivityY = prefs.getInt(SEEKBAR_TRACKPAD_SENSITIVITY_Y, DEFAULT_TRACKPAD_SENSITIVITY_Y);
+        config.trackpadSwapAxis = prefs.getBoolean(CHECKBOX_TRACKPAD_SWAP_AXIS, DEFAULT_TRACKPAD_SWAP_AXIS);
 
         config.absoluteMouseMode = prefs.getBoolean(ABSOLUTE_MOUSE_MODE_PREF_STRING, DEFAULT_ABSOLUTE_MOUSE_MODE);
         config.enableBatteryReport = prefs.getBoolean(CHECKBOX_ENABLE_BATTERY_REPORT, DEFAULT_GAMEPAD_ENABLE_BATTERY_REPORT);

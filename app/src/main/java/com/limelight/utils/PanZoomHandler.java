@@ -28,7 +28,7 @@ public class PanZoomHandler {
         this.game = game;
         this.streamView = streamView;
         this.prefConfig = prefConfig;
-        this.isTopMode = prefConfig.enableDisplayTopCenter;
+        this.isTopMode = prefConfig.alignDisplayTopCenter;
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleListener());
         gestureDetector = new GestureDetector(context, new GestureListener());
 

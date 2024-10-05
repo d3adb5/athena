@@ -326,7 +326,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         cursorVisible = prefConfig.enableMouseLocalCursor;
 
         //串流画面 顶部居中显示
-        if(prefConfig.enableDisplayTopCenter){
+        if(prefConfig.alignDisplayTopCenter){
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) streamView.getLayoutParams();
             params.gravity = Gravity.CENTER_HORIZONTAL|Gravity.TOP;
         }
@@ -619,7 +619,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // Initialize trackpad contexts
         for (int i = 0; i < trackpadContextMap.length; i++) {
-            trackpadContextMap[i] = new TrackpadContext(conn, i);
+            trackpadContextMap[i] = new TrackpadContext(conn, i, prefConfig.trackpadSwapAxis, prefConfig.trackpadSensitivityX, prefConfig.trackpadSensitivityY);
         }
 
         if (prefConfig.onscreenController) {

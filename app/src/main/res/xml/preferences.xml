@@ -201,7 +201,6 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/category_input_settings"
         android:key="category_input_settings">
-
         <ListPreference
             android:defaultValue="0"
             android:entries="@array/mouse_mode_names"
@@ -240,6 +239,29 @@
             android:title="@string/title_checkbox_absolute_mouse_mode"
             android:summary="@string/summary_checkbox_absolute_mouse_mode"
             android:defaultValue="false" />
+        <com.limelight.preferences.SeekBarPreference
+            android:key="seekbar_trackpad_sensitivity_x"
+            seekbar:min="-200"
+            seekbar:step="10"
+            android:max="200"
+            android:defaultValue="100"
+            android:summary="@string/summary_trackpad_sensitivity_x"
+            android:text="%"
+            android:title="@string/title_trackpad_sensitivity_x" />
+        <com.limelight.preferences.SeekBarPreference
+            android:key="seekbar_trackpad_sensitivity_y"
+            seekbar:min="-200"
+            seekbar:step="10"
+            android:max="200"
+            android:defaultValue="100"
+            android:summary="@string/summary_trackpad_sensitivity_y"
+            android:text="%"
+            android:title="@string/title_trackpad_sensitivity_y" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="checkbox_trackpad_swap_axis"
+            android:summary="@string/summary_trackpad_swap_axis"
+            android:title="@string/title_trackpad_swap_axis" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="checkbox_force_qwerty"

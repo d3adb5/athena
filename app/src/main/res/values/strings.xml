@@ -449,6 +449,12 @@
     <string name="summary_device_rumble">If you are not satisfied with the vibration of the connected gamepad, you can enable this option.\nInvalid for forced use of Moonlight\'s built-in USB driver</string>
     <string name="title_clear_default_special_button">Disable default Special Keys</string>
     <string name="summary_clear_default_special_button">If you feel the built-in commands in the Back Menu are useless, you can disable them and use your imported ones.</string>
+    <string name="title_trackpad_sensitivity_x">Trackpad Sensitivity X</string>
+    <string name="summary_trackpad_sensitivity_x">X axis Sensitivity of the trackpad, negative to invert direction</string>
+    <string name="title_trackpad_sensitivity_y">Trackpad Sensitivity Y</string>
+    <string name="summary_trackpad_sensitivity_y">Y axis Sensitivity of the trackpad, negative to invert direction</string>
+    <string name="title_trackpad_swap_axis">Swap X and Y axis of the trackpad input</string>
+    <string name="summary_trackpad_swap_axis">On some devices, trackpad input may be rotated in axis. Enabling this option may help.</string>
     <string name="title_checkbox_force_qwerty">Force QWERTY layout</string>
     <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout.\nRequired by GFE.\nTurn off if you want to use a different keyboard layout.</string>
     <string name="title_checkbox_back_as_meta">Back button as Meta</string>

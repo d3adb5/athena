@@ -310,7 +310,7 @@ public class AnalogStickFree extends VirtualControllerElement {
     private int bgCircleColor=0x2BF5F5F9;
     private int strokeCircleColor=0xFF8F8F8F;
     public void setBgOpacity() {
-        int hexOpacity = PreferenceConfiguration.readPreferences(getContext()).senableNewAnalogStickOpacity* 255 / 100;
+        int hexOpacity = PreferenceConfiguration.readPreferences(getContext()).enableNewAnalogStickOpacity * 255 / 100;
         this.bgCircleColor = (hexOpacity << 24) | (bgCircleColor & 0x00FFFFFF);
         this.strokeCircleColor = (hexOpacity << 24) | (pressedColor & 0x00FFFFFF);
         invalidate();
