@@ -179,11 +179,6 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             }
         }
 
-        // 1% is the lowest possible deadzone we support
-        if (deadzonePercentage <= 0) {
-            deadzonePercentage = 1;
-        }
-
         this.stickDeadzone = (double)deadzonePercentage / 100.0;
 
         // Initialize the default context for events with no device
@@ -1640,14 +1635,30 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
     }
 
     private void handleDeadZone(Vector2d stickVector, float deadzoneRadius) {
-        if (stickVector.getMagnitude() <= deadzoneRadius) {
-            // Deadzone
-            stickVector.initialize(0, 0);
+        if (deadzoneRadius > 0) {
+            // We're not normalizing here because we let the computer handle the deadzones.
+            // Normalizing can make the deadzones larger than they should be after the computer also
+            // evaluates the deadzone.
+            if (stickVector.getMagnitude() <= deadzoneRadius) {
+                // Deadzone
+                stickVector.initialize(0, 0);
+            }
+        } else {
+            double currentMagnitude = stickVector.getMagnitude();
+            if (currentMagnitude < 0.01) {
+                // Keep a 1% actual deadzone for actual centering
+                stickVector.initialize(0, 0);
+                return;
+            }
+            double remainingMagnitude = 1 + deadzoneRadius;
+            double normalizedMagnitude = -deadzoneRadius + currentMagnitude * remainingMagnitude;
+            if (normalizedMagnitude >= 1) {
+                return;
+            }
+            double scaleFactor = normalizedMagnitude / currentMagnitude;
+            stickVector.setX((float) (stickVector.getX() * scaleFactor));
+            stickVector.setY((float) (stickVector.getY() * scaleFactor));
         }
-
-        // We're not normalizing here because we let the computer handle the deadzones.
-        // Normalizing can make the deadzones larger than they should be after the computer also
-        // evaluates the deadzone.
     }
 
     private void handleAxisSet(InputDeviceContext context, float lsX, float lsY, float rsX,
