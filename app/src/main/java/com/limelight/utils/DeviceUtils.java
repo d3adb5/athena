@@ -10,8 +10,6 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
-import android.support.annotation.RequiresApi;
-import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import java.io.BufferedReader;
@@ -25,6 +23,9 @@ import java.util.Enumeration;
 import static android.Manifest.permission.ACCESS_WIFI_STATE;
 import static android.Manifest.permission.CHANGE_WIFI_STATE;
 import static android.content.Context.WIFI_SERVICE;
+
+import androidx.annotation.RequiresApi;
+import androidx.annotation.RequiresPermission;
 
 public final class DeviceUtils {
 

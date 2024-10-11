@@ -1,5 +1,6 @@
 package com.limelight.preferences;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,18 +13,28 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
-import android.support.v4.content.FileProvider;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
+
+import com.bytehamster.lib.preferencesearch.SearchConfiguration;
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResult;
+import com.bytehamster.lib.preferencesearch.SearchPreference;
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Range;
 import android.view.Display;
@@ -34,6 +45,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import com.google.gson.Gson;
 import com.limelight.DebugInfoActivity;
 import com.limelight.BuildConfig;
@@ -51,10 +63,13 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
-public class StreamSettings extends Activity {
+public class StreamSettings extends AppCompatActivity implements SearchPreferenceResultListener {
     private PreferenceConfiguration previousPrefs;
     private int previousDisplayPixelCount;
+
+    private SettingsFragment prefsFragment;
 
     // HACK for Android 9
     static DisplayCutout displayCutoutP;
@@ -64,9 +79,16 @@ public class StreamSettings extends Activity {
             Display.Mode mode = getWindowManager().getDefaultDisplay().getMode();
             previousDisplayPixelCount = mode.getPhysicalWidth() * mode.getPhysicalHeight();
         }
-        getFragmentManager().beginTransaction().replace(
-                R.id.stream_settings, new SettingsFragment()
+        prefsFragment = new SettingsFragment();
+        getSupportFragmentManager().beginTransaction().replace(
+                R.id.stream_settings, prefsFragment
         ).commitAllowingStateLoss();
+    }
+
+    @Override
+    public void onSearchResultClicked(SearchPreferenceResult result) {
+        result.closeSearchPage(this);
+        result.highlight(prefsFragment);
     }
 
     @Override
@@ -136,7 +158,7 @@ public class StreamSettings extends Activity {
         }
     }
 
-    public static class SettingsFragment extends PreferenceFragment {
+    public static class SettingsFragment extends PreferenceFragmentCompat {
         private int nativeResolutionStartIndex = Integer.MAX_VALUE;
         private boolean nativeFramerateShown = false;
 
@@ -285,13 +307,27 @@ public class StreamSettings extends Activity {
             return view;
         }
 
+        @Override
+        public void onCreatePreferences(Bundle bundle, String s) {}
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
+            initializePreferences();
+
+            SearchPreference searchPreference = findPreference("searchPreference");
+            assert searchPreference != null;
+            SearchConfiguration config = searchPreference.getSearchConfiguration();
+            config.setActivity((AppCompatActivity) requireActivity());
+            config.index(R.xml.preferences);
+        }
+
+        public void initializePreferences() {
             addPreferencesFromResource(R.xml.preferences);
             PreferenceScreen screen = getPreferenceScreen();
+
+            AppCompatActivity activity = (AppCompatActivity) requireActivity();
 
             // hide on-screen controls category on non touch screen devices
             if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
@@ -318,15 +354,15 @@ public class StreamSettings extends Activity {
             }
 
             // Hide gamepad motion sensor fallback option if the device has no gyro or accelerometer
-            if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER) &&
-                    !getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)) {
+            if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER) &&
+                    !activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
                 category.removePreference(findPreference("checkbox_gamepad_motion_fallback"));
             }
 
             // Hide USB driver options on devices without USB host support
-            if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
+            if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
                 category.removePreference(findPreference("checkbox_usb_bind_all"));
@@ -336,7 +372,7 @@ public class StreamSettings extends Activity {
             // Remove PiP mode on devices pre-Oreo, where the feature is not available (some low RAM devices),
             // and on Fire OS where it violates the Amazon App Store guidelines for some reason.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    !getActivity().getPackageManager().hasSystemFeature("android.software.picture_in_picture") ||
+                    !activity.getPackageManager().hasSystemFeature("android.software.picture_in_picture") ||
                     getActivity().getPackageManager().hasSystemFeature("com.amazon.software.fireos")) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_ui_settings");
@@ -362,12 +398,12 @@ public class StreamSettings extends Activity {
                 }
             }
             else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    !((Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE)).hasAmplitudeControl() ) {
+                    !((Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE)).hasAmplitudeControl()) {
                 // Remove the vibration strength selector of the device doesn't have amplitude control
                 category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
             }
 
-            String diy=PreferenceManager.getDefaultSharedPreferences(this.getActivity()).getString("edit_diy_w_h","");
+            String diy = PreferenceManager.getDefaultSharedPreferences(this.getActivity()).getString("edit_diy_w_h","");
             if(!TextUtils.isEmpty(diy)){
                 String[] diys=diy.split("x");
                 if(diys.length==2){
@@ -435,7 +471,7 @@ public class StreamSettings extends Activity {
 
                     // Some TVs report strange values here, so let's avoid native resolutions on a TV
                     // unless they report greater than 4K resolutions.
-                    if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
+                    if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
                             (width > 3840 || height > 2160)) {
                         addNativeResolutionEntries(width, height, hasInsets);
                     }
@@ -457,7 +493,7 @@ public class StreamSettings extends Activity {
 
                 // This must be called to do runtime initialization before calling functions that evaluate
                 // decoder lists.
-                MediaCodecHelper.initialize(getContext(), GlPreferences.readPreferences(getContext()).glRenderer);
+                MediaCodecHelper.initialize(getContext(), GlPreferences.readPreferences(requireContext()).glRenderer);
 
                 MediaCodecInfo avcDecoder = MediaCodecHelper.findProbableSafeDecoder("video/avc", -1);
                 MediaCodecInfo hevcDecoder = MediaCodecHelper.findProbableSafeDecoder("video/hevc", -1);
@@ -721,20 +757,20 @@ public class StreamSettings extends Activity {
             findPreference("export_keyboard_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    File file = new File(getActivity().getExternalCacheDir(),"export_settings");
+                    File file = new File(requireActivity().getExternalCacheDir(),"export_settings");
                     if(!file.exists()){
                         file.mkdir();
                     }
-                    File file1= getJsonContent(getActivity(),file);
+                    File file1= getJsonContent(requireActivity(),file);
                     if(file1==null){
-                        Toast.makeText(getActivity(),getString(R.string.pref_error_occurred),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireActivity(),getString(R.string.pref_error_occurred),Toast.LENGTH_SHORT).show();
                         return false;
                     }
                     Uri uri;
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     String authority= BuildConfig.APPLICATION_ID+".fileprovider";
-                    uri= FileProvider.getUriForFile(getActivity(),authority,file1);
+                    uri = FileProvider.getUriForFile(requireActivity(),authority,file1);
                     intent.putExtra(Intent.EXTRA_STREAM, uri);
                     intent.setType("application/json");
                     startActivity(Intent.createChooser(intent,getString(R.string.pref_save_keyboard_profile)));
@@ -745,29 +781,28 @@ public class StreamSettings extends Activity {
 
             findPreference("pref_debug_info").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent intent=new Intent(getActivity(), DebugInfoActivity.class);
-                    getActivity().startActivity(intent);
+                public boolean onPreferenceClick(@NonNull Preference preference) {
+                    Intent intent=new Intent(requireActivity(), DebugInfoActivity.class);
+                    requireActivity().startActivity(intent);
                     return false;
                 }
             });
 
-            EditTextPreference bitrateEditPre= (EditTextPreference) findPreference("edit_diy_bitrate");
-            EditText editText=bitrateEditPre.getEditText();
+            EditTextPreference bitrateEditPre = findPreference("edit_diy_bitrate");
 
-            editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            if (bitrateEditPre != null) {
+                bitrateEditPre.setOnBindEditTextListener((EditText editText) -> {
+                    editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)/*这里限制输入的长度为5个字母*/});
+                });
 
-            editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)/*这里限制输入的长度为5个字母*/});
-
-            bitrateEditPre.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                bitrateEditPre.setOnPreferenceChangeListener((preference, newValue) -> {
                     String value = (String) newValue;
                     if (TextUtils.isEmpty(value)) {
                         Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
                         return false;
                     }
-                    float bitrateValue = Float.valueOf(value) * 1000;
+                    float bitrateValue = Float.parseFloat(value) * 1000;
                     LimeLog.info("axi-bitrateValue:" + bitrateValue);
                     int bitrate = (int) bitrateValue;
                     LimeLog.info("axi-bitrate:" + bitrate);
@@ -775,9 +810,10 @@ public class StreamSettings extends Activity {
                     prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING, bitrate).apply();
                     Toast.makeText(getActivity(), getString(R.string.pref_set_success), Toast.LENGTH_SHORT).show();
                     return true;
-                }
-            });
+                });
+            }
         }
+
         int READ_REQUEST_CODE = 1001;
         int READ_REQUEST_SPECIAL_CODE = 1002;
 
@@ -792,8 +828,8 @@ public class StreamSettings extends Activity {
                         Toast.makeText(getActivity(), getString(R.string.pref_empty_file), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    String name = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
-                    SharedPreferences.Editor prefEditor = getActivity().getSharedPreferences(name, Activity.MODE_PRIVATE).edit();
+                    String name = PreferenceManager.getDefaultSharedPreferences(requireActivity()).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
+                    SharedPreferences.Editor prefEditor = requireActivity().getSharedPreferences(name, Activity.MODE_PRIVATE).edit();
                     JSONObject object = new JSONObject(json);
                     Iterator it = object.keys();
                     prefEditor.clear();

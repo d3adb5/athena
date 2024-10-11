@@ -577,11 +577,11 @@ public class PreferenceConfiguration {
                 .apply();
     }
 
-    public static void completeLanguagePreferenceMigration(Context context) {
-        // Put our language option back to default which tells us that we've already migrated it
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putString(LANGUAGE_PREF_STRING, DEFAULT_LANGUAGE).apply();
-    }
+//    public static void completeLanguagePreferenceMigration(Context context) {
+//        // Put our language option back to default which tells us that we've already migrated it
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        prefs.edit().putString(LANGUAGE_PREF_STRING, DEFAULT_LANGUAGE).apply();
+//    }
 
     public static boolean isShieldAtvFirmwareWithBrokenHdr() {
         // This particular Shield TV firmware crashes when using HDR

@@ -11,8 +11,8 @@ android {
         minSdk 21
         targetSdk 34
 
-        versionName "12.1-artemis-241009"
-        versionCode = 24
+        versionName "12.1-artemis-241011"
+        versionCode = 25
 
         // Generate native debug symbols to allow Google Play to symbolicate our native crashes
         ndk.debugSymbolLevel = 'FULL'
@@ -143,6 +143,9 @@ dependencies {
     implementation 'org.jmdns:jmdns:3.5.9'
     implementation 'com.github.cgutman:ShieldControllerExtensions:1.0.1'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'androidx.annotation:annotation:1.8.2'
     implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'com.github.ByteHamster:SearchPreference:v2.5.1'
 }

@@ -4,8 +4,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
-import android.preference.DialogPreference;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.widget.Toast;
 
@@ -14,22 +12,26 @@ import com.limelight.R;
 import static com.limelight.binding.input.virtual_controller.keyboard.KeyBoardControllerConfigurationLoader.OSC_PREFERENCE;
 import static com.limelight.binding.input.virtual_controller.keyboard.KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.preference.DialogPreference;
+import androidx.preference.PreferenceManager;
+
 public class ConfirmDeleteKeyboardPreference extends DialogPreference {
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public ConfirmDeleteKeyboardPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+
+    public ConfirmDeleteKeyboardPreference(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
 
-    public ConfirmDeleteKeyboardPreference(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ConfirmDeleteKeyboardPreference(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
-    public ConfirmDeleteKeyboardPreference(Context context, AttributeSet attrs) {
+    public ConfirmDeleteKeyboardPreference(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public ConfirmDeleteKeyboardPreference(Context context) {
+    public ConfirmDeleteKeyboardPreference(@NonNull Context context) {
         super(context);
     }
 
