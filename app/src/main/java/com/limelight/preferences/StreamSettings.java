@@ -1,6 +1,5 @@
 package com.limelight.preferences;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,9 +14,9 @@ import android.os.Handler;
 import android.os.Vibrator;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.DialogFragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
@@ -34,7 +33,6 @@ import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Range;
 import android.view.Display;
@@ -63,7 +61,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 
 public class StreamSettings extends AppCompatActivity implements SearchPreferenceResultListener {
     private PreferenceConfiguration previousPrefs;
@@ -866,6 +863,18 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             }
         }
 
+        @Override
+        public void onDisplayPreferenceDialog(@NonNull Preference preference) {
+            if (preference instanceof ConfirmDeleteOscPreference) {
+                DialogFragment dialogFragment = ConfirmDeleteOscPreference.DialogFragmentCompat.newInstance(preference.getKey());
+                dialogFragment.setTargetFragment(this, 0);
+                dialogFragment.show(getFragmentManager(), null);
+            } else if (preference instanceof ConfirmDeleteKeyboardPreference) {
+                DialogFragment dialogFragment = ConfirmDeleteKeyboardPreference.DialogFragmentCompat.newInstance(preference.getKey());
+                dialogFragment.setTargetFragment(this, 0);
+                dialogFragment.show(getFragmentManager(), null);
+            } else super.onDisplayPreferenceDialog(preference);
+        }
 
         private File getJsonContent(Context context,File file){
             String name = PreferenceManager.getDefaultSharedPreferences(context).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
@@ -893,6 +902,5 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             return file1;
         }
     }
-
-
 }
+
