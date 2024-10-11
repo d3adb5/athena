@@ -1,5 +1,7 @@
 package com.limelight.nvstream;
 
+import static java.lang.Thread.sleep;
+
 import android.app.ActivityManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -390,21 +392,46 @@ public class NvConnection {
 
                 context.connListener.stageStarting(appName);
 
-                try {
-                    if (!startApp()) {
-                        context.connListener.stageFailed(appName, 0, 0);
-                        return;
+                int tryCount = 0;
+
+                do {
+                    boolean retry = false;
+                    try {
+                        if (!startApp()) {
+                            retry = context.connListener.stageFailed(appName, 0, 0);
+                            if (!retry) {
+                                return;
+                            }
+                        }
+                        context.connListener.stageComplete(appName);
+                    } catch (HostHttpResponseException e) {
+                        e.printStackTrace();
+                        context.connListener.displayMessage(e.getMessage());
+                        retry = context.connListener.stageFailed(appName, 0, e.getErrorCode());
+                        if (!retry) {
+                            return;
+                        }
+                    } catch (XmlPullParserException | IOException e) {
+                        e.printStackTrace();
+                        context.connListener.displayMessage(e.getMessage());
+                        retry = context.connListener.stageFailed(appName, MoonBridge.ML_PORT_FLAG_TCP_47984 | MoonBridge.ML_PORT_FLAG_TCP_47989, tryCount < 2 ? 0 : -408);
+                        if (!retry) {
+                            return;
+                        }
                     }
-                    context.connListener.stageComplete(appName);
-                } catch (HostHttpResponseException e) {
-                    e.printStackTrace();
-                    context.connListener.displayMessage(e.getMessage());
-                    context.connListener.stageFailed(appName, 0, e.getErrorCode());
-                    return;
-                } catch (XmlPullParserException | IOException e) {
-                    e.printStackTrace();
-                    context.connListener.displayMessage(e.getMessage());
-                    context.connListener.stageFailed(appName, MoonBridge.ML_PORT_FLAG_TCP_47984 | MoonBridge.ML_PORT_FLAG_TCP_47989, 0);
+
+                    if (!retry) break;
+                    tryCount += 1;
+
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } while (tryCount < 3);
+
+                if (tryCount >= 3) {
+                    context.connListener.stageFailed(appName, 0, -408);
                     return;
                 }
 

@@ -550,4 +550,9 @@
     <string name="configuration_mode_move_buttons">Configuration Mode (Move buttons)</string>
     <string name="configuration_mode_resize_buttons">Configuration Mode (Resize buttons)</string>
     <string name="configuration_mode_exiting">Exiting Configuration Mode</string>
+    <string name="unlocking_or_starting">Server is starting or computer is unlocking, please wait…</string>
+    <string name="error_msg_permission_denied">Permission Denied</string>
+    <string name="error_msg_timeout">Connection Timeout</string>
+    <string name="permission_launch_app">Launch Apps</string>
+    <string name="permission_sync_clipboard">Sync Clipboard</string>
 </resources>

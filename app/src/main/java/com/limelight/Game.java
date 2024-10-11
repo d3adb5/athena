@@ -2764,10 +2764,15 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     @Override
-    public void stageFailed(final String stage, final int portFlags, final int errorCode) {
+    public boolean stageFailed(final String stage, final int portFlags, final int errorCode) {
         // Perform a connection test if the failure could be due to a blocked port
         // This does network I/O, so don't do it on the main thread.
         final int portTestResult = MoonBridge.testClientConnectivity(ServerHelper.CONNECTION_TEST_SERVER, 443, portFlags);
+
+        if (errorCode == 0 && portFlags != 0 && (portTestResult == MoonBridge.ML_TEST_RESULT_INCONCLUSIVE || portTestResult == 0)) {
+            spinner.setMessage(getResources().getString(R.string.unlocking_or_starting));
+            return true;
+        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -2788,6 +2793,20 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                     String dialogText = getResources().getString(R.string.conn_error_msg) + " " + stage +" (error "+errorCode+")";
 
+                    switch (errorCode) {
+                        case 403: {
+                            dialogText += "\n\n" + getResources().getString(R.string.error_msg_permission_denied) + " (" + getResources().getString(R.string.permission_launch_app) + ")";
+                            break;
+                        }
+                        case -408: {
+                            dialogText += "\n\n" + getResources().getString(R.string.error_msg_timeout);
+                            break;
+                        }
+                        default: {
+                            // do nothing
+                        }
+                    }
+
                     if (portFlags != 0) {
                         dialogText += "\n\n" + getResources().getString(R.string.check_ports_msg) + "\n" +
                                 MoonBridge.stringifyPortFlags(portFlags, "\n");
@@ -2801,6 +2820,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 }
             }
         });
+
+        return false;
     }
 
     @Override
