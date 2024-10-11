@@ -424,13 +424,13 @@ public class NvConnection {
                     tryCount += 1;
 
                     try {
-                        sleep(1000);
+                        sleep(2000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                } while (tryCount < 3);
+                } while (tryCount < 5);
 
-                if (tryCount >= 3) {
+                if (tryCount >= 5) {
                     context.connListener.stageFailed(appName, 0, -408);
                     return;
                 }
