@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.limelight.AppView;
 import com.limelight.Game;
@@ -71,7 +72,16 @@ public class UiHelper {
     {
         String locale = PreferenceConfiguration.readPreferences(activity).language;
         Configuration config = new Configuration(activity.getResources().getConfiguration());
-        if (!locale.equals(PreferenceConfiguration.DEFAULT_LANGUAGE)) {
+        if (locale.equals(PreferenceConfiguration.DEFAULT_LANGUAGE)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // On Android 13, migrate this non-default language setting into the OS native API
+                LocaleManager localeManager = activity.getSystemService(LocaleManager.class);
+                LocaleList systemLocales = localeManager.getSystemLocales();
+                if (!systemLocales.isEmpty()) {
+                    config.locale = systemLocales.get(0);
+                }
+            }
+        } else {
             // We're handling some nasty non-standard devices which cannot set locale using system config correctly
             // Some locales include both language and country which must be separated
             // before calling the Locale constructor.

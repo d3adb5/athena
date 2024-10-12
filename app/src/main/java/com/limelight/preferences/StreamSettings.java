@@ -144,13 +144,18 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
 
         // Language changes are handled via configuration changes in Android 13+,
         // so manual activity relaunching is no longer required.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            PreferenceConfiguration newPrefs = PreferenceConfiguration.readPreferences(this);
-            if (!newPrefs.language.equals(previousPrefs.language)) {
+        PreferenceConfiguration newPrefs = PreferenceConfiguration.readPreferences(this);
+        if (!newPrefs.language.equals(previousPrefs.language)) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 // Restart the PC view to apply UI changes
                 Intent intent = new Intent(this, PcView.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent, null);
+            } else {
+                if (newPrefs.language == PreferenceConfiguration.DEFAULT_LANGUAGE) {
+                    Toast.makeText(this, "Language has been reset to default, please restart the app!", Toast.LENGTH_LONG).show();
+                    System.exit(0);
+                }
             }
         }
     }
