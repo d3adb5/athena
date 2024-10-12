@@ -528,4 +528,11 @@
     <string name="error_msg_timeout">连接超时</string>
     <string name="permission_launch_app">启动APP</string>
     <string name="permission_sync_clipboard">同步剪贴板</string>
+
+    <string name="searchpreference_search">搜索…</string>
+    <string name="searchpreference_clear">清除</string>
+    <string name="searchpreference_history_entry">历史条目</string>
+    <string name="searchpreference_more">更多</string>
+    <string name="searchpreference_clear_history">清除历史</string>
+    <string name="searchpreference_no_results">无结果</string>
 </resources>
