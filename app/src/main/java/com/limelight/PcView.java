@@ -41,7 +41,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -59,6 +58,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+
+import androidx.preference.PreferenceManager;
 
 import org.xmlpull.v1.XmlPullParserException;
 

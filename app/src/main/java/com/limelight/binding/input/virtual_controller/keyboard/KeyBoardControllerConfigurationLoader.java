@@ -10,11 +10,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.widget.Toast;
+import androidx.preference.PreferenceManager;
 
 import com.limelight.GameMenu;
 import com.limelight.LimeLog;

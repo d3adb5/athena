@@ -68,7 +68,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Rational;
 import android.view.Display;
 import android.view.Gravity;
@@ -91,6 +90,8 @@ import android.widget.FrameLayout;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
