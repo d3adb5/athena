@@ -52,6 +52,18 @@ android {
             dimension "root"
             buildConfigField "boolean", "ROOT_BUILD", "false"
         }
+
+        game {
+            externalNativeBuild {
+                ndkBuild {
+                    arguments "PRODUCT_FLAVOR=nonRoot"
+                }
+            }
+
+            applicationId "com.limelight.game"
+            dimension "root"
+            buildConfigField "boolean", "ROOT_BUILD", "false"
+        }
     }
 
     compileOptions {
@@ -84,6 +96,7 @@ android {
             applicationIdSuffix ".noirdebug"
             resValue "string", "app_label", "Diana"
             resValue "string", "app_label_root", "Diana (Root)"
+            resValue "string", "app_label_game", "Diana (Game)"
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -122,6 +135,7 @@ android {
             applicationIdSuffix ".noir"
             resValue "string", "app_label", "Artemis"
             resValue "string", "app_label_root", "Artemis (Root)"
+            resValue "string", "app_label_game", "Artemis (Game)"
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -143,7 +157,7 @@ dependencies {
     implementation 'org.jmdns:jmdns:3.5.9'
     implementation 'com.github.cgutman:ShieldControllerExtensions:1.0.1'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'androidx.annotation:annotation:1.8.2'
+    implementation 'androidx.annotation:annotation:1.9.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.preference:preference:1.2.1'
