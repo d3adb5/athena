@@ -4,7 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -138,10 +142,6 @@ public class GameMenu implements Game.GameMenuCallbacks {
         final ArrayAdapter<String> actions =
                 new ArrayAdapter<String>(game, android.R.layout.simple_list_item_1);
 
-        for (MenuOption option : options) {
-            actions.add(option.label);
-        }
-
         builder.setAdapter(actions, (dialog, which) -> {
             String label = actions.getItem(which);
             for (MenuOption option : options) {
@@ -158,6 +158,26 @@ public class GameMenu implements Game.GameMenuCallbacks {
             currentDialog.hide();
         }
         currentDialog = builder.show();
+
+        Window window = currentDialog.getWindow();
+
+        if (window != null) {
+            View decorView = window.getDecorView();
+            decorView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+
+                    decorView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        for (MenuOption option : options) {
+                            actions.add(option.label);
+                        }
+                        actions.notifyDataSetChanged();
+                    });
+                }
+            });
+        }
     }
 
     private void showSpecialKeysMenu() {
