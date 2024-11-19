@@ -45,7 +45,7 @@ android {
             buildConfigField "boolean", "ROOT_BUILD", "true"
         }
 
-        nonRoot {
+        nonRoot_game {
             externalNativeBuild {
                 ndkBuild {
                     arguments "PRODUCT_FLAVOR=nonRoot"
