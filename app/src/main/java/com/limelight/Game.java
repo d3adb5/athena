@@ -1824,9 +1824,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         ClipDescription clipDescription = clipData.getDescription();
                         PersistableBundle newExtras = new PersistableBundle();
                         newExtras.putBoolean(CLIPBOARD_IDENTIFIER, true);
-                        // We don't know if the message is sensitive or not, to be safe mark them all as sensitive.
-                        newExtras.putBoolean("android.content.extra.IS_SENSITIVE", true);
-                        clipDescription.setExtras(newExtras);
+                        if (prefConfig.hideClipboardContent) {
+                            // We don't know if the message is sensitive or not, to be safe mark them all as sensitive.
+                            newExtras.putBoolean("android.content.extra.IS_SENSITIVE", true);
+                            clipDescription.setExtras(newExtras);
+                        }
                     }
 
                     clipboardManager.setPrimaryClip(clipData);
