@@ -1743,13 +1743,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 ClipData.Item item = clipData.getItemAt(0);
 
                 // Get the text data from the clipboard item
-                String clipboardText = item.getText().toString();
+                CharSequence textSeq = item.getText();
+                if (textSeq != null) {
+                    String clipboardText = textSeq.toString();
 
-                // Mark the data as already read
-                ClipData newClipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardText);
-                clipboardManager.setPrimaryClip(newClipData);
+                    // Mark the data as already read
+                    ClipData newClipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardText);
+                    clipboardManager.setPrimaryClip(newClipData);
 
-                return clipboardText;
+                    return clipboardText;
+                }
             }
         }
 
@@ -2181,6 +2184,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     // Returns true if the event was consumed
     // NB: View is only present if called from a view callback
     private boolean handleMotionEvent(View view, MotionEvent event) {
+
+        LimeLog.info("Motion event: " + event.toString());
         // Pass through mouse/touch/joystick input if we're not grabbing
         if (!grabbedInput) {
             return false;
