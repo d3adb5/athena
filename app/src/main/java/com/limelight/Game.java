@@ -47,6 +47,7 @@ import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
 import android.app.Service;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -68,6 +69,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.util.Rational;
 import android.view.Display;
 import android.view.Gravity;
@@ -221,7 +223,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_VDISPLAY = "VirtualDisplay";
     public static final String EXTRA_SERVER_COMMANDS = "ServerCommands";
 
-    public static final String CLIPBOARD_LABEL = "ArtemisStreaming";
+    public static final String CLIPBOARD_IDENTIFIER = "ArtemisStreaming";
 
     private String host;
     private int port;
@@ -1734,25 +1736,36 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             ClipData clipData = clipboardManager.getPrimaryClip();
 
             if (clipData != null && clipData.getItemCount() > 0) {
-                String clipLabel = (String) clipData.getDescription().getLabel();
-                if (!force && CLIPBOARD_LABEL.equals(clipLabel)) {
-                    // We're getting the clipboard data we just set a while ago
-                    return null;
+                ClipDescription clipDescription = clipData.getDescription();
+                if (!force) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        PersistableBundle extras = clipDescription.getExtras();
+                        if (extras != null && extras.getBoolean(CLIPBOARD_IDENTIFIER)) {
+                            // We're getting the clipboard data we just set/read a while ago
+                            return null;
+                        }
+
+                        // Mark the clip already read
+                        if (extras == null) {
+                            extras = new PersistableBundle();
+                            clipDescription.setExtras(extras);
+                        }
+
+                        extras.putBoolean(CLIPBOARD_IDENTIFIER, true);
+                    } else {
+                        String clipLabel = (String) clipDescription.getLabel();
+                        if (clipLabel != null && clipLabel.equals(CLIPBOARD_IDENTIFIER)) {
+                            // We're getting the clipboard data we set a while ago
+                            return null;
+                        }
+                    }
                 }
+
                 // Get the first item from the clipboard data
                 ClipData.Item item = clipData.getItemAt(0);
 
                 // Get the text data from the clipboard item
-                CharSequence textSeq = item.getText();
-                if (textSeq != null) {
-                    String clipboardText = textSeq.toString();
-
-                    // Mark the data as already read
-                    ClipData newClipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardText);
-                    clipboardManager.setPrimaryClip(newClipData);
-
-                    return clipboardText;
-                }
+                return (String) item.getText();
             }
         }
 
@@ -1805,7 +1818,17 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 try {
                     sleep(delay);
                     String clipboardContent = httpConn.getClipboard();
-                    ClipData clipData = ClipData.newPlainText(CLIPBOARD_LABEL, clipboardContent);
+                    ClipData clipData = ClipData.newPlainText(CLIPBOARD_IDENTIFIER, clipboardContent);
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        ClipDescription clipDescription = clipData.getDescription();
+                        PersistableBundle newExtras = new PersistableBundle();
+                        newExtras.putBoolean(CLIPBOARD_IDENTIFIER, true);
+                        // We don't know if the message is sensitive or not, to be safe mark them all as sensitive.
+                        newExtras.putBoolean("android.content.extra.IS_SENSITIVE", true);
+                        clipDescription.setExtras(newExtras);
+                    }
+
                     clipboardManager.setPrimaryClip(clipData);
                     if (prefConfig.smartClipboardSyncToast) {
                         Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_success), Toast.LENGTH_SHORT).show());
