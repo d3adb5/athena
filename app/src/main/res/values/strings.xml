@@ -565,4 +565,8 @@
     <string name="searchpreference_more">More</string>
     <string name="searchpreference_clear_history">Clear history</string>
     <string name="searchpreference_no_results">No results</string>
+
+    <!-- Compliance -->
+    <string name="category_basic_settings" />
+    <string name="title_checkbox_stretch_video" />
 </resources>
