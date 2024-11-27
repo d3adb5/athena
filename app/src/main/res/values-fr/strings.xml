@@ -105,7 +105,7 @@
     <string name="applist_refresh_msg">Actualisation des applications…</string>
     <string name="applist_refresh_error_title">Erreur</string>
     <string name="applist_refresh_error_msg">Impossible d\'obtenir la liste des applications</string>
-    <string name="applist_quit_app">Fermeture</string>
+    <string name="applist_quit_app">Fermeture de</string>
     <string name="applist_quit_success">Application fermée avec succès</string>
     <string name="applist_quit_fail">Échec de la fermeture</string>
     <string name="applist_quit_confirmation">Voulez-vous vraiment quitter l\'application en cours d\'exécution \? Toutes les données non enregistrées seront perdues.</string>
@@ -126,6 +126,7 @@
     <string name="summary_fps_list">Augmentez pour un flux vidéo plus fluide. Diminuez pour de meilleures performances sur les appareils bas de gamme.</string>
     <string name="title_seekbar_bitrate">Bitrate vidéo</string>
     <string name="summary_seekbar_bitrate">Augmentez-le pour une meilleure qualité d’image. Diminuez-le pour améliorer les performances sur les connexions plus lentes.</string>
+    <string name="title_checkbox_stretch_video">Étirer la vidéo en plein écran</string>
     <string name="title_checkbox_disable_warnings">Désactiver les messages d\'avertissement</string>
     <string name="title_checkbox_enable_pip">Activer le mode observateur</string>
     <string name="summary_checkbox_enable_pip">Permet de visualiser le stream (sans le contrôler) tout en utilisant une autre appli</string>
