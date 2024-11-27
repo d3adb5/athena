@@ -333,8 +333,9 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
 
             // hide on-screen controls category on non touch screen devices
             if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
-                PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_onscreen_controls");
+                PreferenceCategory category = findPreference("category_onscreen_controls");
+                screen.removePreference(category);
+                category = findPreference("category_onscreen_controls");
                 screen.removePreference(category);
             }
 
@@ -397,6 +398,10 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 PreferenceCategory category = (PreferenceCategory) findPreference("category_onscreen_controls");
                 if (category != null) {
                     category.removePreference(findPreference("checkbox_vibrate_osc"));
+                }
+                category = (PreferenceCategory) findPreference("category_special_key_layout");
+                if (category != null) {
+                    category.removePreference(findPreference("checkbox_vibrate_keyboard"));
                 }
             }
             else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
@@ -642,7 +647,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
                 LimeLog.info("Excluding HDR toggle based on OS");
                 PreferenceCategory category =
-                        (PreferenceCategory) findPreference("category_advanced_settings");
+                        (PreferenceCategory) findPreference("category_video_settings");
                 category.removePreference(findPreference("checkbox_enable_hdr"));
             }
             else {
@@ -663,13 +668,13 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 if (!foundHdr10) {
                     LimeLog.info("Excluding HDR toggle based on display capabilities");
                     PreferenceCategory category =
-                            (PreferenceCategory) findPreference("category_advanced_settings");
+                            (PreferenceCategory) findPreference("category_video_settings");
                     category.removePreference(findPreference("checkbox_enable_hdr"));
                 }
                 else if (PreferenceConfiguration.isShieldAtvFirmwareWithBrokenHdr()) {
                     LimeLog.info("Disabling HDR toggle on old broken SHIELD TV firmware");
                     PreferenceCategory category =
-                            (PreferenceCategory) findPreference("category_advanced_settings");
+                            (PreferenceCategory) findPreference("category_video_settings");
                     CheckBoxPreference hdrPref = (CheckBoxPreference) category.findPreference("checkbox_enable_hdr");
                     hdrPref.setEnabled(false);
                     hdrPref.setChecked(false);
