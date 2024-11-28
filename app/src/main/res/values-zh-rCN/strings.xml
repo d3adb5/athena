@@ -433,7 +433,7 @@
     <string name="title_checkbox_back_as_meta">使用返回键作为 Meta</string>
     <string name="summary_back_as_meta">在按下物理返回键时发送 Meta(Win) 键</string>
     <string name="title_smart_clipboard_sync">智能剪贴板同步（实验性）</string>
-    <string name="summary_smart_clipboard_sync">在开始/恢复串流时自动同步本地剪贴板至服务端，在客户端按下 Ctrl/CMD+C 或失去焦点时自动同步服务端剪贴板至本地（需要Apollo）</string>
+    <string name="summary_smart_clipboard_sync">在开始/恢复串流时自动同步本地剪贴板至服务端，在客户端失去焦点时自动同步服务端剪贴板至本地（需要Apollo）</string>
     <string name="title_smart_clipboard_sync_toast">剪贴板同步通知</string>
     <string name="summary_smart_clipboard_sync_toast">以 Toast 形式展示剪贴板同步结果</string>
     <string name="title_hide_clipboard_content">隐藏剪贴板内容</string>

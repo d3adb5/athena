@@ -93,6 +93,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import java.io.ByteArrayInputStream;
@@ -236,12 +237,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private ViewParent rootView;
     private ClipboardManager clipboardManager;
+    private boolean clipboardSyncRunning = false;
 
     private NvHTTP httpConn;
 
     public interface GameMenuCallbacks {
         void showMenu(GameInputDevice devic);
         void hideMenu();
+        boolean isMenuOpen();
     }
 
     public GameMenuCallbacks gameMenuCallbacks;
@@ -1618,10 +1621,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             conn.sendKeyboardInput(translated, KeyboardPacket.KEY_DOWN, getModifierState(event),
                     keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
-
-            if (prefConfig.smartClipboardSync && (event.isCtrlPressed() || event.isMetaPressed()) && (event.getKeyCode() == KeyEvent.KEYCODE_C)) {
-                getClipboard(100);
-            }
         }
 
         return true;
@@ -1733,43 +1732,59 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private String getClipboardContent(boolean force) {
         // Check if there is any clipboard data
         if (clipboardManager.hasPrimaryClip()) {
+            ClipDescription clipDescription = clipboardManager.getPrimaryClipDescription();
+            if (!force && clipDescription != null) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                    PersistableBundle extras = clipDescription.getExtras();
+                    if (extras != null && extras.getBoolean(CLIPBOARD_IDENTIFIER)) {
+                        // We're getting the clipboard data we just set/read a while ago
+                        return null;
+                    }
+                } else {
+                    CharSequence clipLabel = clipDescription.getLabel();
+                    if (clipLabel != null && clipLabel.equals(CLIPBOARD_IDENTIFIER)) {
+                        // We're getting the clipboard data we set a while ago
+                        return null;
+                    }
+                }
+            }
+
             ClipData clipData = clipboardManager.getPrimaryClip();
 
             if (clipData != null && clipData.getItemCount() > 0) {
-                ClipDescription clipDescription = clipData.getDescription();
-                if (!force) {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        PersistableBundle extras = clipDescription.getExtras();
-                        if (extras != null && extras.getBoolean(CLIPBOARD_IDENTIFIER)) {
-                            // We're getting the clipboard data we just set/read a while ago
-                            return null;
-                        }
-
-                        // Mark the clip already read
-                        if (extras == null) {
-                            extras = new PersistableBundle();
-                            clipDescription.setExtras(extras);
-                        }
-
-                        extras.putBoolean(CLIPBOARD_IDENTIFIER, true);
-                    } else {
-                        String clipLabel = (String) clipDescription.getLabel();
-                        if (clipLabel != null && clipLabel.equals(CLIPBOARD_IDENTIFIER)) {
-                            // We're getting the clipboard data we set a while ago
-                            return null;
-                        }
-                    }
-                }
-
                 // Get the first item from the clipboard data
                 ClipData.Item item = clipData.getItemAt(0);
 
+                // Mark the clip as visited
+                if (clipDescription != null) {
+                    ClipData clonedClip = cloneClipData(clipDescription, item);
+                    clipboardManager.setPrimaryClip(clonedClip);
+                }
+
                 // Get the text data from the clipboard item
-                return (String) item.getText();
+                CharSequence clipText = item.getText();
+                if (clipText == null) {
+                    return  null;
+                }
+                return clipText.toString();
             }
         }
 
         return null;
+    }
+
+    private static @NonNull ClipData cloneClipData(ClipDescription clipDescription, ClipData.Item item) {
+        ClipDescription clonedDescription = new ClipDescription(clipDescription);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            PersistableBundle extras = clipDescription.getExtras();
+            if (extras == null) {
+                extras = new PersistableBundle();
+            }
+            extras.putBoolean(CLIPBOARD_IDENTIFIER, true);
+            clonedDescription.setExtras(extras);
+        }
+
+        return new ClipData(clonedDescription, item);
     }
 
     public boolean sendClipboard(boolean force) {
@@ -1813,10 +1828,21 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             return false;
         }
 
+        if (delay == 0 && gameMenuCallbacks != null && gameMenuCallbacks.isMenuOpen()) {
+            return false;
+        }
+
         new Thread() {
             public void run() {
+                if (clipboardSyncRunning) {
+                    return;
+                }
+
+                clipboardSyncRunning = true;
                 try {
-                    sleep(delay);
+                    if (delay > 0) {
+                        sleep(delay);
+                    }
                     String clipboardContent = httpConn.getClipboard();
                     ClipData clipData = ClipData.newPlainText(CLIPBOARD_IDENTIFIER, clipboardContent);
 
@@ -1827,8 +1853,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         if (prefConfig.hideClipboardContent) {
                             // We don't know if the message is sensitive or not, to be safe mark them all as sensitive.
                             newExtras.putBoolean("android.content.extra.IS_SENSITIVE", true);
-                            clipDescription.setExtras(newExtras);
                         }
+                        clipDescription.setExtras(newExtras);
                     }
 
                     clipboardManager.setPrimaryClip(clipData);
@@ -1841,6 +1867,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         Game.this.runOnUiThread(() -> Toast.makeText(Game.this, getString(R.string.get_clipboard_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
                     }
                 }
+                clipboardSyncRunning = false;
             }
         }.start();
 
@@ -3400,6 +3427,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     public void disconnect() {
+        if (prefConfig.smartClipboardSync) {
+            getClipboard(-1);
+        }
         finish();
     }
 

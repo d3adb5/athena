@@ -155,7 +155,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
         });
 
         if (currentDialog != null) {
-            currentDialog.hide();
+            currentDialog.dismiss();
         }
         currentDialog = builder.show();
 
@@ -389,5 +389,12 @@ public class GameMenu implements Game.GameMenuCallbacks {
             currentDialog.dismiss();
             currentDialog = null;
         }
+    }
+
+    public boolean isMenuOpen() {
+        if (currentDialog == null) {
+            return false;
+        }
+        return currentDialog.isShowing();
     }
 }

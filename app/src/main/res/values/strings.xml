@@ -465,7 +465,7 @@
     <string name="title_checkbox_back_as_meta">Back button as Meta</string>
     <string name="summary_back_as_meta">Send Meta(Win) key on physical back button press.</string>
     <string name="title_smart_clipboard_sync">Smart Clipboard Sync (Experimental)</string>
-    <string name="summary_smart_clipboard_sync">Automatically upload clipboard content to server when the stream starts/resumes, download clipboard from server when pressing Ctrl/CMD+C on the client or losing focus(requires Apollo)</string>
+    <string name="summary_smart_clipboard_sync">Automatically upload clipboard content to server when the stream starts/resumes, download clipboard from server when losing focus(requires Apollo)</string>
     <string name="title_smart_clipboard_sync_toast">Clipboard Sync Toast</string>
     <string name="summary_smart_clipboard_sync_toast">Show toast for clipboard sync result</string>
     <string name="title_hide_clipboard_content">Hide clipboard content</string>
