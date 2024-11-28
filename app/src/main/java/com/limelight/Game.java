@@ -3279,7 +3279,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public void onBackPressed() {
-        if(prefConfig.enableQtDialog){
+        if(prefConfig.enableBackMenu){
             showGameMenu(null);
             return;
         }

@@ -2455,9 +2455,9 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             if ((context.inputMap & ControllerPacket.PLAY_FLAG) != 0 &&
                     context.startUpTime - context.startDownTime > ControllerHandler.START_DOWN_TIME_MOUSE_MODE_MS &&
                     prefConfig.mouseEmulation) {
-                if (prefConfig.enableQtDialog && context.quickMenuPending){
+                if (prefConfig.enableBackMenu && context.backMenuPending){
                     //todo 展示快捷菜单
-                    context.quickMenuPending = false;
+                    context.backMenuPending = false;
                     gestures.showGameMenu(context);
                 } else {
                     context.toggleMouseEmulation();
@@ -2676,9 +2676,9 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             if (event.getRepeatCount() == 0) {
                 context.startDownTime = event.getEventTime();
                 if (context.startDownTime - context.startUpTime <= ControllerHandler.QUICK_MENU_FIRST_STAGE_MS) {
-                    context.quickMenuPending = true;
+                    context.backMenuPending = true;
                 } else {
-                    context.quickMenuPending = false;
+                    context.backMenuPending = false;
                 }
             }
             context.inputMap |= ControllerPacket.PLAY_FLAG;
@@ -3112,7 +3112,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
 
         public long startDownTime = 0;
         public long startUpTime = 0;
-        public boolean quickMenuPending = false;
+        public boolean backMenuPending = false;
 
         public final Runnable batteryStateUpdateRunnable = new Runnable() {
             @Override
