@@ -2237,7 +2237,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     // NB: View is only present if called from a view callback
     private boolean handleMotionEvent(View view, MotionEvent event) {
 
-        LimeLog.info("Motion event: " + event.toString());
         // Pass through mouse/touch/joystick input if we're not grabbing
         if (!grabbedInput) {
             return false;
