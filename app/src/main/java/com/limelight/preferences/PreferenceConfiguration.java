@@ -184,6 +184,7 @@ public class PreferenceConfiguration {
     public int oscOpacity;
     public int oscKeyboardOpacity;
     public int oscKeyboardHeight;
+    public int oscKeyboardWidth;
     public boolean enforceDisplayMode, useVirtualDisplay, enableSops, playHostAudio, disableWarnings;
     public ScaleMode videoScaleMode;
     public String language;
@@ -786,6 +787,8 @@ public class PreferenceConfiguration {
         config.enableNewAnalogStickOpacity =prefs.getInt("seekbar_osc_free_analog_stick_opacity",20);
 
         config.oscKeyboardHeight=prefs.getInt("seekbar_keyboard_axi_height",200);
+
+        config.oscKeyboardWidth=prefs.getInt("seekbar_keyboard_axi_width",1000);
 
         config.enableNewAnalogStick=prefs.getBoolean(CHECKBOX_CHECKBOX_ENABLE_ANALOG_STICK_NEW,false);
 

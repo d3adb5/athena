@@ -200,14 +200,15 @@ public class KeyBoardLayoutController {
         frame_layout.removeView(keyboardView);
 //        DisplayMetrics screen = context.getResources().getDisplayMetrics();
 //        (int)(screen.heightPixels/0.4)
-        int height=PreferenceConfiguration.readPreferences(context).oscKeyboardHeight;
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,dip2px(context,height));
-        params.gravity= Gravity.BOTTOM;
+        int height = PreferenceConfiguration.readPreferences(context).oscKeyboardHeight;
+        int widthPreference = PreferenceConfiguration.readPreferences(context).oscKeyboardWidth;
+        int width = widthPreference == 1000 ? ViewGroup.LayoutParams.MATCH_PARENT : dip2px(context, widthPreference);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, dip2px(context, height));
+        params.gravity = Gravity.BOTTOM;
 //        params.leftMargin = 20 + buttonSize;
 //        params.topMargin = 15;
-        keyboardView.setAlpha(PreferenceConfiguration.readPreferences(context).oscKeyboardOpacity/100f);
-        frame_layout.addView(keyboardView,params);
-
+        keyboardView.setAlpha(PreferenceConfiguration.readPreferences(context).oscKeyboardOpacity / 100f);
+        frame_layout.addView(keyboardView, params);
     }
 
     public int dip2px(Context context, float dpValue) {
