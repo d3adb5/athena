@@ -299,15 +299,30 @@ public class KeyBoardLayoutController {
     public void refreshLayout() {
         frame_layout.removeView(keyboardView);
         // DisplayMetrics screen = context.getResources().getDisplayMetrics();
-        // (int)(screen.heightPixels/0.4)
-        int height = PreferenceConfiguration.readPreferences(context).oscKeyboardHeight;
-        int widthPreference = PreferenceConfiguration.readPreferences(context).oscKeyboardWidth;
+        // (int)(screen.heightPixels/0.4)/
+        int height = prefConfig.onscreenKeyboardHeight;
+        int widthPreference = prefConfig.onscreenKeyboardWidth;
         int width = widthPreference == 1000 ? ViewGroup.LayoutParams.MATCH_PARENT : dip2px(context, widthPreference);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, dip2px(context, height));
-        params.gravity = Gravity.BOTTOM | Gravity.START;
+        params.gravity = Gravity.BOTTOM;
+        switch (prefConfig.onscreenKeyboardAlignMode) {
+            case "left": {
+                params.gravity |= Gravity.START;
+                break;
+            }
+            case "right": {
+                params.gravity |= Gravity.END;
+                break;
+            }
+            case "center":
+            default: {
+                params.gravity |= Gravity.CENTER_HORIZONTAL;
+            }
+        }
+
         // params.leftMargin = 20 + buttonSize;
         // params.topMargin = 15;
-        keyboardView.setAlpha(PreferenceConfiguration.readPreferences(context).oscKeyboardOpacity / 100f);
+        keyboardView.setAlpha(prefConfig.oscKeyboardOpacity / 100f);
         frame_layout.addView(keyboardView, params);
     }
 
@@ -320,7 +335,7 @@ public class KeyBoardLayoutController {
         if (Game.instance == null || !Game.instance.connected) {
             return;
         }
-        // 1-鼠标 0-按键 2-摇杆 3-十字键
+        // 1-Mouse 0-Buttons 2-Stick 3-DPad
         if (keyEvent.getSource() == 1) {
             Game.instance.mouseButtonEvent(keyEvent.getKeyCode(), KeyEvent.ACTION_DOWN == keyEvent.getAction());
         } else {

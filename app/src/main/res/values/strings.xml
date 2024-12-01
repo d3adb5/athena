@@ -11,6 +11,11 @@
     <string name="help_loading_title">Help Viewer</string>
     <string name="help_loading_msg">Loading help page…</string>
 
+    <!-- Alignments -->
+    <string name="align_left">Align Left</string>
+    <string name="align_center">Align Center</string>
+    <string name="align_right">Align Right</string>
+
     <!-- PC view menu entries -->
     <string name="pcview_menu_header_online">Online</string>
     <string name="pcview_menu_header_offline">Offline</string>
@@ -424,10 +429,12 @@
     <string name="title_joyconfix">Compatible with Switch JoyCon</string>
     <string name="summary_joyconfix">If your JoyCon cannot be used or has key recognition issues, you can try to enable this feature. Adapted for Android 10 and above</string>
     <string name="title_keyboard_opacity">Virtual Full Keyboard Opacity</string>
-    <string name="title_keyboard_height">Virtual Full Keyboard Height</string>
-    <string name="title_keyboard_width">Virtual Full Keyboard Width</string>
-    <string name="summary_keyboard_height">Adjust the height of the virtual full keyboard</string>
-    <string name="summary_keyboard_width">Adjust the width of the virtual full keyboard</string>
+    <string name="title_onscreen_keyboard_height">Virtual Full Keyboard Height</string>
+    <string name="title_onscreen_keyboard_width">Virtual Full Keyboard Width</string>
+    <string name="title_onscreen_keyboard_align_mode">Virtual Full Keyboard Align Mode</string>
+    <string name="summary_onscreen_keyboard_height">Adjust the height of the virtual full keyboard</string>
+    <string name="summary_onscreen_keyboard_width">Adjust the width of the virtual full keyboard</string>
+    <string name="summary_onscreen_keyboard_align_mode">How the virtual full keyboard aligns to the view port</string>
     <string name="title_free_analog_stick">Free Analog Stick</string>
     <string name="summary_free_analog_stick">Virtual gamepad left and right stick center point positions are not fixed, can be freely adjusted within a certain range of movement.</string>
     <string name="summary_free_analog_stick_opacity">By default, only when the stick moves, the background is displayed. If you don\'t like it, you can adjust the opacity effect.</string>

@@ -403,24 +403,32 @@
             seekbar:step="1" />
         <com.limelight.preferences.SeekBarPreference
             android:defaultValue="200"
-            android:key="seekbar_keyboard_axi_height"
+            android:key="seekbar_onscreen_keyboard_height"
             android:max="400"
-            android:summary="@string/summary_keyboard_height"
+            android:summary="@string/summary_onscreen_keyboard_height"
             android:text="dp"
-            android:title="@string/title_keyboard_height"
+            android:title="@string/title_onscreen_keyboard_height"
             app:iconSpaceReserved="false"
             seekbar:min="150"
             seekbar:step="10" />
         <com.limelight.preferences.SeekBarPreference
-            android:defaultValue="0"
-            android:key="seekbar_keyboard_axi_width"
-            android:max="1000"
-            android:summary="@string/summary_keyboard_width"
-            android:text="dp"
-            android:title="@string/title_keyboard_width"
-            app:iconSpaceReserved="false"
+            android:defaultValue="1000"
             seekbar:min="150"
+            android:max="1000"
+            android:key="seekbar_onscreen_keyboard_width"
+            android:summary="@string/summary_onscreen_keyboard_width"
+            android:text="dp"
+            android:title="@string/title_onscreen_keyboard_width"
+            app:iconSpaceReserved="false"
             seekbar:step="10" />
+        <ListPreference
+            android:defaultValue="center"
+            android:entries="@array/onscreen_keyboard_align_modes"
+            android:entryValues="@array/onscreen_keyboard_align_values"
+            android:key="list_onscreen_keyboard_align_mode"
+            android:summary="@string/summary_onscreen_keyboard_align_mode"
+            android:title="@string/title_onscreen_keyboard_align_mode"
+            app:iconSpaceReserved="false" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="checkbox_disable_warnings"

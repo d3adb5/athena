@@ -83,6 +83,8 @@ public class PreferenceConfiguration {
     private static final String GAMEPAD_MOTION_SENSORS_PREF_STRING = "checkbox_gamepad_motion_sensors";
     private static final String GAMEPAD_MOTION_FALLBACK_PREF_STRING = "checkbox_gamepad_motion_fallback";
 
+    private static final String LIST_ONSCREEN_KEYBOARD_ALIGN_MODE = "list_onscreen_keyboard_align_mode";
+
     private static final String CHECKBOX_ENABLE_BATTERY_REPORT = "checkbox_gamepad_enable_battery_report";
     private static final String CHECKBOX_FORCE_QWERTY = "checkbox_force_qwerty";
     private static final String CHECKBOX_BACK_AS_META = "checkbox_back_as_meta";
@@ -163,6 +165,7 @@ public class PreferenceConfiguration {
     private static final int DEFAULT_TRACKPAD_SENSITIVITY_X = 100;
     private static final int DEFAULT_TRACKPAD_SENSITIVITY_Y = 100;
     private static final boolean DEFAULT_TRACKPAD_SWAP_AXIS = false;
+    private static final String DEFAULT_ONSCREEN_KEYBOARD_ALIGN_MODE = "center";
 
     public static final int FRAME_PACING_MIN_LATENCY = 0;
     public static final int FRAME_PACING_BALANCED = 1;
@@ -183,8 +186,9 @@ public class PreferenceConfiguration {
     public int deadzonePercentage;
     public int oscOpacity;
     public int oscKeyboardOpacity;
-    public int oscKeyboardHeight;
-    public int oscKeyboardWidth;
+    public int onscreenKeyboardHeight;
+    public int onscreenKeyboardWidth;
+    public String onscreenKeyboardAlignMode;
     public boolean enforceDisplayMode, useVirtualDisplay, enableSops, playHostAudio, disableWarnings;
     public ScaleMode videoScaleMode;
     public String language;
@@ -776,19 +780,19 @@ public class PreferenceConfiguration {
 
         config.enableKeyboard = prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD,false);
 
-        config.enableKeyboardVibrate=prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD_VIBRATE,false);
+        config.enableKeyboardVibrate = prefs.getBoolean(CHECKBOX_ENABLE_KEYBOARD_VIBRATE,false);
         //兼容joycon手柄
-        config.enableJoyConFix=prefs.getBoolean("checkbox_enable_joyconfix",false);
+        config.enableJoyConFix = prefs.getBoolean("checkbox_enable_joyconfix",false);
         //全键盘透明度
-        config.oscKeyboardOpacity=prefs.getInt("seekbar_keyboard_axi_opacity",DEFAULT_OPACITY);
+        config.oscKeyboardOpacity = prefs.getInt("seekbar_keyboard_axi_opacity",DEFAULT_OPACITY);
 
-        config.enableOnScreenStyleOfficial=prefs.getBoolean("checkbox_onscreen_style_official",false);
+        config.enableOnScreenStyleOfficial = prefs.getBoolean("checkbox_onscreen_style_official",false);
 
-        config.enableNewAnalogStickOpacity =prefs.getInt("seekbar_osc_free_analog_stick_opacity",20);
+        config.enableNewAnalogStickOpacity = prefs.getInt("seekbar_osc_free_analog_stick_opacity",20);
 
-        config.oscKeyboardHeight=prefs.getInt("seekbar_keyboard_axi_height",200);
-
-        config.oscKeyboardWidth=prefs.getInt("seekbar_keyboard_axi_width",1000);
+        config.onscreenKeyboardHeight = prefs.getInt("seekbar_onscreen_keyboard_height",200);
+        config.onscreenKeyboardWidth = prefs.getInt("seekbar_onscreen_keyboard_width",1000);
+        config.onscreenKeyboardAlignMode = prefs.getString(LIST_ONSCREEN_KEYBOARD_ALIGN_MODE, DEFAULT_ONSCREEN_KEYBOARD_ALIGN_MODE);
 
         config.enableNewAnalogStick=prefs.getBoolean(CHECKBOX_CHECKBOX_ENABLE_ANALOG_STICK_NEW,false);
 

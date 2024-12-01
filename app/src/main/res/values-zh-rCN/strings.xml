@@ -9,6 +9,10 @@
     <!-- Help strings -->
     <string name="help_loading_title"> 查看帮助 </string>
     <string name="help_loading_msg"> 正在加载帮助页面…… </string>
+    <!-- Alignments -->
+    <string name="align_left">左对齐</string>
+    <string name="align_center">居中</string>
+    <string name="align_right">右对齐</string>
     <!-- PC view menu entries -->
     <string name="pcview_menu_app_list"> 浏览游戏列表 </string>
     <string name="pcview_menu_pair_pc"> 普通配对 </string>
@@ -376,10 +380,12 @@
     <string name="title_joyconfix">兼容Switch JoyCon手柄</string>
     <string name="summary_joyconfix">如果你的JoyCon无法使用或识别按键有问题，可以尝试开启此功能。适配Android 10及以上</string>
     <string name="title_keyboard_opacity">虚拟全键盘透明度</string>
-    <string name="title_keyboard_height">虚拟全键盘高度</string>
-    <string name="title_keyboard_width">虚拟全键盘宽度</string>
-    <string name="summary_keyboard_height">调整虚拟全键盘的高度</string>
-    <string name="summary_keyboard_width">调整虚拟全键盘的宽度</string>
+    <string name="title_onscreen_keyboard_height">虚拟全键盘高度</string>
+    <string name="title_onscreen_keyboard_width">虚拟全键盘宽度</string>
+    <string name="title_onscreen_keyboard_align_mode">虚拟全键盘对齐方式</string>
+    <string name="summary_onscreen_keyboard_height">调整虚拟全键盘的高度</string>
+    <string name="summary_onscreen_keyboard_width">调整虚拟全键盘的宽度</string>
+    <string name="summary_onscreen_keyboard_align_mode">虚拟全键盘如何与视口对齐</string>
     <string name="title_free_analog_stick">自由摇杆</string>
     <string name="summary_free_analog_stick">虚拟手柄 左右摇杆中心点位置不固定，可自由调整在一定区域内移动。</string>
     <string name="summary_free_analog_stick_opacity">默认只有摇杆移动的时候，有背景显示，如何不喜欢可调节透明度效果。</string>
