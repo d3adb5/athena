@@ -395,13 +395,17 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 category_gamepad_settings.removePreference(findPreference("checkbox_vibrate_fallback"));
                 category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
                 // The entire OSC category may have already been removed by the touchscreen check above
-                PreferenceCategory category = (PreferenceCategory) findPreference("category_onscreen_controls");
+                PreferenceCategory category = findPreference("category_onscreen_controls");
                 if (category != null) {
                     category.removePreference(findPreference("checkbox_vibrate_osc"));
                 }
-                category = (PreferenceCategory) findPreference("category_special_key_layout");
+                category = findPreference("category_special_key_layout");
                 if (category != null) {
                     category.removePreference(findPreference("checkbox_vibrate_keyboard"));
+                }
+                category = findPreference("category_gamepad_settings");
+                if (category != null) {
+                    category.removePreference(findPreference("checkbox_enable_device_rumble"));
                 }
             }
             else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
