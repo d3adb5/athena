@@ -6,6 +6,7 @@ package com.limelight.binding.input.virtual_controller.keyboard;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.limelight.Game;
 import com.limelight.R;
@@ -30,6 +33,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class KeyBoardLayoutController {
+    private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
+    private static final Set<Integer> SPECIAL_KEY_CODES = new HashSet<>();
+    private static final long POPUP_DURATION_MS = 75;
 
     private final long timerLongClickTimeout = 300;
     private final Context context;
@@ -37,9 +43,11 @@ public class KeyBoardLayoutController {
     private FrameLayout frame_layout = null;
     private final Handler handler;
     public boolean shown = false;
-
     private final LinearLayout keyboardView;
-    private static final Set<Integer> MODIFIER_KEY_CODES = new HashSet<>();
+    private PopupWindow keyPopup;
+    private TextView keyPopupText;
+    private Runnable hidePopupRunnable;
+
     static {
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_LEFT);
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_ALT_RIGHT);
@@ -49,6 +57,23 @@ public class KeyBoardLayoutController {
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_SHIFT_RIGHT);
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_META_LEFT);
         MODIFIER_KEY_CODES.add(KeyEvent.KEYCODE_META_RIGHT);
+
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_TAB);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_ENTER);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_SPACE);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_DEL);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_FORWARD_DEL);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_ESCAPE);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_CAPS_LOCK);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_INSERT);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_DPAD_UP);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_DPAD_DOWN);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_DPAD_LEFT);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_DPAD_RIGHT);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_PAGE_UP);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_PAGE_DOWN);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_MOVE_HOME);
+        SPECIAL_KEY_CODES.add(KeyEvent.KEYCODE_MOVE_END);
     }
 
     private static final HashMap<Integer, Runnable> longClickRunnables = new HashMap<>();
@@ -63,12 +88,17 @@ public class KeyBoardLayoutController {
         return MODIFIER_KEY_CODES.contains(keyCode);
     }
 
+    private boolean isSpecialKey(int keyCode) {
+        return SPECIAL_KEY_CODES.contains(keyCode);
+    }
+
     public KeyBoardLayoutController(FrameLayout layout, final Context context, PreferenceConfiguration prefConfig) {
         this.frame_layout = layout;
         this.context = context;
         this.prefConfig = prefConfig;
         this.keyboardView = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.layout_axixi_keyboard, null);
         this.handler = new Handler(Looper.getMainLooper());
+        initKeyPopup();
         initKeyboard();
     }
 
@@ -76,11 +106,11 @@ public class KeyBoardLayoutController {
         return handler;
     }
 
-    private void initKeyboard(){
+    private void initKeyboard() {
         @SuppressLint("ClickableViewAccessibility")
         View.OnTouchListener touchListener = (View v, MotionEvent event) -> {
             int eventAction = event.getAction();
-            String tag=(String) v.getTag();
+            String tag = (String) v.getTag();
             if (TextUtils.equals("hide", tag)) {
                 if (eventAction == MotionEvent.ACTION_UP || eventAction == MotionEvent.ACTION_CANCEL) {
                     hide();
@@ -91,6 +121,7 @@ public class KeyBoardLayoutController {
             int keyCode = Integer.parseInt(tag);
             int keyAction;
             boolean _isModifierKey = isModifierKey(keyCode);
+            boolean _isSpecialKey = isSpecialKey(keyCode);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (_isModifierKey && isModifierKeyPressed(keyCode)) {
@@ -98,13 +129,60 @@ public class KeyBoardLayoutController {
                         return true;
                     }
 
+                    // Key popup
+                    if (!TextUtils.equals("hide", tag) && !_isModifierKey && !_isSpecialKey) {
+                        String popupText;
+                        KeyEvent tempEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
+                        int unicodeChar = tempEvent.getUnicodeChar(0);
+
+                        if (unicodeChar != 0) {
+                            popupText = String.valueOf((char) unicodeChar);
+                        } else {
+                            popupText = KeyEvent.keyCodeToString(keyCode).replace("KEYCODE_", "");
+                        }
+
+                        keyPopupText.setText(popupText);
+
+                        // Force layout measurement
+                        keyPopupText.measure(
+                                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                        );
+
+                        int popupWidth = keyPopupText.getMeasuredWidth();
+
+                        // Calculate position using the measured width
+                        int[] location = new int[2];
+                        v.getLocationInWindow(location);
+
+                        // Center the popup over the key
+                        int x = location[0] + (v.getWidth() - popupWidth) / 2;
+
+                        // Show the popup above the key
+                        int y = (int) (location[1] - v.getHeight() * 1.5);
+
+                        keyPopup.update(x, y, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+                        if (keyPopup.isShowing()) {
+                            keyPopup.update(x, y, popupWidth, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        } else {
+                            keyPopup.showAtLocation(v, Gravity.NO_GRAVITY, x, y);
+                        }
+                    }
+
                     keyAction = KeyEvent.ACTION_DOWN;
                     break;
+
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     if (_isModifierKey && isModifierKeyPressed(keyCode)) {
                         return true;
                     }
+
+                    // Remove any pending hide operations
+                    handler.removeCallbacks(hidePopupRunnable);
+                    // Schedule a new hide operation
+                    handler.postDelayed(hidePopupRunnable, POPUP_DURATION_MS);
 
                     keyAction = KeyEvent.ACTION_UP;
                     break;
@@ -128,7 +206,11 @@ public class KeyBoardLayoutController {
 
             if (keyAction == KeyEvent.ACTION_DOWN) {
                 if (prefConfig.enableKeyboardVibrate) {
-                    keyboardView.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                    keyboardView.performHapticFeedback(
+                            HapticFeedbackConstants.VIRTUAL_KEY,
+                            HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING |
+                                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+                    );
                 }
                 v.setBackgroundResource(R.drawable.bg_ax_keyboard_button_confirm);
             } else {
@@ -143,9 +225,9 @@ public class KeyBoardLayoutController {
             }
             return true;
         };
-        for (int i = 0; i < keyboardView.getChildCount(); i++){
+        for (int i = 0; i < keyboardView.getChildCount(); i++) {
             LinearLayout keyboardRow = (LinearLayout) keyboardView.getChildAt(i);
-            for (int j = 0; j < keyboardRow.getChildCount(); j++){
+            for (int j = 0; j < keyboardRow.getChildCount(); j++) {
                 View child = keyboardRow.getChildAt(j);
                 keyboardRow.getChildAt(j).setOnTouchListener(touchListener);
                 String keyTag = (String) child.getTag();
@@ -163,6 +245,24 @@ public class KeyBoardLayoutController {
                 }
             }
         }
+    }
+
+    private void initKeyPopup() {
+        // Create the popup window
+        keyPopupText = new TextView(context);
+        keyPopupText.setBackgroundResource(R.drawable.key_popup_background);
+        keyPopupText.setTextColor(Color.WHITE);
+        keyPopupText.setTextSize(32);
+        keyPopupText.setGravity(Gravity.CENTER);
+        keyPopupText.setPadding(24, 16, 24, 16);
+
+        keyPopup = new PopupWindow(
+                keyPopupText,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+
+        hidePopupRunnable = () -> keyPopup.dismiss();
     }
 
     public void hide(boolean temporary) {
@@ -198,15 +298,15 @@ public class KeyBoardLayoutController {
 
     public void refreshLayout() {
         frame_layout.removeView(keyboardView);
-//        DisplayMetrics screen = context.getResources().getDisplayMetrics();
-//        (int)(screen.heightPixels/0.4)
+        // DisplayMetrics screen = context.getResources().getDisplayMetrics();
+        // (int)(screen.heightPixels/0.4)
         int height = PreferenceConfiguration.readPreferences(context).oscKeyboardHeight;
         int widthPreference = PreferenceConfiguration.readPreferences(context).oscKeyboardWidth;
         int width = widthPreference == 1000 ? ViewGroup.LayoutParams.MATCH_PARENT : dip2px(context, widthPreference);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, dip2px(context, height));
-        params.gravity = Gravity.BOTTOM;
-//        params.leftMargin = 20 + buttonSize;
-//        params.topMargin = 15;
+        params.gravity = Gravity.BOTTOM | Gravity.START;
+        // params.leftMargin = 20 + buttonSize;
+        // params.topMargin = 15;
         keyboardView.setAlpha(PreferenceConfiguration.readPreferences(context).oscKeyboardOpacity / 100f);
         frame_layout.addView(keyboardView, params);
     }
@@ -220,7 +320,7 @@ public class KeyBoardLayoutController {
         if (Game.instance == null || !Game.instance.connected) {
             return;
         }
-        //1-鼠标 0-按键 2-摇杆 3-十字键
+        // 1-鼠标 0-按键 2-摇杆 3-十字键
         if (keyEvent.getSource() == 1) {
             Game.instance.mouseButtonEvent(keyEvent.getKeyCode(), KeyEvent.ACTION_DOWN == keyEvent.getAction());
         } else {
