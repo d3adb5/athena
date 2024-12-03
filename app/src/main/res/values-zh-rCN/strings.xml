@@ -441,7 +441,7 @@
     <string name="title_checkbox_back_as_meta">使用返回键作为 Meta</string>
     <string name="summary_back_as_meta">在按下物理返回键时发送 Meta(Win) 键</string>
     <string name="title_checkbox_ignore_synth_events">忽略合成事件</string>
-    <string name="summary_ignore_synth_events">忽略 Android 系统发送的合成事件。可能可以解决某些设备上的鼠标双击问题。</string>
+    <string name="summary_ignore_synth_events">忽略 Android 系统发送的合成事件。可能可以解决某些设备上的鼠标点击触发其他非预期按键的问题。\n启用此选项会导致系统软键盘不工作。</string>
     <string name="title_smart_clipboard_sync">智能剪贴板同步（实验性）</string>
     <string name="summary_smart_clipboard_sync">在开始/恢复串流时自动同步本地剪贴板至服务端，在客户端失去焦点时自动同步服务端剪贴板至本地（需要Apollo）</string>
     <string name="title_smart_clipboard_sync_toast">剪贴板同步通知</string>
