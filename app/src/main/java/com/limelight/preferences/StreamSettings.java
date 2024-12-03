@@ -334,9 +334,13 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             // hide on-screen controls category on non touch screen devices
             if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
                 PreferenceCategory category = findPreference("category_onscreen_controls");
-                screen.removePreference(category);
-                category = findPreference("category_onscreen_controls");
-                screen.removePreference(category);
+                if (category != null) {
+                    screen.removePreference(category);
+                }
+                category = findPreference("category_special_key_layout");
+                if (category != null) {
+                    screen.removePreference(category);
+                }
             }
 
             // Hide remote desktop mouse mode on pre-Oreo (which doesn't have pointer capture)
