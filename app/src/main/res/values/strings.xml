@@ -473,6 +473,8 @@
     <string name="summary_checkbox_force_qwerty">Force use QWERTY keyboard layout.\nRequired by GFE.\nTurn off if you want to use a different keyboard layout.</string>
     <string name="title_checkbox_back_as_meta">Back button as Meta</string>
     <string name="summary_back_as_meta">Send Meta(Win) key on physical back button press.</string>
+    <string name="title_checkbox_ignore_synth_events">Ignore synthetic events</string>
+    <string name="summary_ignore_synth_events">Ignore synthetic events sent by Android System. Might fix some mouse double clicking issue on some devices.</string>
     <string name="title_smart_clipboard_sync">Smart Clipboard Sync (Experimental)</string>
     <string name="summary_smart_clipboard_sync">Automatically upload clipboard content to server when the stream starts/resumes, download clipboard from server when losing focus(requires Apollo)</string>
     <string name="title_smart_clipboard_sync_toast">Clipboard Sync Toast</string>
