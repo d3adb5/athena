@@ -330,9 +330,10 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             PreferenceScreen screen = getPreferenceScreen();
 
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
+            PackageManager pm = activity.getPackageManager();
 
             // hide on-screen controls category on non touch screen devices
-            if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
+            if (!pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {
                 PreferenceCategory category = findPreference("category_onscreen_controls");
                 if (category != null) {
                     screen.removePreference(category);
@@ -361,7 +362,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             }
 
             // Hide gamepad motion sensor fallback option if the device has no gyro or accelerometer
-            if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER) &&
+            if (!pm.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER) &&
                     !activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
@@ -369,7 +370,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             }
 
             // Hide USB driver options on devices without USB host support
-            if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
+            if (!pm.hasSystemFeature(PackageManager.FEATURE_USB_HOST)) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
                 category.removePreference(findPreference("checkbox_usb_bind_all"));
@@ -379,8 +380,8 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             // Remove PiP mode on devices pre-Oreo, where the feature is not available (some low RAM devices),
             // and on Fire OS where it violates the Amazon App Store guidelines for some reason.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-                    !activity.getPackageManager().hasSystemFeature("android.software.picture_in_picture") ||
-                    getActivity().getPackageManager().hasSystemFeature("com.amazon.software.fireos")) {
+                    !pm.hasSystemFeature("android.software.picture_in_picture") ||
+                    pm.hasSystemFeature("com.amazon.software.fireos")) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_ui_settings");
                 category.removePreference(findPreference("checkbox_enable_pip"));
@@ -418,7 +419,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
             }
 
-            String diy = PreferenceManager.getDefaultSharedPreferences(this.getActivity()).getString("edit_diy_w_h","");
+            String diy = PreferenceManager.getDefaultSharedPreferences(activity).getString("edit_diy_w_h","");
             if(!TextUtils.isEmpty(diy)){
                 String[] diys=diy.split("x");
                 if(diys.length==2){
@@ -430,7 +431,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
             }
 
-            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            Display display = activity.getWindowManager().getDefaultDisplay();
             float maxSupportedFps = display.getRefreshRate();
 
             // Hide non-supported resolution/FPS combinations
@@ -747,61 +748,73 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
             });
 
-            findPreference("import_keyboard_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType("application/json");
-                    startActivityForResult(intent, READ_REQUEST_CODE);
-                    return false;
-                }
-            });
-            findPreference("import_special_button_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType("application/json");
-                    startActivityForResult(intent, READ_REQUEST_SPECIAL_CODE);
-                    return false;
-                }
-            });
-
-
-            findPreference("export_keyboard_file").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    File file = new File(requireActivity().getExternalCacheDir(),"export_settings");
-                    if(!file.exists()){
-                        file.mkdir();
-                    }
-                    File file1= getJsonContent(requireActivity(),file);
-                    if(file1==null){
-                        Toast.makeText(requireActivity(),getString(R.string.pref_error_occurred),Toast.LENGTH_SHORT).show();
+            Preference _pref;
+            _pref = findPreference("import_keyboard_file");
+            if (_pref != null) {
+                _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.setType("application/json");
+                        startActivityForResult(intent, READ_REQUEST_CODE);
                         return false;
                     }
-                    Uri uri;
-                    Intent intent = new Intent(Intent.ACTION_SEND);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    String authority= BuildConfig.APPLICATION_ID+".fileprovider";
-                    uri = FileProvider.getUriForFile(requireActivity(),authority,file1);
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                    intent.setType("application/json");
-                    startActivity(Intent.createChooser(intent,getString(R.string.pref_save_keyboard_profile)));
-                    return false;
-                }
-            });
+                });
+            }
 
+            _pref = findPreference("import_special_button_file");
+            if (_pref != null) {
+                _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                        intent.addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.setType("application/json");
+                        startActivityForResult(intent, READ_REQUEST_SPECIAL_CODE);
+                        return false;
+                    }
+                });
+            }
 
-            findPreference("pref_debug_info").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(@NonNull Preference preference) {
-                    Intent intent=new Intent(requireActivity(), DebugInfoActivity.class);
-                    requireActivity().startActivity(intent);
-                    return false;
-                }
-            });
+            _pref = findPreference("export_keyboard_file");
+            if (_pref != null) {
+                _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        File file = new File(requireActivity().getExternalCacheDir(),"export_settings");
+                        if(!file.exists()){
+                            file.mkdir();
+                        }
+                        File file1= getJsonContent(requireActivity(),file);
+                        if(file1==null){
+                            Toast.makeText(requireActivity(),getString(R.string.pref_error_occurred),Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+                        Uri uri;
+                        Intent intent = new Intent(Intent.ACTION_SEND);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        String authority= BuildConfig.APPLICATION_ID+".fileprovider";
+                        uri = FileProvider.getUriForFile(requireActivity(),authority,file1);
+                        intent.putExtra(Intent.EXTRA_STREAM, uri);
+                        intent.setType("application/json");
+                        startActivity(Intent.createChooser(intent,getString(R.string.pref_save_keyboard_profile)));
+                        return false;
+                    }
+                });
+            }
+
+            _pref = findPreference("pref_debug_info");
+            if (_pref != null) {
+                _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(@NonNull Preference preference) {
+                        Intent intent=new Intent(requireActivity(), DebugInfoActivity.class);
+                        requireActivity().startActivity(intent);
+                        return false;
+                    }
+                });
+            }
 
             EditTextPreference bitrateEditPre = findPreference("edit_diy_bitrate");
 
