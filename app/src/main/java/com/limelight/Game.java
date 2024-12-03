@@ -1552,6 +1552,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             return false;
         }
 
+        int deviceId = event.getDeviceId();
+        if (prefConfig.ignoreSynthEvents && deviceId <= 0) {
+            return false;
+        }
+
         // Handle a synthetic back button event that some Android OS versions
         // create as a result of a right-click. This event WILL repeat if
         // the right mouse button is held down, so we ignore those.
@@ -1594,7 +1599,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             // We'll send it as a raw key event if we have a key mapping, otherwise we'll send it
             // as UTF-8 text (if it's a printable character).
-            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getScanCode(), event.getDeviceId());
+            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getScanCode(), deviceId);
             if (translated == 0) {
                 if (prefConfig.backAsMeta && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                     translated = 0x5b; // Meta key
@@ -1620,7 +1625,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
 
             conn.sendKeyboardInput(translated, KeyboardPacket.KEY_DOWN, getModifierState(event),
-                    keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+                    keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), deviceId) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
         }
 
         return true;
@@ -1635,6 +1640,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public boolean handleKeyUp(KeyEvent event) {
         // Pass-through virtual navigation keys
         if ((event.getFlags() & KeyEvent.FLAG_VIRTUAL_HARD_KEY) != 0) {
+            return false;
+        }
+
+        int deviceId = event.getDeviceId();
+        if (prefConfig.ignoreSynthEvents && deviceId <= 0) {
             return false;
         }
 
@@ -1675,7 +1685,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return false;
             }
 
-            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getScanCode(), event.getDeviceId());
+            short translated = keyboardTranslator.translate(event.getKeyCode(), event.getScanCode(), deviceId);
             if (translated == 0) {
                 if (prefConfig.backAsMeta && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                     translated = 0x5b; // Meta key
@@ -1688,7 +1698,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
 
             conn.sendKeyboardInput(translated, KeyboardPacket.KEY_UP, getModifierState(event),
-                    keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), event.getDeviceId()) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
+                    keyboardTranslator.hasNormalizedMapping(event.getKeyCode(), deviceId) ? 0 : MoonBridge.SS_KBE_FLAG_NON_NORMALIZED);
         }
 
         return true;
@@ -2242,11 +2252,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             return false;
         }
 
-        int eventSource = event.getSource();
-        if (prefConfig.ignoreSynthEvents && eventSource == 0) {
+        int deviceId = event.getDeviceId();
+        if (prefConfig.ignoreSynthEvents && deviceId <= 0) {
             return false;
         }
 
+        int eventSource = event.getSource();
         int deviceSources = event.getDevice() != null ? event.getDevice().getSources() : 0;
         if ((eventSource & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
             if (controllerHandler.handleMotionEvent(event)) {
