@@ -34,7 +34,7 @@ If you switch back to the main stream version, you'll be missing the following a
 17. Trackpad tap/scrolling support
 18. Natural track pad mode with touch screen
 19. Non-QWERTY keyboard layout support
-20. Quick Meta key with physicl BACK button
+20. Quick Meta key with physical BACK button
 21. Frame rate lock fix for some devices
 22. Video scale mode: Fit/Fill/Stretch
 23. View pan/zoom support
