@@ -121,6 +121,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private final TouchContext[] trackpadContextMap = new TouchContext[2];
     private PanZoomHandler panZoomHandler;
     private long threeFingerDownTime = 0;
+    private long fourFingerDownTime = 0;
 
     private static final int REFERENCE_HORIZ_RES = 1280;
     private static final int REFERENCE_VERT_RES = 720;
@@ -132,6 +133,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private static final int STYLUS_UP_DEAD_ZONE_RADIUS = 50;
 
     private static final int THREE_FINGER_TAP_THRESHOLD = 300;
+    private static final int FOUR_FINGER_TAP_THRESHOLD = 300;
 
     private ControllerHandler controllerHandler;
     private KeyboardTranslator keyboardTranslator;
@@ -2542,29 +2544,36 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         return true;
                     }
 
-                    // Special handling for 3 finger gesture
-                    if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN &&
-                            event.getPointerCount() == 3) {
-                        // Three fingers down
-                        threeFingerDownTime = event.getEventTime();
-
-                        // Cancel the first and second touches to avoid
-                        // erroneous events
-                        for (TouchContext aTouchContext : touchContextMap) {
-                            aTouchContext.cancelTouch();
-                        }
-
-                        return true;
-                    }
-
                     // TODO: Re-enable native touch when have a better solution for handling
                     // cancelled touches from Android gestures and 3 finger taps to activate
                     // the software keyboard.
-                    if(prefConfig.enableMultiTouchScreen) {
+                    if (prefConfig.enableMultiTouchScreen) {
                         if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
                             // If this host supports touch events and absolute touch is enabled,
                             // send it directly as a touch event.
                             return true;
+                        }
+                    } else {
+                        // Special handling for 3 finger gesture
+                        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
+                            int fingerCount = event.getPointerCount();
+                            if (fingerCount == 3) {
+                                // Three fingers down
+                                threeFingerDownTime = event.getEventTime();
+                            } else if (fingerCount == 4) {
+                                threeFingerDownTime = 0;
+                                fourFingerDownTime = event.getEventTime();
+                            }
+
+                            if (fingerCount > 2) {
+                                // Cancel previous touches to avoid
+                                // erroneous events
+                                for (TouchContext aTouchContext : touchContextMap) {
+                                    aTouchContext.cancelTouch();
+                                }
+
+                                return true;
+                            }
                         }
                     }
 
@@ -2621,9 +2630,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     if (pointerCount == 1 &&
                             (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || (event.getFlags() & MotionEvent.FLAG_CANCELED) == 0)) {
                         // All fingers up
-                        if (event.getEventTime() - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
+                        long currentEventTime = event.getEventTime();
+                        if (currentEventTime - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
                             // This is a 3 finger tap to bring up the keyboard
                             toggleKeyboard();
+                            return true;
+                        } else if (currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
+                            showHidekeyBoardLayoutController();
                             return true;
                         }
                     }
