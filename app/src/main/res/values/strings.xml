@@ -493,6 +493,8 @@
     <string name="summary_checkbox_enforce_display_mode">Force surface to use the optimal display mode.\nRequired by some systems (such as ColorOS) to set refresh rate/resolution properly.\nDo not enable on ChromeCast 4K as it might lead to bugs.</string>
     <string name="title_checkbox_use_virtual_display">Use Virtual Display</string>
     <string name="summary_checkbox_use_virtual_display">Use Virtual Display by default.\nVirtual Display can automatically match your client side resolution and frame rate settings, giving you a seamless streaming experience.\nRequires Apollo as host streaming software.</string>
+    <string name="title_checkbox_resume_without_confirm">Quick Resume</string>
+    <string name="summary_checkbox_resume_without_confirm">Do not show resume menu when clicking resume button, resume the app immediately.</string>
     <string name="virtual_keyboard_hide">Hide\nKBD</string>
     <string name="mouse_mode_multi_touch">Multi touch</string>
     <string name="mouse_mode_absolute_touch">Absolute touch</string>

@@ -392,6 +392,12 @@
         android:title="@string/category_ui_settings"
         app:iconSpaceReserved="false">
         <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="checkbox_resume_without_confirm"
+            android:summary="@string/summary_checkbox_resume_without_confirm"
+            android:title="@string/title_checkbox_resume_without_confirm"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
             android:defaultValue="true"
             android:key="checkbox_enable_quit_dialog"
             android:summary="@string/summary_quit_dialog"

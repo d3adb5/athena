@@ -688,7 +688,11 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
                 // Only open the context menu if something is running, otherwise start it
                 if (lastRunningAppId != 0) {
-                    openContextMenu(arg1);
+                    if (prefConfig.resumeWithoutConfirm && lastRunningAppId == app.app.getAppId()) {
+                        ServerHelper.doStart(AppView.this, app.app, computer, managerBinder, prefConfig.useVirtualDisplay);
+                    } else {
+                        openContextMenu(arg1);
+                    }
                 } else {
                     if (prefConfig.useVirtualDisplay && !(computer.vDisplaySupported && computer.vDisplayDriverReady)) {
                         UiHelper.displayVdisplayConfirmationDialog(
