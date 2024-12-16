@@ -733,9 +733,9 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         context.hasPaddles = MoonBridge.guessControllerHasPaddles(context.vendorId, context.productId);
         context.hasShare = MoonBridge.guessControllerHasShareButton(context.vendorId, context.productId);
 
-        if(prefConfig.enableDeviceRumble){
+        if (prefConfig.enableDeviceRumble) {
             context.vibrator = deviceVibrator;
-        }else{
+        } else {
             // Try to use the InputDevice's associated vibrators first
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && hasQuadAmplitudeControlledRumbleVibrators(dev.getVibratorManager())) {
                 context.vibratorManager = dev.getVibratorManager();
@@ -2315,8 +2315,13 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         // Report rate is restricted to <= 200 Hz without the HIGH_SAMPLING_RATE_SENSORS permission
         reportRateHz = (short) Math.min(200, reportRateHz);
 
-        for (int i = 0; i < inputDeviceContexts.size(); i++) {
-            InputDeviceContext deviceContext = inputDeviceContexts.valueAt(i);
+        for (int i = 0; i < inputDeviceContexts.size() + usbDeviceContexts.size(); i++) {
+            InputDeviceContext deviceContext;
+            if (i < inputDeviceContexts.size()) {
+                deviceContext = inputDeviceContexts.valueAt(i);
+            } else {
+                deviceContext = usbDeviceContexts.valueAt(i - inputDeviceContexts.size());
+            }
 
             if (deviceContext.controllerNumber == controllerNumber) {
                 // Store the desired report rate even if we don't have sensors. In some cases,
@@ -3358,20 +3363,38 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         }
     }
 
-    class UsbDeviceContext extends GenericControllerContext {
+    class UsbDeviceContext extends InputDeviceContext {
         public AbstractController device;
 
-        @Override
-        public void destroy() {
-            super.destroy();
-
-            // Nothing for now
-        }
+//        @Override
+//        public void destroy() {
+//            super.destroy();
+//
+//            // Nothing for now
+//        }
 
         @Override
         public void sendControllerArrival() {
+            byte type = device.getType();
+            short capabilities = device.getCapabilities();
+
+            // Report sensors if the input device has them or we're using built-in sensors for a built-in controller
+            if (sensorManager != null && sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
+                capabilities |= MoonBridge.LI_CCAP_ACCEL;
+            }
+            if (sensorManager != null && sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
+                capabilities |= MoonBridge.LI_CCAP_GYRO;
+            }
+
+            if (type != MoonBridge.LI_CTYPE_PS && sensorManager != null) {
+                type = MoonBridge.LI_CTYPE_UNKNOWN;
+                activityContext.runOnUiThread(() -> {
+                    Toast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
+                });
+            }
+
             conn.sendControllerArrivalEvent((byte)controllerNumber, getActiveControllerMask(),
-                    device.getType(), device.getSupportedButtonFlags(), device.getCapabilities());
+                    type, device.getSupportedButtonFlags(), capabilities);
         }
     }
 }
