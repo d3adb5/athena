@@ -586,6 +586,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         }
 
+        if (prefConfig.framePacingWarpDrive) {
+            chosenFrameRate *= 4;
+        }
+
         StreamConfiguration config = new StreamConfiguration.Builder()
                 .setResolution(
                         displayWidth,

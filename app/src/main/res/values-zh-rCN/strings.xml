@@ -257,8 +257,6 @@
     <string name="fps_120">120 FPS</string>
     <string name="resolution_1080p">1080p</string>
     <string name="resolution_720p">720p</string>
-    <string name="pacing_balanced">平衡</string>
-    <string name="pacing_smoothness">优先视频流畅度（可能会显著增大延迟）</string>
     <string name="summary_setup_guide">查看有关如何设置游戏电脑以进行流传输的说明</string>
     <string name="title_checkbox_auto_invert_video_resolution">自动反转分辨率</string>
     <string name="summary_checkbox_auto_invert_video_resolution">在竖屏时自动反转视频流的宽/高。\n例如: 1920x1080 会变成 1080x1920。</string>
@@ -274,8 +272,11 @@
     <string name="title_troubleshooting">解决方案向导</string>
     <string name="summary_troubleshooting">查看有关诊断和修复常见流传输问题的提示</string>
     <string name="summary_frame_pacing">指定如何平衡视频延迟和流畅度</string>
-    <string name="pacing_balanced_alt">有FPS限制的平衡</string>
+    <string name="pacing_warp">曲率推进（实验性）</string>
     <string name="pacing_latency">优先最低延迟</string>
+    <string name="pacing_balanced">平衡</string>
+    <string name="pacing_balanced_alt">有FPS限制的平衡</string>
+    <string name="pacing_smoothness">优先视频流畅度（可能会显著增大延迟）</string>
     <string name="summary_seekbar_deadzone">正值为普通死区，负值为死区补偿。\n注意：使用死区补偿时请确保你的手柄本身可以设置死区，否则很难完全回中。</string>
     <string name="title_checkbox_absolute_mouse_mode">适合远程桌面的鼠标模式</string>
     <string name="summary_checkbox_absolute_mouse_mode">这可以使得鼠标加速在远程桌面使用中表现得更自然，但它与许多游戏不兼容。</string>
