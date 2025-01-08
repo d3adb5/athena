@@ -2944,6 +2944,16 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
     }
 
     @Override
+    public void reportControllerMotion(int controllerId, byte motionType, float motionX, float motionY, float motionZ) {
+        GenericControllerContext context = usbDeviceContexts.get(controllerId);
+        if (context == null) {
+            return;
+        }
+
+        conn.sendControllerMotionEvent((byte)context.controllerNumber, motionType, motionX, motionY, motionZ);
+    }
+
+    @Override
     public void deviceRemoved(AbstractController controller) {
         UsbDeviceContext context = usbDeviceContexts.get(controller.getControllerId());
         if (context != null) {
@@ -3379,15 +3389,18 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             short capabilities = device.getCapabilities();
 
             // Report sensors if the input device has them or we're using built-in sensors for a built-in controller
-            if (sensorManager != null && sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
-                capabilities |= MoonBridge.LI_CCAP_ACCEL;
-            }
-            if (sensorManager != null && sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
-                capabilities |= MoonBridge.LI_CCAP_GYRO;
+            if (type != MoonBridge.LI_CTYPE_PS && type != MoonBridge.LI_CTYPE_NINTENDO && sensorManager != null) {
+                if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
+                    capabilities |= MoonBridge.LI_CCAP_GYRO;
+                }
+                if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
+                    capabilities |= MoonBridge.LI_CCAP_ACCEL;
+                }
+
+                type = MoonBridge.LI_CTYPE_UNKNOWN;
             }
 
-            if (type != MoonBridge.LI_CTYPE_PS && sensorManager != null) {
-                type = MoonBridge.LI_CTYPE_UNKNOWN;
+            if (type != MoonBridge.LI_CTYPE_PS && (capabilities & (MoonBridge.LI_CCAP_GYRO | MoonBridge.LI_CCAP_ACCEL)) != 0) {
                 activityContext.runOnUiThread(() -> {
                     Toast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
                 });
