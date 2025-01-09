@@ -187,7 +187,7 @@ public class PreferenceConfiguration {
     public int width, height, fps;
     public int bitrate;
     public FormatOption videoFormat;
-    public boolean framePacingWarpDrive;
+    public int framePacingWarpFactor = 0;
     public int deadzonePercentage;
     public int oscOpacity;
     public int oscKeyboardOpacity;
@@ -743,7 +743,13 @@ public class PreferenceConfiguration {
 
         config.videoFormat = getVideoFormatValue(context);
         config.framePacing = getFramePacingValue(context);
-        config.framePacingWarpDrive = prefs.getString(FRAME_PACING_PREF_STRING, "").equals("warp");
+
+        String warpFactorStr = prefs.getString(FRAME_PACING_PREF_STRING, "");
+        if (warpFactorStr.equals("warp")) {
+            config.framePacingWarpFactor = 2;
+        } else if (warpFactorStr.equals("warp2")) {
+            config.framePacingWarpFactor = 4;
+        }
 
         config.analogStickForScrolling = getAnalogStickForScrollingValue(context);
 
