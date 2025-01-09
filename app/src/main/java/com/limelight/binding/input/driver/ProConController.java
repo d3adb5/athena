@@ -27,6 +27,7 @@ public class ProConController extends AbstractController {
     private UsbEndpoint inEndpt, outEndpt;
     private Thread inputThread;
     private boolean stopped = false;
+    private byte sendPacketCount = 0;
     private final int[][][] stickCalibration = new int[2][2][3]; // [stick][axis][min, center, max]
     private final float[][][] stickExtends = new float[2][2][2]; // Pre-calculated scale for each axis
 
@@ -52,8 +53,10 @@ public class ProConController extends AbstractController {
             notifyDeviceAdded();
 
             loadStickCalibration();
+            setInputReportMode();
             enableIMU(true);
             enableVibration(true);
+            setHomeLightAnimation();
 
             while (!Thread.currentThread().isInterrupted() && !stopped) {
                 byte[] buffer = new byte[64];
@@ -124,20 +127,45 @@ public class ProConController extends AbstractController {
             inputThread = null;
         }
 
-        for (int i = 0; i < device.getInterfaceCount(); i++) {
-            UsbInterface iface = device.getInterface(i);
-            connection.releaseInterface(iface);
-        }
+//        for (int i = 0; i < device.getInterfaceCount(); i++) {
+//            UsbInterface iface = device.getInterface(i);
+//            connection.releaseInterface(iface);
+//        }
         connection.close();
         notifyDeviceRemoved();
     }
 
+
     @Override
     public void rumble(short lowFreqMotor, short highFreqMotor) {
-        byte[] data = {
-                0x10, 0x00, RUMBLE[0], RUMBLE[1], RUMBLE[2], RUMBLE[3],
-                RUMBLE[0], RUMBLE[1], RUMBLE[2], RUMBLE[3]
-        };
+        byte[] data = new byte[10];
+        data[0] = 0x10;  // Rumble command
+        data[1] = sendPacketCount++;  // Counter (increments per call)
+
+        if (sendPacketCount > 0xF) {
+            sendPacketCount = 0;
+        }
+
+        if (lowFreqMotor == 0) {
+            System.arraycopy(RUMBLE_NEUTRAL, 0, data, 2, RUMBLE_NEUTRAL.length);
+        } else {
+            data[2] = 0x00;
+            data[3] = 0x01;
+            data[4] = data[8] = (byte)(0xBB - (lowFreqMotor >> 12));
+            data[5] = data[9] = (byte)((lowFreqMotor >> 10) + 0x5A);
+        }
+        if (highFreqMotor == 0) {
+            System.arraycopy(RUMBLE_NEUTRAL, 0, data, 6, RUMBLE_NEUTRAL.length);
+        } else {
+            data[6] = (byte)(0x66 - (highFreqMotor >> 12));
+            data[7] = (byte)(highFreqMotor >> 8);
+            if (data[7] > (byte)0xC8) {
+                data[7] = (byte)0xC8;
+            }
+            data[8] = 0x40;
+            data[9] = 0x40;
+        }
+
         connection.bulkTransfer(outEndpt, data, data.length, 100);
     }
 
@@ -289,6 +317,26 @@ public class ProConController extends AbstractController {
         }
     }
 
+    private boolean sendSubcommand(byte subcommand, byte[] payload) {
+        byte[] packet = new byte[PACKET_SIZE];
+        packet[0] = 0x01;  // Rumble command
+        packet[1] = 0x00;  // Counter (increments on each call)
+        System.arraycopy(payload, 0, packet, 2, payload.length);
+
+        int result = connection.bulkTransfer(outEndpt, packet, packet.length, 100);
+        return result == packet.length;
+    }
+
+    private void setInputReportMode() {
+        final byte[] data = new byte[] {0x30};
+        sendSubcommand((byte) 0x03, data);
+    }
+
+    private void setHomeLightAnimation() {
+        final byte[] data = new byte[] {0x2F, 0x10, 0x11, 0x33, 0x33};
+        sendSubcommand((byte) 0x38, data);
+    }
+
     private void enableIMU(boolean enable) {
         byte[] data = new byte[11];
         data[0] = 0x01;  // Rumble subcommand
@@ -309,15 +357,5 @@ public class ProConController extends AbstractController {
         data[10] = (byte) (enable ? 0x01 : 0x00);  // Enable or disable vibration
 
         sendSubcommand((byte) 0x48, data);
-    }
-
-    private boolean sendSubcommand(byte subcommand, byte[] payload) {
-        byte[] packet = new byte[PACKET_SIZE];
-        packet[0] = 0x01;  // Rumble command
-        packet[1] = 0x00;  // Counter (increments on each call)
-        System.arraycopy(payload, 0, packet, 2, payload.length);
-
-        int result = connection.bulkTransfer(outEndpt, packet, packet.length, 100);
-        return result == packet.length;
     }
 }
