@@ -13,14 +13,21 @@ import com.limelight.nvstream.jni.MoonBridge;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Locale;
 
 public class ProConController extends AbstractController {
 
     private static final int PACKET_SIZE = 64;
     private static final byte[] RUMBLE_NEUTRAL = {0x00, 0x01, 0x40, 0x40};
     private static final byte[] RUMBLE = {0x74, (byte) 0xBE, (byte) 0xBD, 0x6F};
-    private static final int CALIBRATION_OFFSET = 0x603D;
-    private static final int CALIBRATION_LENGTH = 0x12;
+    private static final int FACTORY_LS_CALIBRATION_OFFSET = 0x603D;
+    private static final int FACTORY_RS_CALIBRATION_OFFSET = 0x6046;
+    private static final int USER_LS_MAGIC_OFFSET = 0x8010;
+    private static final int USER_LS_CALIBRATION_OFFSET = 0x8012;
+    private static final int USER_RS_MAGIC_OFFSET = 0x801B;
+    private static final int USER_RS_CALIBRATION_OFFSET = 0x801D;
+    private static final int CALIBRATION_LENGTH = 9;
+    private static final int COMMAND_RETRIES = 10;
 
     private final UsbDevice device;
     private final UsbDeviceConnection connection;
@@ -50,20 +57,35 @@ public class ProConController extends AbstractController {
             } catch (InterruptedException e) {
                 return;
             }
-            notifyDeviceAdded();
 
-            loadStickCalibration();
-            setInputReportMode();
-            enableIMU(true);
-            enableVibration(true);
-            setHomeLightAnimation();
+            boolean handshakeSuccess = handshake();
+
+            if (!handshakeSuccess) {
+                LimeLog.info("ProCon: Initial handshake failed!");
+                ProConController.this.stop();
+                return;
+            }
+
+            LimeLog.info("ProCon: handshake " + handshakeSuccess);
+            LimeLog.info("ProCon: highspeed " + highSpeed());
+            LimeLog.info("ProCon: handshake " + handshake());
+            LimeLog.info("ProCon: loadstickcalibration " + loadStickCalibration());
+            LimeLog.info("ProCon: enablevibration " + enableVibration(true));
+            LimeLog.info("ProCon: setinutreportmode " + setInputReportMode((byte)0x30));
+            LimeLog.info("ProCon: forceusb " + forceUSB());
+            LimeLog.info("ProCon: setplayerled " + setPlayerLED(getControllerId() + 1));
+            LimeLog.info("ProCon: enableimu " + enableIMU(true));
+
+            LimeLog.info("ProCon: initialized!");
+
+            notifyDeviceAdded();
 
             while (!Thread.currentThread().isInterrupted() && !stopped) {
                 byte[] buffer = new byte[64];
                 int res;
                 do {
                     long lastMillis = SystemClock.uptimeMillis();
-                    res = connection.bulkTransfer(inEndpt, buffer, buffer.length, 3000);
+                    res = connection.bulkTransfer(inEndpt, buffer, buffer.length, 1000);
                     if (res == 0) {
                         res = -1;
                     }
@@ -84,6 +106,103 @@ public class ProConController extends AbstractController {
                 }
             }
         });
+    }
+
+    private boolean sendData(byte[] data, int size) {
+        return connection.bulkTransfer(outEndpt, data, size, 100) == size;
+    }
+
+    private boolean sendCommand(byte id, boolean waitReply) {
+        byte[] data = new byte[] {(byte)0x80, id};
+        for (int i = 0; i < COMMAND_RETRIES; i++) {
+            if (!sendData(data, data.length)) {
+                continue;
+            }
+            if (!waitReply) {
+                return true;
+            }
+
+            byte[] buffer = new byte[PACKET_SIZE];
+            int res;
+            int retries = 0;
+            do {
+                res = connection.bulkTransfer(inEndpt, buffer, buffer.length, 100);
+                if (res > 0 && (buffer[0] & 0xFF) == 0x81 && (buffer[1] & 0xFF) == id) {
+                    return true;
+                }
+                retries += 1;
+            } while (retries < 20 && res > 0 && !Thread.currentThread().isInterrupted() && !stopped);
+        }
+
+        return false;
+    }
+
+    private boolean sendSubcommand(byte subcommand, byte[] payload, byte[] buffer) {
+        byte[] data = new byte[11 + payload.length];
+        data[0] = 0x01;  // Rumble and subcommand
+        data[1] = sendPacketCount++;  // Counter (increments per call)
+        if (sendPacketCount > 0xF) {
+            sendPacketCount = 0;
+        }
+
+        data[10] = subcommand;
+        System.arraycopy(payload, 0, data, 11, payload.length);
+
+        for (int i = 0; i < COMMAND_RETRIES; i++) {
+            if (!sendData(data, data.length)) {
+                continue;
+            }
+
+//            LimeLog.warning("ProCon: Sent: " + toHexadecimal(data, data.length));
+
+            // Wait for response
+            int res;
+            int retries = 0;
+            do {
+                res = connection.bulkTransfer(inEndpt, buffer, buffer.length, 100);
+                if (res < 0 || buffer[0] != 0x21 || buffer[14] != subcommand) {
+                    retries += 1;
+                } else {
+                    return true;
+                }
+            } while (retries < 20 && res > 0 && !Thread.currentThread().isInterrupted() && !stopped);
+            LimeLog.warning("ProCon: Failed to get subcmd reply: " + res + " bytes received, " + String.format((Locale)null, "0x%02x, 0x%02x", buffer[0], buffer[14]));
+            return false;
+        }
+
+        return false;
+    }
+
+    private boolean handshake() {
+        return sendCommand((byte)0x02, true);
+    }
+
+    private boolean highSpeed() {
+        return sendCommand((byte)0x03, true);
+    }
+
+    private boolean forceUSB() {
+        return sendCommand((byte)0x04, true);
+    }
+
+    private boolean setInputReportMode(byte mode) {
+        final byte[] data = new byte[] {mode};
+        return sendSubcommand((byte) 0x03, data, new byte[PACKET_SIZE]);
+    }
+
+    private boolean setPlayerLED(int id) {
+        final byte[] data = new byte[] {(byte)(id & 0b1111)};
+        return sendSubcommand((byte)0x30, data, new byte[PACKET_SIZE]);
+    }
+
+    private boolean enableIMU(boolean enable) {
+        byte[] data = new byte[]{(byte)(enable ? 0x01 : 0x00)};
+        return sendSubcommand((byte)0x40, data, new byte[PACKET_SIZE]);
+    }
+
+    private boolean enableVibration(boolean enable) {
+        byte[] data = new byte[]{(byte)(enable ? 0x01 : 0x00)};
+        return sendSubcommand((byte)0x48, data, new byte[PACKET_SIZE]);
     }
 
     public boolean start() {
@@ -141,7 +260,6 @@ public class ProConController extends AbstractController {
         byte[] data = new byte[10];
         data[0] = 0x10;  // Rumble command
         data[1] = sendPacketCount++;  // Counter (increments per call)
-
         if (sendPacketCount > 0xF) {
             sendPacketCount = 0;
         }
@@ -166,7 +284,7 @@ public class ProConController extends AbstractController {
             data[9] = 0x40;
         }
 
-        connection.bulkTransfer(outEndpt, data, data.length, 100);
+        sendData(data, data.length);
     }
 
     @Override
@@ -176,6 +294,10 @@ public class ProConController extends AbstractController {
 
     protected boolean handleRead(ByteBuffer buffer) {
         if (buffer.remaining() < PACKET_SIZE) {
+            return false;
+        }
+
+        if (buffer.get(0) != 0x30) {
             return false;
         }
 
@@ -222,13 +344,6 @@ public class ProConController extends AbstractController {
     }
 
     private boolean spiFlashRead(int offset, int length, byte[] buffer) {
-        byte[] command = new byte[11];
-        command[0] = 0x01;  // Rumble subcommand
-        command[1] = 0x00;  // Subcommand counter (can increment)
-        System.arraycopy(RUMBLE_NEUTRAL, 0, command, 2, RUMBLE_NEUTRAL.length);
-        System.arraycopy(RUMBLE_NEUTRAL, 0, command, 6, RUMBLE_NEUTRAL.length);
-        command[10] = 0x10;  // SPI Flash Read Subcommand
-
         // SPI Read Address (Little Endian)
         byte[] address = {
                 (byte) (offset & 0xFF),
@@ -238,59 +353,99 @@ public class ProConController extends AbstractController {
                 (byte) length
         };
 
-        // Append address to command
-        byte[] fullCommand = new byte[command.length + address.length];
-        System.arraycopy(command, 0, fullCommand, 0, command.length);
-        System.arraycopy(address, 0, fullCommand, command.length, address.length);
-
-        if (!sendSubcommand((byte) 0x10, fullCommand)) {
-            LimeLog.warning("SPI Flash Read subcommand failed.");
-            return false;
-        }
-
-        // Wait for response
-        int res = connection.bulkTransfer(inEndpt, buffer, PACKET_SIZE, 1000);
-        if (res <= 0 || buffer[0] != 0x21 || buffer[14] != 0x10) {
-            LimeLog.warning("Failed to receive SPI Flash data.");
+        if (!sendSubcommand((byte) 0x10, address, buffer)) {
+            LimeLog.warning("ProCon: Failed to receive SPI Flash data.");
             return false;
         }
 
         return true;
     }
 
-    private void loadStickCalibration() {
+    private boolean checkUserCalMagic(int offset) {
         byte[] buffer = new byte[PACKET_SIZE];
 
-        // Read calibration data from SPI flash
-        if (!spiFlashRead(CALIBRATION_OFFSET, CALIBRATION_LENGTH, buffer)) {
-            LimeLog.warning("Failed to read stick calibration from SPI flash. Applying default calibration.");
-            applyDefaultCalibration();
-            return;
+        if (!spiFlashRead(offset, 2, buffer)) {
+            return false;
         }
 
-        // Parse calibration data
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                stickCalibration[i][j][0] = ((buffer[20 + i * 6 + j * 3] & 0xFF) | ((buffer[21 + i * 6 + j * 3] & 0x0F) << 8)) & 0xFFF;
-                stickCalibration[i][j][1] = ((buffer[22 + i * 6] & 0xFF) << 4) | ((buffer[21 + i * 6 + j * 3] & 0xF0) >> 4);
-                stickCalibration[i][j][2] = ((buffer[23 + i * 6 + j * 3] & 0xFF) | ((buffer[24 + i * 6 + j * 3] & 0x0F) << 8)) & 0xFFF;
-
-                stickExtends[i][j][0] = (float) (stickCalibration[i][j][0] * 0.7);
-                stickExtends[i][j][1] = (float) (stickCalibration[i][j][2] * 0.7);
-            }
-        }
+        return buffer[0] == (byte)0xB2 && buffer[1] == (byte)0xA1;
     }
 
-    private void applyDefaultCalibration() {
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 2; j++) {
-                stickCalibration[i][j][0] = 0x000;  // Min
-                stickCalibration[i][j][1] = 0x800;  // Center
-                stickCalibration[i][j][2] = 0x1000;  // Max
+    private boolean loadStickCalibration() {
+        byte[] buffer = new byte[PACKET_SIZE];
 
-                stickExtends[i][j][0] = -0x700;
-                stickExtends[i][j][1] = 0x700;
-            }
+        int ls_addr = FACTORY_LS_CALIBRATION_OFFSET;
+        int rs_addr = FACTORY_RS_CALIBRATION_OFFSET;
+
+        if (checkUserCalMagic(USER_LS_MAGIC_OFFSET)) {
+            ls_addr = USER_LS_CALIBRATION_OFFSET;
+            LimeLog.info("ProCon: LS has user calibration!");
+        }
+        if (checkUserCalMagic(USER_RS_MAGIC_OFFSET)) {
+            rs_addr = USER_RS_CALIBRATION_OFFSET;
+            LimeLog.info("ProCon: RS has user calibration!");
+        }
+
+        boolean ls_calibrated = false;
+        if (spiFlashRead(ls_addr, CALIBRATION_LENGTH, buffer)) {
+            // read offset 20
+            int x_max = (buffer[20] & 0xFF) | ((buffer[21] & 0x0F) << 8);
+            int y_max = ((buffer[21] & 0xF0) >> 4) | ((buffer[22] & 0xFF) << 4);
+            int x_center = (buffer[23] & 0xFF) | ((buffer[24] & 0x0F) << 8);
+            int y_center = ((buffer[24] & 0xF0) >> 4) | ((buffer[25] & 0xFF) << 4);
+            int x_min = (buffer[26] & 0xFF) | ((buffer[27] & 0x0F) << 8);
+            int y_min = ((buffer[27] & 0xF0) >> 4) | ((buffer[28] & 0xFF) << 4);
+            stickCalibration[0][0][0] = x_center - x_min; // Min
+            stickCalibration[0][0][1] = x_center; // Center
+            stickCalibration[0][0][2] = x_center + x_max; // Max
+            stickCalibration[0][1][0] = y_center - y_min; // Min
+            stickCalibration[0][1][1] = y_center; // Center
+            stickCalibration[0][1][2] = y_center + y_max; // Max
+            stickExtends[0][0][0] = (float) ((x_center - stickCalibration[0][0][0]) * -0.7);
+            stickExtends[0][0][1] = (float) ((stickCalibration[0][0][2] - x_center) * 0.7);
+            stickExtends[0][1][0] = (float) ((y_center - stickCalibration[0][1][0]) * -0.7);
+            stickExtends[0][1][1] = (float) ((stickCalibration[0][1][2] - y_center) * 0.7);
+
+            ls_calibrated = true;
+        }
+
+        if (!ls_calibrated) {
+            applyDefaultCalibration(0);
+        }
+
+        if (spiFlashRead(rs_addr, CALIBRATION_LENGTH, buffer)) {
+            // read offset 20
+            int x_center = (buffer[20] & 0xFF) | ((buffer[21] & 0x0F) << 8);
+            int y_center = ((buffer[21] & 0xF0) >> 4) | ((buffer[22] & 0xFF) << 4);
+            int x_min = (buffer[23] & 0xFF) | ((buffer[24] & 0x0F) << 8);
+            int y_min = ((buffer[24] & 0xF0) >> 4) | ((buffer[25] & 0xFF) << 4);
+            int x_max = (buffer[26] & 0xFF) | ((buffer[27] & 0x0F) << 8);
+            int y_max = ((buffer[27] & 0xF0) >> 4) | ((buffer[28] & 0xFF) << 4);
+            stickCalibration[1][0][0] = x_center - x_min; // Min
+            stickCalibration[1][0][1] = x_center; // Center
+            stickCalibration[1][0][2] = x_center + x_max; // Max
+            stickCalibration[1][1][0] = y_center - y_min; // Min
+            stickCalibration[1][1][1] = y_center; // Center
+            stickCalibration[1][1][2] = y_center + y_max; // Max
+            stickExtends[1][0][0] = (float) ((x_center - stickCalibration[1][0][0]) * -0.7);
+            stickExtends[1][0][1] = (float) ((stickCalibration[1][0][2] - x_center) * 0.7);
+            stickExtends[1][1][0] = (float) ((y_center - stickCalibration[1][1][0]) * -0.7);
+            stickExtends[1][1][1] = (float) ((stickCalibration[1][1][2] - y_center) * 0.7);
+        } else {
+            applyDefaultCalibration(1);
+        }
+
+        return true;
+    }
+
+    private void applyDefaultCalibration(int stick) {
+        for (int axis = 0; axis < 2; axis++) {
+            stickCalibration[stick][axis][0] = 0x000;  // Min
+            stickCalibration[stick][axis][1] = 0x800;  // Center
+            stickCalibration[stick][axis][2] = 0xFFF;  // Max
+
+            stickExtends[stick][axis][0] = -0x700;
+            stickExtends[stick][axis][1] = 0x700;
         }
     }
 
@@ -315,47 +470,5 @@ public class ProConController extends AbstractController {
         } else {
             return -value / stickExtends[stick][axis][0];
         }
-    }
-
-    private boolean sendSubcommand(byte subcommand, byte[] payload) {
-        byte[] packet = new byte[PACKET_SIZE];
-        packet[0] = 0x01;  // Rumble command
-        packet[1] = 0x00;  // Counter (increments on each call)
-        System.arraycopy(payload, 0, packet, 2, payload.length);
-
-        int result = connection.bulkTransfer(outEndpt, packet, packet.length, 100);
-        return result == packet.length;
-    }
-
-    private void setInputReportMode() {
-        final byte[] data = new byte[] {0x30};
-        sendSubcommand((byte) 0x03, data);
-    }
-
-    private void setHomeLightAnimation() {
-        final byte[] data = new byte[] {0x2F, 0x10, 0x11, 0x33, 0x33};
-        sendSubcommand((byte) 0x38, data);
-    }
-
-    private void enableIMU(boolean enable) {
-        byte[] data = new byte[11];
-        data[0] = 0x01;  // Rumble subcommand
-        data[1] = 0x00;  // Subcommand counter (can increment)
-        System.arraycopy(RUMBLE_NEUTRAL, 0, data, 2, RUMBLE_NEUTRAL.length);
-        System.arraycopy(RUMBLE_NEUTRAL, 0, data, 6, RUMBLE_NEUTRAL.length);
-        data[10] = (byte) (enable ? 0x01 : 0x00);  // Enable or disable IMU
-
-        sendSubcommand((byte) 0x40, data);
-    }
-
-    private void enableVibration(boolean enable) {
-        byte[] data = new byte[11];
-        data[0] = 0x01;  // Rumble subcommand
-        data[1] = 0x00;  // Subcommand counter
-        System.arraycopy(RUMBLE_NEUTRAL, 0, data, 2, RUMBLE_NEUTRAL.length);
-        System.arraycopy(RUMBLE_NEUTRAL, 0, data, 6, RUMBLE_NEUTRAL.length);
-        data[10] = (byte) (enable ? 0x01 : 0x00);  // Enable or disable vibration
-
-        sendSubcommand((byte) 0x48, data);
     }
 }
