@@ -270,13 +270,13 @@ public class ProConController extends AbstractController {
             data[2] = 0x00;
             data[3] = 0x01;
             data[4] = data[8] = (byte)(0xBB - (lowFreqMotor >> 12));
-            data[5] = data[9] = (byte)((lowFreqMotor >> 10) + 0x5A);
+            data[5] = data[9] = (byte)((lowFreqMotor >> 10) + 0x60);
         }
         if (highFreqMotor == 0) {
             System.arraycopy(RUMBLE_NEUTRAL, 0, data, 6, RUMBLE_NEUTRAL.length);
         } else {
-            data[6] = (byte)(0x66 - (highFreqMotor >> 12));
-            data[7] = (byte)(highFreqMotor >> 8);
+            data[6] = (byte)(0x77 - (highFreqMotor >> 11));
+            data[7] = (byte)(highFreqMotor >> 4 | 0x01);
             if (data[7] > (byte)0xC8) {
                 data[7] = (byte)0xC8;
             }
