@@ -398,9 +398,9 @@ public class ProConController extends AbstractController {
             stickCalibration[0][0][0] = x_center - x_min; // Min
             stickCalibration[0][0][1] = x_center; // Center
             stickCalibration[0][0][2] = x_center + x_max; // Max
-            stickCalibration[0][1][0] = y_center - y_min; // Min
-            stickCalibration[0][1][1] = y_center; // Center
-            stickCalibration[0][1][2] = y_center + y_max; // Max
+            stickCalibration[0][1][0] = 0x1000 - y_center - y_max; // Min
+            stickCalibration[0][1][1] = 0x1000 - y_center; // Center
+            stickCalibration[0][1][2] = 0x1000 - y_center + y_min; // Max
             stickExtends[0][0][0] = (float) ((x_center - stickCalibration[0][0][0]) * -0.7);
             stickExtends[0][0][1] = (float) ((stickCalibration[0][0][2] - x_center) * 0.7);
             stickExtends[0][1][0] = (float) ((y_center - stickCalibration[0][1][0]) * -0.7);
@@ -425,9 +425,9 @@ public class ProConController extends AbstractController {
             stickCalibration[1][0][0] = x_center - x_min; // Min
             stickCalibration[1][0][1] = x_center; // Center
             stickCalibration[1][0][2] = x_center + x_max; // Max
-            stickCalibration[1][1][0] = y_center - y_min; // Min
-            stickCalibration[1][1][1] = y_center; // Center
-            stickCalibration[1][1][2] = y_center + y_max; // Max
+            stickCalibration[1][1][0] = 0x1000 - y_center - y_max; // Min
+            stickCalibration[1][1][1] = 0x1000 - y_center; // Center
+            stickCalibration[1][1][2] = 0x1000 - y_center + y_min; // Max
             stickExtends[1][0][0] = (float) ((x_center - stickCalibration[1][0][0]) * -0.7);
             stickExtends[1][0][1] = (float) ((stickCalibration[1][0][2] - x_center) * 0.7);
             stickExtends[1][1][0] = (float) ((y_center - stickCalibration[1][1][0]) * -0.7);
@@ -460,16 +460,13 @@ public class ProConController extends AbstractController {
     }
 
     private float applyStickCalibration(int value, int stick, int axis) {
+        int center = stickCalibration[stick][axis][1];
+
         if (value < 0) {
             value += 0x1000;
         }
-        int center = stickCalibration[stick][axis][1];
 
-        if (axis == 1) {
-            value = value + center - 0x1000;
-        } else {
-            value -= center;
-        }
+        value -= center;
 
         if (value < stickExtends[stick][axis][0]) {
             stickExtends[stick][axis][0] = value;
