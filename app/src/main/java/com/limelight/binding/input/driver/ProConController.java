@@ -20,13 +20,17 @@ public class ProConController extends AbstractController {
     private static final int PACKET_SIZE = 64;
     private static final byte[] RUMBLE_NEUTRAL = {0x00, 0x01, 0x40, 0x40};
     private static final byte[] RUMBLE = {0x74, (byte) 0xBE, (byte) 0xBD, 0x6F};
+    private static final int FACTORY_IMU_CALIBRATION_OFFSET = 0x6020;
     private static final int FACTORY_LS_CALIBRATION_OFFSET = 0x603D;
     private static final int FACTORY_RS_CALIBRATION_OFFSET = 0x6046;
+    private static final int USER_IMU_MAGIC_OFFSET = 0x8026;
+    private static final int USER_IMU_CALIBRATION_OFFSET = 0x8028;
     private static final int USER_LS_MAGIC_OFFSET = 0x8010;
     private static final int USER_LS_CALIBRATION_OFFSET = 0x8012;
     private static final int USER_RS_MAGIC_OFFSET = 0x801B;
     private static final int USER_RS_CALIBRATION_OFFSET = 0x801D;
-    private static final int CALIBRATION_LENGTH = 9;
+    private static final int IMU_CALIBRATION_LENGTH = 24;
+    private static final int STICK_CALIBRATION_LENGTH = 9;
     private static final int COMMAND_RETRIES = 10;
 
     private final UsbDevice device;
@@ -264,25 +268,21 @@ public class ProConController extends AbstractController {
             sendPacketCount = 0;
         }
 
-        if (lowFreqMotor == 0) {
-            System.arraycopy(RUMBLE_NEUTRAL, 0, data, 2, RUMBLE_NEUTRAL.length);
-        } else {
-            data[2] = 0x00;
-            data[3] = 0x01;
-            data[4] = data[8] = (byte)(0xBB - (lowFreqMotor >> 12));
-            data[5] = data[9] = (byte)((lowFreqMotor >> 10) + 0x60);
+        if (lowFreqMotor != 0) {
+            data[4] = data[8] = (byte)(0x50 - (lowFreqMotor & 0xFFFF >> 12));
+            data[5] = data[9] = (byte)((((lowFreqMotor & 0xFFFF) >> 8) / 5) + 0x40);
         }
-        if (highFreqMotor == 0) {
-            System.arraycopy(RUMBLE_NEUTRAL, 0, data, 6, RUMBLE_NEUTRAL.length);
-        } else {
-            data[6] = (byte)(0x77 - (highFreqMotor >> 11));
-            data[7] = (byte)(highFreqMotor >> 4 | 0x01);
-            if (data[7] > (byte)0xC8) {
-                data[7] = (byte)0xC8;
-            }
-            data[8] = 0x40;
-            data[9] = 0x40;
+        if (highFreqMotor != 0) {
+            data[6] = (byte)((0x70 - ((highFreqMotor & 0xFFFF) >> 10) & -0x04));
+            data[7] = (byte)(((highFreqMotor & 0xFFFF) >> 8) * 0xC8 / 0xFF);
         }
+
+        data[2] |= 0x00;
+        data[3] |= 0x01;
+        data[5] |= 0x40;
+        data[6] |= 0x00;
+        data[7] |= 0x01;
+        data[9] |= 0x40;
 
         sendData(data, data.length);
     }
@@ -387,7 +387,7 @@ public class ProConController extends AbstractController {
         }
 
         boolean ls_calibrated = false;
-        if (spiFlashRead(ls_addr, CALIBRATION_LENGTH, buffer)) {
+        if (spiFlashRead(ls_addr, STICK_CALIBRATION_LENGTH, buffer)) {
             // read offset 20
             int x_max = (buffer[20] & 0xFF) | ((buffer[21] & 0x0F) << 8);
             int y_max = ((buffer[21] & 0xF0) >> 4) | ((buffer[22] & 0xFF) << 4);
@@ -413,7 +413,7 @@ public class ProConController extends AbstractController {
             applyDefaultCalibration(0);
         }
 
-        if (spiFlashRead(rs_addr, CALIBRATION_LENGTH, buffer)) {
+        if (spiFlashRead(rs_addr, STICK_CALIBRATION_LENGTH, buffer)) {
             // read offset 20
             int x_center = (buffer[20] & 0xFF) | ((buffer[21] & 0x0F) << 8);
             int y_center = ((buffer[21] & 0xF0) >> 4) | ((buffer[22] & 0xFF) << 4);
