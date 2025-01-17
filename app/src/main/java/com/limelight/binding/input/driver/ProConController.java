@@ -368,7 +368,7 @@ public class ProConController extends AbstractController {
             return false;
         }
 
-        return buffer[0] == (byte)0xB2 && buffer[1] == (byte)0xA1;
+        return ((buffer[20] & 0xFF) == 0xB2) && ((buffer[21] & 0xFF) == 0xA1);
     }
 
     private boolean loadStickCalibration() {
@@ -413,6 +413,7 @@ public class ProConController extends AbstractController {
             applyDefaultCalibration(0);
         }
 
+        boolean rs_calibrated = false;
         if (spiFlashRead(rs_addr, STICK_CALIBRATION_LENGTH, buffer)) {
             // read offset 20
             int x_center = (buffer[20] & 0xFF) | ((buffer[21] & 0x0F) << 8);
@@ -431,9 +432,18 @@ public class ProConController extends AbstractController {
             stickExtends[1][0][1] = (float) ((stickCalibration[1][0][2] - x_center) * 0.7);
             stickExtends[1][1][0] = (float) ((y_center - stickCalibration[1][1][0]) * -0.7);
             stickExtends[1][1][1] = (float) ((stickCalibration[1][1][2] - y_center) * 0.7);
-        } else {
+
+            rs_calibrated = true;
+        }
+
+        if (!rs_calibrated) {
             applyDefaultCalibration(1);
         }
+
+//        LimeLog.info(String.format("ProCon: LS X: %04x, %04x, %04x", stickCalibration[0][0][0], stickCalibration[0][0][1], stickCalibration[0][0][2]));
+//        LimeLog.info(String.format("ProCon: LS Y: %04x, %04x, %04x", stickCalibration[0][1][0], stickCalibration[0][1][1], stickCalibration[0][1][2]));
+//        LimeLog.info(String.format("ProCon: RS X: %04x, %04x, %04x", stickCalibration[1][0][0], stickCalibration[1][0][1], stickCalibration[1][0][2]));
+//        LimeLog.info(String.format("ProCon: RS Y: %04x, %04x, %04x", stickCalibration[1][1][0], stickCalibration[1][1][1], stickCalibration[1][1][2]));
 
         return true;
     }
@@ -455,7 +465,11 @@ public class ProConController extends AbstractController {
         }
         int center = stickCalibration[stick][axis][1];
 
-        value -= center;
+        if (axis == 1) {
+            value = value + center - 0x1000;
+        } else {
+            value -= center;
+        }
 
         if (value < stickExtends[stick][axis][0]) {
             stickExtends[stick][axis][0] = value;
