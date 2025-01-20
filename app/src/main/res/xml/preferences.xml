@@ -39,7 +39,6 @@
             seekbar:step="500" />
 
         <ListPreference
-            android:layout_height="wrap_content"
             android:defaultValue="latency"
             android:entries="@array/video_frame_pacing_names"
             android:entryValues="@array/video_frame_pacing_values"
