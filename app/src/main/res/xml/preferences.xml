@@ -327,8 +327,8 @@
         <com.limelight.preferences.SeekBarPreference
             android:defaultValue="250"
             android:key="seekbar_trackpad_drag_drop_threshold"
-            seekbar:step="10"
-            seekbar:min="100"
+            seekbar:step="1"
+            seekbar:min="0"
             android:max="2000"
             android:text="ms"
             android:summary="@string/summary_trackpad_drag_drop_threshold"
