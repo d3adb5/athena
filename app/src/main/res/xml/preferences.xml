@@ -320,6 +320,12 @@
             seekbar:step="10" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="checkbox_trackpad_drag_drop_vibration"
+            android:summary="@string/summary_trackpad_drag_drop_vibration"
+            android:title="@string/title_trackpad_drag_drop_vibration"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="checkbox_trackpad_swap_axis"
             android:summary="@string/summary_trackpad_swap_axis"
             android:title="@string/title_trackpad_swap_axis"

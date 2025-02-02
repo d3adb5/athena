@@ -180,7 +180,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private boolean pendingDrag = false;
     private boolean isDragging = false;
-    private long lastDragDownTime = -1;
     private float lastTouchDownX, lastTouchDownY;
 
     private long lastAbsTouchUpTime = 0;
@@ -2391,44 +2390,21 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                 Math.pow(event.getY() - lastTouchDownY, 2)
                         );
 
-                        if (eventAction == MotionEvent.ACTION_HOVER_EXIT ||
-                            eventAction == MotionEvent.ACTION_DOWN) {
-                            if (lastDragDownTime == -1) {
-                                pendingDrag = true;
-                                positionDelta = 0;
-                                lastTouchDownX = event.getX();
-                                lastTouchDownY = event.getY();
-                                lastDragDownTime = event.getEventTime();
-                            }
-                        }
-
-                        if (eventAction == MotionEvent.ACTION_HOVER_ENTER ||
-                            eventAction == MotionEvent.ACTION_UP) {
-                            if (isDragging) {
-                                isDragging = false;
-                                lastDragDownTime = -1;
-                                conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_LEFT);
-                                return true;
-                            }
-                            pendingDrag = false;
-                            lastDragDownTime = -1;
-                        }
-
-                        if (lastDragDownTime != -1 &&
-                            event.getEventTime() - lastDragDownTime >= 250) {
+                        if (synthClickPending &&
+                            event.getEventTime() - synthTouchDownTime >= 250) {
                             if (positionDelta > 50) {
                                 pendingDrag = false;
                             } else if (pendingDrag) {
                                 pendingDrag = false;
                                 isDragging = true;
-
-                                Vibrator vibrator = ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE));
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    vibrator.vibrate(VibrationEffect.createOneShot(20, 127));
-                                } else {
-                                    vibrator.vibrate(20);
+                                if (prefConfig.trackpadDragDropVibration) {
+                                    Vibrator vibrator = ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE));
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        vibrator.vibrate(VibrationEffect.createOneShot(20, 127));
+                                    } else {
+                                        vibrator.vibrate(20);
+                                    }
                                 }
-
                                 conn.sendMouseButtonDown(MouseButtonPacket.BUTTON_LEFT);
                                 return true;
                             }
@@ -2441,8 +2417,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                 return true;
                             case MotionEvent.ACTION_HOVER_EXIT:
                             case MotionEvent.ACTION_DOWN:
-                                synthTouchDownTime = event.getEventTime();
+                                pendingDrag = true;
                                 synthClickPending = true;
+                                lastTouchDownX = event.getX();
+                                lastTouchDownY = event.getY();
+                                synthTouchDownTime = event.getEventTime();
                                 return true;
                             case MotionEvent.ACTION_HOVER_ENTER:
                             case MotionEvent.ACTION_UP:
@@ -2466,7 +2445,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                             conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_RIGHT);
                                         }
                                     }
+                                    if (isDragging) {
+                                        isDragging = false;
+                                        conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_LEFT);
+                                    }
 
+                                     = false;
                                     synthClickPending = false;
                                 }
                                 return true;
