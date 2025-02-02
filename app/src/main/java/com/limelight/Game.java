@@ -2391,7 +2391,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         );
 
                         if (synthClickPending &&
-                            event.getEventTime() - synthTouchDownTime >= 250) {
+                            event.getEventTime() - synthTouchDownTime >= prefConfig.trackpadDragDropThreshold) {
                             if (positionDelta > 50) {
                                 pendingDrag = false;
                             } else if (pendingDrag) {
@@ -2449,8 +2449,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                         isDragging = false;
                                         conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_LEFT);
                                     }
-
-                                     = false;
+                                    pendingDrag = false;
                                     synthClickPending = false;
                                 }
                                 return true;
