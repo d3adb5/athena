@@ -114,7 +114,7 @@ public class PreferenceConfiguration {
     private static final String SEEKBAR_TRACKPAD_SENSITIVITY_X = "seekbar_trackpad_sensitivity_x";
     private static final String SEEKBAR_TRACKPAD_SENSITIVITY_Y = "seekbar_trackpad_sensitivity_y";
     private static final String CHECKBOX_TRACKPAD_DRAG_DROP_VIBRATION = "checkbox_trackpad_drag_drop_vibration";
-    private static final String SEEKBAR_TRACKPAD_DRAG_DROP_THRESHOLD = "checkbox_trackpad_drag_drop_threshold";
+    private static final String SEEKBAR_TRACKPAD_DRAG_DROP_THRESHOLD = "seekbar_trackpad_drag_drop_threshold";
     private static final String CHECKBOX_TRACKPAD_SWAP_AXIS = "checkbox_trackpad_swap_axis";
 
     static final String DEFAULT_RESOLUTION = "1280x720";
