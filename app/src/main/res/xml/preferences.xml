@@ -320,6 +320,22 @@
             seekbar:step="10" />
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="checkbox_trackpad_drag_drop_vibration"
+            android:summary="@string/summary_trackpad_drag_drop_vibration"
+            android:title="@string/title_trackpad_drag_drop_vibration"
+            app:iconSpaceReserved="false" />
+        <com.limelight.preferences.SeekBarPreference
+            android:defaultValue="250"
+            android:key="seekbar_trackpad_drag_drop_threshold"
+            seekbar:step="1"
+            seekbar:min="0"
+            android:max="2000"
+            android:text="ms"
+            android:summary="@string/summary_trackpad_drag_drop_threshold"
+            android:title="@string/title_trackpad_drag_drop_threshold"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="checkbox_trackpad_swap_axis"
             android:summary="@string/summary_trackpad_swap_axis"
             android:title="@string/title_trackpad_swap_axis"

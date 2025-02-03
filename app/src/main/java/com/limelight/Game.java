@@ -70,6 +70,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PersistableBundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Rational;
 import android.view.Display;
 import android.view.Gravity;
@@ -175,6 +177,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private int specialKeyCode = KeyEvent.KEYCODE_UNKNOWN;
     private StreamView streamView;
     private long synthTouchDownTime = 0;
+
+    private boolean pendingDrag = false;
+    private boolean isDragging = false;
+    private float lastTouchDownX, lastTouchDownY;
+
     private long lastAbsTouchUpTime = 0;
     private long lastAbsTouchDownTime = 0;
     private float lastAbsTouchUpX, lastAbsTouchUpY;
@@ -2377,6 +2384,32 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                             return true;
                         }
 
+                        // Press & Hold / Double-Tap & Hold for Selection or Drag & Drop
+                        double positionDelta = Math.sqrt(
+                                Math.pow(event.getX() - lastTouchDownX, 2) +
+                                Math.pow(event.getY() - lastTouchDownY, 2)
+                        );
+
+                        if (synthClickPending &&
+                            event.getEventTime() - synthTouchDownTime >= prefConfig.trackpadDragDropThreshold) {
+                            if (positionDelta > 50) {
+                                pendingDrag = false;
+                            } else if (pendingDrag) {
+                                pendingDrag = false;
+                                isDragging = true;
+                                if (prefConfig.trackpadDragDropVibration) {
+                                    Vibrator vibrator = ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE));
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        vibrator.vibrate(VibrationEffect.createOneShot(20, 127));
+                                    } else {
+                                        vibrator.vibrate(20);
+                                    }
+                                }
+                                conn.sendMouseButtonDown(MouseButtonPacket.BUTTON_LEFT);
+                                return true;
+                            }
+                        }
+
                         switch (eventAction) {
                             case MotionEvent.ACTION_HOVER_MOVE:
                             case MotionEvent.ACTION_MOVE:
@@ -2384,13 +2417,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                 return true;
                             case MotionEvent.ACTION_HOVER_EXIT:
                             case MotionEvent.ACTION_DOWN:
-                                synthTouchDownTime = System.currentTimeMillis();
+                                pendingDrag = true;
                                 synthClickPending = true;
+                                lastTouchDownX = event.getX();
+                                lastTouchDownY = event.getY();
+                                synthTouchDownTime = event.getEventTime();
                                 return true;
                             case MotionEvent.ACTION_HOVER_ENTER:
                             case MotionEvent.ACTION_UP:
                                 if (synthClickPending) {
-                                    long timeDiff = System.currentTimeMillis() - synthTouchDownTime;
+                                    long timeDiff = event.getEventTime() - synthTouchDownTime;
 
                                     if (eventSource == 12290) {
                                         // Special handle for DeX
@@ -2409,7 +2445,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                             conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_RIGHT);
                                         }
                                     }
-
+                                    if (isDragging) {
+                                        isDragging = false;
+                                        conn.sendMouseButtonUp(MouseButtonPacket.BUTTON_LEFT);
+                                    }
+                                    pendingDrag = false;
                                     synthClickPending = false;
                                 }
                                 return true;

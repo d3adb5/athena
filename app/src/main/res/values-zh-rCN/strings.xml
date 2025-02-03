@@ -436,6 +436,10 @@
     <string name="summary_trackpad_sensitivity_x">触摸板 X 轴灵敏度，负值则反向移动</string>
     <string name="title_trackpad_sensitivity_y">触摸板 Y 轴灵敏度</string>
     <string name="summary_trackpad_sensitivity_y">触摸板 Y 轴灵敏度，负值则反向移动</string>
+    <string name="title_trackpad_drag_drop_vibration">触摸板拖拽时震动设备</string>
+    <string name="summary_trackpad_drag_drop_vibration">在三星设备上启用触摸板拖拽震动反馈。</string>
+    <string name="title_trackpad_drag_drop_threshold">触摸板按压拖拽动作触发时间阈值</string>
+    <string name="summary_trackpad_drag_drop_threshold">调整三星设备上按压触发触摸板拖拽操作的时间阈值。</string>
     <string name="title_trackpad_swap_axis">交换触摸板XY坐标</string>
     <string name="summary_trackpad_swap_axis">在某些设备上，触摸板输入坐标可能会与当前视图方向不符。开启此选项可能会有用。</string>
     <string name="title_checkbox_force_qwerty">强制使用 QWERTY 布局</string>
