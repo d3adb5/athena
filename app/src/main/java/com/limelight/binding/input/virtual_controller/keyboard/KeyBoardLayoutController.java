@@ -85,11 +85,15 @@ public class KeyBoardLayoutController {
     }
 
     private boolean isModifierKey(int keyCode) {
-        return MODIFIER_KEY_CODES.contains(keyCode);
+        if (prefConfig.stickyModifierKey) {
+            return MODIFIER_KEY_CODES.contains(keyCode);
+        }
+
+        return false;
     }
 
     private boolean isSpecialKey(int keyCode) {
-        return SPECIAL_KEY_CODES.contains(keyCode);
+        return SPECIAL_KEY_CODES.contains(keyCode) || MODIFIER_KEY_CODES.contains(keyCode);
     }
 
     public KeyBoardLayoutController(FrameLayout layout, final Context context, PreferenceConfiguration prefConfig) {
@@ -130,7 +134,7 @@ public class KeyBoardLayoutController {
                     }
 
                     // Key popup
-                    if (!TextUtils.equals("hide", tag) && !_isModifierKey && !_isSpecialKey) {
+                    if (!TextUtils.equals("hide", tag) && !_isSpecialKey) {
                         String popupText;
                         KeyEvent tempEvent = new KeyEvent(KeyEvent.ACTION_DOWN, keyCode);
                         int unicodeChar = tempEvent.getUnicodeChar(0);

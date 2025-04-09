@@ -464,6 +464,12 @@
             android:title="@string/title_onscreen_keyboard_align_mode"
             app:iconSpaceReserved="false" />
         <CheckBoxPreference
+            android:key="checkbox_enable_sticky_modifier_key_virtual_keyboard"
+            android:title="@string/title_checkbox_enable_sticky_modifier_key_virtual_keyboard"
+            android:summary="@string/summary_checkbox_enable_sticky_modifier_key_virtual_keyboard"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
             android:defaultValue="false"
             android:key="checkbox_disable_warnings"
             android:summary="@string/summary_checkbox_disable_warnings"

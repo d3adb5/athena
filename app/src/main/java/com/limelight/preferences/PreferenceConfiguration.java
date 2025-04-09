@@ -95,6 +95,8 @@ public class PreferenceConfiguration {
     private static final String CHECKBOX_SMART_CLIPBOARD_SYNC_TOAST = "checkbox_smart_clipboard_sync_toast";
     private static final String CHECKBOX_HIDE_CLIPBOARD_CONTENT = "checkbox_hide_clipboard_content";
 
+    private static final String CHECKBOX_ENABLE_STICKY_MODIFIER_KEY_VIRTUAL_KEYBOARD = "checkbox_enable_sticky_modifier_key_virtual_keyboard";
+
     //是否弹出软键盘
     private static final String CHECKBOX_ENABLE_QUIT_DIALOG = "checkbox_enable_quit_dialog";
 
@@ -170,6 +172,7 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_SMART_CLIPBOARD_SYNC = false;
     private static final boolean DEFAULT_SMART_CLIPBOARD_SYNC_TOAST = true;
     private static final boolean DEFAULT_HIDE_CLIPBOARD_CONTENT = true;
+    private static final boolean DEFAULT_ENABLE_STICKY_MODIFIER_KEY_VIRTUAL_KEYBOARD = true;
     private static final int DEFAULT_TRACKPAD_SENSITIVITY_X = 100;
     private static final int DEFAULT_TRACKPAD_SENSITIVITY_Y = 100;
     private static final boolean DEFAULT_TRACKPAD_DRAG_DROP_VIBRATION = false;
@@ -214,6 +217,7 @@ public class PreferenceConfiguration {
     public boolean smartClipboardSync;
     public boolean smartClipboardSyncToast;
     public boolean hideClipboardContent;
+    public boolean stickyModifierKey;
     public boolean onlyL3R3;
     public boolean showGuideButton;
     public boolean enableHdr;
@@ -864,6 +868,7 @@ public class PreferenceConfiguration {
         config.smartClipboardSync = prefs.getBoolean(CHECKBOX_SMART_CLIPBOARD_SYNC, DEFAULT_SMART_CLIPBOARD_SYNC);
         config.smartClipboardSyncToast = prefs.getBoolean(CHECKBOX_SMART_CLIPBOARD_SYNC_TOAST, DEFAULT_SMART_CLIPBOARD_SYNC_TOAST);
         config.hideClipboardContent = prefs.getBoolean(CHECKBOX_HIDE_CLIPBOARD_CONTENT, DEFAULT_HIDE_CLIPBOARD_CONTENT);
+        config.stickyModifierKey = prefs.getBoolean(CHECKBOX_ENABLE_STICKY_MODIFIER_KEY_VIRTUAL_KEYBOARD, DEFAULT_ENABLE_STICKY_MODIFIER_KEY_VIRTUAL_KEYBOARD);
         config.enableAudioFx = prefs.getBoolean(ENABLE_AUDIO_FX_PREF_STRING, DEFAULT_ENABLE_AUDIO_FX);
         config.reduceRefreshRate = prefs.getBoolean(REDUCE_REFRESH_RATE_PREF_STRING, DEFAULT_REDUCE_REFRESH_RATE);
         config.fullRange = prefs.getBoolean(FULL_RANGE_PREF_STRING, DEFAULT_FULL_RANGE);
