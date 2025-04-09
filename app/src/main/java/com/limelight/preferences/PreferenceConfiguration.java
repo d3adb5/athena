@@ -39,6 +39,7 @@ public class PreferenceConfiguration {
     static final String FPS_PREF_STRING = "list_fps";
     static final String BITRATE_PREF_STRING = "seekbar_bitrate_kbps";
     private static final String BITRATE_PREF_OLD_STRING = "seekbar_bitrate";
+    private static final String METERED_BITRATE_PREF_STRING = "seekbar_metered_bitrate_kbps";
     private static final String ENFORCE_DISPLAY_MODE_PREF_STRING = "checkbox_enforce_display_mode";
     private static final String USE_VIRTUAL_DISPLAY_PREF_STRING = "checkbox_use_virtual_display";
     private static final String AUTO_INVERT_VIDEO_RESOLUTION_PREF_STRING = "checkbox_auto_invert_video_resolution";
@@ -195,6 +196,7 @@ public class PreferenceConfiguration {
 
     public int width, height, fps;
     public int bitrate;
+    public int meteredBitrate;
     public FormatOption videoFormat;
     public int framePacingWarpFactor = 0;
     public int deadzonePercentage;
@@ -739,6 +741,12 @@ public class PreferenceConfiguration {
         config.bitrate = prefs.getInt(BITRATE_PREF_STRING, prefs.getInt(BITRATE_PREF_OLD_STRING, 0) * 1000);
         if (config.bitrate == 0) {
             config.bitrate = getDefaultBitrate(context);
+        }
+
+        config.meteredBitrate = prefs.getInt((METERED_BITRATE_PREF_STRING), 0);
+        if (config.meteredBitrate == 0) {
+            config.meteredBitrate = config.bitrate / 4;
+            prefs.edit().putInt(METERED_BITRATE_PREF_STRING, 0).apply();
         }
 
         String audioConfig = prefs.getString(AUDIO_CONFIG_PREF_STRING, DEFAULT_AUDIO_CONFIG);

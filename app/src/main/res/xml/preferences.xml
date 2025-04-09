@@ -37,6 +37,18 @@
             seekbar:keyStep="1000"
             seekbar:min="500"
             seekbar:step="500" />
+        <com.limelight.preferences.SeekBarPreference
+            android:dialogMessage="@string/summary_seekbar_metered_bitrate"
+            android:key="seekbar_metered_bitrate_kbps"
+            android:max="300000"
+            android:summary="@string/summary_seekbar_metered_bitrate"
+            android:text="@string/suffix_seekbar_bitrate_mbps"
+            android:title="@string/title_seekbar_metered_bitrate"
+            app:iconSpaceReserved="false"
+            seekbar:divisor="1000"
+            seekbar:keyStep="1000"
+            seekbar:min="0"
+            seekbar:step="500" />
 
         <ListPreference
             android:defaultValue="latency"
