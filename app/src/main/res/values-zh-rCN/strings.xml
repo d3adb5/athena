@@ -242,6 +242,7 @@
     <string name="perf_overlay_netlatency">平均网络延迟： %1$d ms (抖动： %2$d ms)</string>
     <string name="perf_overlay_streamdetails">视频流： %1$s %2$.2f FPS</string>
     <string name="resolution_prefix_native_fullscreen">原生全屏</string>
+    <string name="resolution_prefix_custom">自定义</string>
     <!-- Array strings -->
     <string name="audioconf_stereo">立体声</string>
     <string name="audioconf_51surround">5.1环绕声</string>
@@ -358,9 +359,12 @@
     <string name="title_export_keyboard_layout">导出键盘布局</string>
     <string name="summary_import_keyboard_layout">导入键盘布局配置。会覆盖当前配置。</string>
     <string name="summary_export_keyboard_layout">导出当前设置的键盘布局</string>
-    <string name="title_manual_enter_bitrate">手动输入码率</string>
-    <string name="summary_manual_enter_bitrate">手动输入码率，可以超过滑动条选项的极限。</string>
+    <string name="title_manual_enter_bitrate">自定义码率</string>
+    <string name="summary_manual_enter_bitrate">手动输入码率，可以超过滑动条选项的上限。</string>
     <string name="dialog_manual_enter_bitrate">以 Mbps 输入码率。以0.5为限四舍五入。</string>
+    <string name="title_custom_refresh_rate">自定义刷新率</string>
+    <string name="summary_custom_refresh_rate">手动输入刷新率。仅支持Apollo。</string>
+    <string name="dialog_custom_refresh_rate">输入刷新率，单位为 Hz。可以是小数。</string>
     <string name="title_touchscreen_mode">触摸屏鼠标模拟方式</string>
     <string name="summary_touchscreen_mode">选择多点触控/单点触控/触摸板/禁用。\n禁用时手写笔仍可使用。\n在使用外接屏幕时强制为触摸板(自然)模式。</string>
     <string name="title_checkbox_mouse_local_cursor">使用本地鼠标光标</string>

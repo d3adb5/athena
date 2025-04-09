@@ -12,8 +12,8 @@ public class StreamConfiguration {
     
     private NvApp app;
     private int width, height;
-    private int refreshRate;
-    private int launchRefreshRate;
+    private float refreshRate;
+    private float launchRefreshRate;
     private boolean virtualDisplay;
     private int resolutionScaleFactor;
     private int clientRefreshRateX100;
@@ -50,12 +50,12 @@ public class StreamConfiguration {
             return this;
         }
         
-        public StreamConfiguration.Builder setRefreshRate(int refreshRate) {
+        public StreamConfiguration.Builder setRefreshRate(float refreshRate) {
             config.refreshRate = refreshRate;
             return this;
         }
 
-        public StreamConfiguration.Builder setLaunchRefreshRate(int refreshRate) {
+        public StreamConfiguration.Builder setLaunchRefreshRate(float refreshRate) {
             config.launchRefreshRate = refreshRate;
             return this;
         }
@@ -173,11 +173,19 @@ public class StreamConfiguration {
     }
     
     public int getRefreshRate() {
-        return refreshRate;
+        if (refreshRate == (int)refreshRate) {
+            return (int)refreshRate;
+        } else {
+            return (int)(refreshRate * 1000);
+        }
     }
 
     public int getLaunchRefreshRate() {
-        return launchRefreshRate;
+        if (launchRefreshRate == (int)launchRefreshRate) {
+            return (int) launchRefreshRate;
+        } else {
+            return (int)(launchRefreshRate * 1000);
+        }
     }
 
     public boolean getVirtualDisplay() { return virtualDisplay; }

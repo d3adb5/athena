@@ -30,6 +30,10 @@ public class PreferenceConfiguration {
         LEFT
     }
 
+    public static final String CUSTOM_BITRATE_PREF_STRING = "edit_diy_bitrate";
+    public static final String CUSTOM_REFRESH_RATE_PREF_STRING = "custom_refresh_rate";
+    public static final String CUSTOM_RESOLUTION_PREF_STRING = "edit_diy_w_h";
+
     private static final String LEGACY_RES_FPS_PREF_STRING = "list_resolution_fps";
     private static final String LEGACY_ENABLE_51_SURROUND_PREF_STRING = "checkbox_51_surround";
     private static final String LEGACY_STRETCH_PREF_STRING = "checkbox_stretch_video";
@@ -196,8 +200,11 @@ public class PreferenceConfiguration {
     public static final String RES_4K = "3840x2160";
     public static final String RES_NATIVE = "Native";
 
-    public int width, height, fps;
-    public int bitrate;
+    public int width, height, bitrate;
+    public float fps;
+//    public String customBitrate;
+    public String customResolution;
+    public String customRefreshRate;
     public int meteredBitrate;
     public FormatOption videoFormat;
     public int framePacingWarpFactor = 0;
@@ -422,7 +429,7 @@ public class PreferenceConfiguration {
     public static int getDefaultBitrate(String resString, String fpsString) {
         int width = getWidthFromResolutionString(resString);
         int height = getHeightFromResolutionString(resString);
-        int fps = Integer.parseInt(fpsString);
+        int fps = Math.round(Float.parseFloat(fpsString));
 
         // This logic is shamelessly stolen from Moonlight Qt:
         // https://github.com/moonlight-stream/moonlight-qt/blob/master/app/settings/streamingpreferences.cpp
@@ -706,7 +713,7 @@ public class PreferenceConfiguration {
 
             config.width = PreferenceConfiguration.getWidthFromResolutionString(resStr);
             config.height = PreferenceConfiguration.getHeightFromResolutionString(resStr);
-            config.fps = Integer.parseInt(prefs.getString(FPS_PREF_STRING, PreferenceConfiguration.DEFAULT_FPS));
+            config.fps = Float.parseFloat(prefs.getString(FPS_PREF_STRING, PreferenceConfiguration.DEFAULT_FPS));
         }
 
         if (prefs.contains(LEGACY_STRETCH_PREF_STRING)) {
@@ -888,6 +895,10 @@ public class PreferenceConfiguration {
         config.gamepadMotionSensorsFallbackToDevice = prefs.getBoolean(GAMEPAD_MOTION_FALLBACK_PREF_STRING, DEFAULT_GAMEPAD_MOTION_FALLBACK);
         config.forceMotionSensorsFallbackToDevice = prefs.getBoolean(FORCE_MOTION_SENSORS_FALLBACK_PREF_STRING, DEFAULT_FORCE_MOTION_SENSORS_FALLBACK);
 
+        // Read custom values
+        config.customResolution = prefs.getString(CUSTOM_RESOLUTION_PREF_STRING, null);
+        config.customRefreshRate = prefs.getString(CUSTOM_REFRESH_RATE_PREF_STRING, null);
+//        config.customBitrate = prefs.getString(CUSTOM_BITRATE_PREF_STRING, null);
 
         return config;
     }

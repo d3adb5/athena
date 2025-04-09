@@ -182,6 +182,7 @@
     <string name="resolution_prefix_native_fullscreen">Native Full-Screen</string>
     <string name="resolution_prefix_native_landscape">(Landscape)</string>
     <string name="resolution_prefix_native_portrait">(Portrait)</string>
+    <string name="resolution_prefix_custom">Custom</string>
     <string name="fps_suffix_fps">FPS</string>
     <string name="title_native_fps_dialog">Native FPS Warning</string>
     <string name="title_checkbox_auto_invert_video_resolution">Auto Invert Resolution</string>
@@ -393,9 +394,12 @@
     <string name="title_export_keyboard_layout">Export keyboard layout</string>
     <string name="summary_import_keyboard_layout">This will overwrite the current layout.</string>
     <string name="summary_export_keyboard_layout">Export the current keyboard layout</string>
-    <string name="title_manual_enter_bitrate">Enter bitrate manually</string>
+    <string name="title_manual_enter_bitrate">Custom bitrate</string>
     <string name="summary_manual_enter_bitrate">Enter bitrate manually.\nCan exceed the maximum range of the seekbar.</string>
     <string name="dialog_manual_enter_bitrate">Enter bitrate in Mbps. Round to 0.5.</string>
+    <string name="title_custom_refresh_rate">Custom refresh rate</string>
+    <string name="summary_custom_refresh_rate">Enter refresh rate manually. Only supports Apollo.</string>
+    <string name="dialog_custom_refresh_rate">Enter refresh rate in Hz. Can be fractional.</string>
     <string name="title_touchscreen_mode">Touchscreen Mode</string>
     <string name="summary_touchscreen_mode">Select between MultiTouch/SingleTouch/Trackpad/Disabled mode.\nPen/Stylus are still usable when Disabled is selected.\nForced to Track Pad(Natural) mode when useing external display.</string>
 

@@ -121,13 +121,22 @@
             app:iconSpaceReserved="false" />
 
         <EditTextPreference
+            android:key="edit_diy_bitrate"
             android:defaultValue="20"
             android:dialogMessage="@string/dialog_manual_enter_bitrate"
             android:dialogTitle="@string/title_manual_enter_bitrate"
-            android:key="edit_diy_bitrate"
             android:singleLine="true"
             android:summary="@string/summary_manual_enter_bitrate"
             android:title="@string/title_manual_enter_bitrate"
+            app:iconSpaceReserved="false" />
+
+        <EditTextPreference
+            android:key="custom_refresh_rate"
+            android:defaultValue="59.94"
+            android:dialogMessage="@string/dialog_custom_refresh_rate"
+            android:dialogTitle="@string/title_custom_refresh_rate"
+            android:summary="@string/summary_custom_refresh_rate"
+            android:title="@string/title_custom_refresh_rate"
             app:iconSpaceReserved="false" />
 
         <CheckBoxPreference

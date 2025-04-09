@@ -76,7 +76,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             Display.Mode mode = getWindowManager().getDefaultDisplay().getMode();
             previousDisplayPixelCount = mode.getPhysicalWidth() * mode.getPhysicalHeight();
         }
-        prefsFragment = new SettingsFragment();
+        prefsFragment = new SettingsFragment(PreferenceConfiguration.readPreferences(this));
         getSupportFragmentManager().beginTransaction().replace(
                 R.id.stream_settings, prefsFragment
         ).commitAllowingStateLoss();
@@ -164,6 +164,12 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         private int nativeResolutionStartIndex = Integer.MAX_VALUE;
         private boolean nativeFramerateShown = false;
 
+        private PreferenceConfiguration prevPrefConfig;
+
+        public SettingsFragment(PreferenceConfiguration prefCfg) {
+            prevPrefConfig = prefCfg;
+        }
+
         private void setValue(String preferenceKey, String value) {
             ListPreference pref = (ListPreference) findPreference(preferenceKey);
 
@@ -182,7 +188,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             pref.setEntryValues(newValues);
         }
 
-        private void addNativeResolutionEntry(int nativeWidth, int nativeHeight, boolean insetsRemoved, boolean portrait) {
+        private void addNativeResolutionEntry(int nativeWidth, int nativeHeight, boolean insetsRemoved, boolean portrait, boolean is_custom) {
             ListPreference pref = (ListPreference) findPreference(PreferenceConfiguration.RESOLUTION_PREF_STRING);
 
             String newName;
@@ -191,7 +197,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 newName = getResources().getString(R.string.resolution_prefix_native_fullscreen);
             }
             else {
-                newName = getResources().getString(R.string.resolution_prefix_native);
+                newName = is_custom ? getResources().getString(R.string.resolution_prefix_custom) : getResources().getString(R.string.resolution_prefix_native);
             }
 
             if (PreferenceConfiguration.isSquarishScreen(nativeWidth, nativeHeight)) {
@@ -221,22 +227,24 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             appendPreferenceEntry(pref, newName, newValue);
         }
 
-        private void addNativeResolutionEntries(int nativeWidth, int nativeHeight, boolean insetsRemoved) {
+        private void addNativeResolutionEntries(int nativeWidth, int nativeHeight, boolean insetsRemoved, boolean is_custom) {
             if (PreferenceConfiguration.isSquarishScreen(nativeWidth, nativeHeight)) {
-                addNativeResolutionEntry(nativeHeight, nativeWidth, insetsRemoved, true);
+                addNativeResolutionEntry(nativeHeight, nativeWidth, insetsRemoved, true, is_custom);
             }
-            addNativeResolutionEntry(nativeWidth, nativeHeight, insetsRemoved, false);
+            addNativeResolutionEntry(nativeWidth, nativeHeight, insetsRemoved, false, is_custom);
         }
 
-        private void addNativeFrameRateEntry(float framerate) {
-            int frameRateRounded = Math.round(framerate);
-            if (frameRateRounded == 0) {
-                return;
+        private void addNativeFrameRateEntry(float framerate, boolean is_custom) {
+            if (!is_custom) {
+                framerate = Math.round(framerate);
+                if (framerate == 0) {
+                    return;
+                }
             }
 
             ListPreference pref = (ListPreference) findPreference(PreferenceConfiguration.FPS_PREF_STRING);
-            String fpsValue = Integer.toString(frameRateRounded);
-            String fpsName = getResources().getString(R.string.resolution_prefix_native) +
+            String fpsValue = is_custom ? Float.toString(framerate) : Integer.toString(Math.round(framerate));
+            String fpsName = (is_custom ? getResources().getString(R.string.resolution_prefix_custom) : getResources().getString(R.string.resolution_prefix_native)) +
                     " (" + fpsValue + " " + getResources().getString(R.string.fps_suffix_fps) + ")";
 
             // Check if the native frame rate is already present
@@ -420,15 +428,29 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 category_gamepad_settings.removePreference(findPreference("seekbar_vibrate_fallback_strength"));
             }
 
-            String diy = PreferenceManager.getDefaultSharedPreferences(activity).getString("edit_diy_w_h","");
-            if(!TextUtils.isEmpty(diy)){
-                String[] diys=diy.split("x");
-                if(diys.length==2){
-                    try{
-                        addNativeResolutionEntries(Integer.parseInt(diys[0]), Integer.parseInt(diys[1]), false);
-                    }catch (Exception e){
+            // Check custom resolution
+            String customResStr = prevPrefConfig.customResolution;
+            if(customResStr != null && !customResStr.isEmpty()){
+                String[] resolutionSegments = customResStr.split("x");
+                if(resolutionSegments.length == 2){
+                    try {
+                        addNativeResolutionEntries(Integer.parseInt(resolutionSegments[0]), Integer.parseInt(resolutionSegments[1]), false, true);
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+            }
+            
+            // Check custom refresh rate
+            String customRefreshRateStr = prevPrefConfig.customRefreshRate;
+            if (customRefreshRateStr != null && !customRefreshRateStr.isEmpty()) {
+                try {
+                    float customRefreshRateValue = Float.parseFloat(customRefreshRateStr);
+                    if (customRefreshRateValue > 0) {
+                        addNativeFrameRateEntry(customRefreshRateValue, true);
+                    }
+                } catch (NumberFormatException e) {
+                    PreferenceManager.getDefaultSharedPreferences(this.getActivity()).edit().remove(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING).apply();
                 }
             }
 
@@ -465,7 +487,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                             int width = Math.max(metrics.widthPixels - widthInsets, metrics.heightPixels - heightInsets);
                             int height = Math.min(metrics.widthPixels - widthInsets, metrics.heightPixels - heightInsets);
 
-                            addNativeResolutionEntries(width, height, false);
+                            addNativeResolutionEntries(width, height, false, false);
                             hasInsets = true;
                         }
                     }
@@ -490,7 +512,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                     // unless they report greater than 4K resolutions.
                     if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
                             (width > 3840 || height > 2160)) {
-                        addNativeResolutionEntries(width, height, hasInsets);
+                        addNativeResolutionEntries(width, height, hasInsets, false);
                     }
 
                     if ((width >= 3840 || height >= 2160) && maxSupportedResW < 3840) {
@@ -599,7 +621,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 display.getRealMetrics(metrics);
                 int width = Math.max(metrics.widthPixels, metrics.heightPixels);
                 int height = Math.min(metrics.widthPixels, metrics.heightPixels);
-                addNativeResolutionEntries(width, height, false);
+                addNativeResolutionEntries(width, height, false, false);
             }
 
             if (!PreferenceConfiguration.readPreferences(this.getActivity()).unlockFps) {
@@ -627,7 +649,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
                 // Never remove 30 FPS or 60 FPS
             }
-            addNativeFrameRateEntry(maxSupportedFps);
+            addNativeFrameRateEntry(maxSupportedFps, false);
 
             // Android L introduces the drop duplicate behavior of releaseOutputBuffer()
             // that the unlock FPS option relies on to not massively increase latency.
@@ -817,8 +839,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 });
             }
 
-            EditTextPreference bitrateEditPre = findPreference("edit_diy_bitrate");
-
+            EditTextPreference bitrateEditPre = findPreference(PreferenceConfiguration.CUSTOM_BITRATE_PREF_STRING);
             if (bitrateEditPre != null) {
                 bitrateEditPre.setOnBindEditTextListener((EditText editText) -> {
                     editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
@@ -839,6 +860,113 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                     prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING, bitrate).apply();
                     Toast.makeText(getActivity(), getString(R.string.pref_set_success), Toast.LENGTH_SHORT).show();
                     return true;
+                });
+            }
+
+            EditTextPreference resolutionEditPref = findPreference(PreferenceConfiguration.CUSTOM_RESOLUTION_PREF_STRING);
+            if (resolutionEditPref != null) {
+                resolutionEditPref.setOnBindEditTextListener((EditText editText) -> {
+                    editText.setInputType(InputType.TYPE_CLASS_TEXT);
+                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(11)});
+                });
+
+                resolutionEditPref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    String value = (String) newValue;
+                    if (TextUtils.isEmpty(value)) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+
+                    // Verify format: [width]x[height]
+                    String[] resolutionSegments = value.split("x");
+                    if (resolutionSegments.length != 2) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+
+                    try {
+                        int width = Integer.parseInt(resolutionSegments[0]);
+                        int height = Integer.parseInt(resolutionSegments[1]);
+                        
+                        if (width <= 0 || height <= 0) {
+                            Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+
+                        // Save the value and reload settings
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
+                        prefs.edit().putString(PreferenceConfiguration.CUSTOM_RESOLUTION_PREF_STRING, value).apply();
+                        
+                        // HACK: We need to let the preference change succeed before reinitializing to ensure
+                        // it's reflected in the new layout.
+                        final Handler h = new Handler();
+                        h.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Ensure the activity is still open when this timeout expires
+                                StreamSettings settingsActivity = (StreamSettings) SettingsFragment.this.getActivity();
+                                if (settingsActivity != null) {
+                                    settingsActivity.reloadSettings();
+                                }
+                            }
+                        }, 500);
+                        
+                        return true;
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                });
+            }
+
+            EditTextPreference customRefreshRatePref = findPreference(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING);
+            if (customRefreshRatePref != null) {
+                customRefreshRatePref.setOnBindEditTextListener((EditText editText) -> {
+                    editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(7)});
+                });
+
+                customRefreshRatePref.setOnPreferenceChangeListener((preference, newValue) -> {
+                    String value = (String) newValue;
+                    if (TextUtils.isEmpty(value)) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
+                    
+                    try {
+                        float refreshRate = Float.parseFloat(value);
+                        if (refreshRate <= 0) {
+                            Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+                        
+                        // Format to max 3 decimal places
+                        String formattedValue = String.format("%.3f", refreshRate);
+                        // Remove trailing zeros
+                        formattedValue = formattedValue.replaceAll("0+$", "").replaceAll("\\.$", "");
+
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
+                        prefs.edit().putString(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING, formattedValue).apply();
+                        
+                        // HACK: We need to let the preference change succeed before reinitializing to ensure
+                        // it's reflected in the new layout.
+                        final Handler h = new Handler();
+                        h.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Ensure the activity is still open when this timeout expires
+                                StreamSettings settingsActivity = (StreamSettings) SettingsFragment.this.getActivity();
+                                if (settingsActivity != null) {
+                                    settingsActivity.reloadSettings();
+                                }
+                            }
+                        }, 500);
+                        
+                        return true;
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
+                        return false;
+                    }
                 });
             }
         }
