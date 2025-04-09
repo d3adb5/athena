@@ -359,6 +359,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
                 category.removePreference(findPreference("checkbox_gamepad_motion_sensors"));
+                category.removePreference(findPreference("checkbox_force_device_motion"));
             }
 
             // Hide gamepad motion sensor fallback option if the device has no gyro or accelerometer

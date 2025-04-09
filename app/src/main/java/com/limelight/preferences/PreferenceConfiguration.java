@@ -84,6 +84,7 @@ public class PreferenceConfiguration {
     private static final String GAMEPAD_TOUCHPAD_AS_MOUSE_PREF_STRING = "checkbox_gamepad_touchpad_as_mouse";
     private static final String GAMEPAD_MOTION_SENSORS_PREF_STRING = "checkbox_gamepad_motion_sensors";
     private static final String GAMEPAD_MOTION_FALLBACK_PREF_STRING = "checkbox_gamepad_motion_fallback";
+    private static final String FORCE_MOTION_SENSORS_FALLBACK_PREF_STRING = "checkbox_force_device_motion";
 
     private static final String LIST_ONSCREEN_KEYBOARD_ALIGN_MODE = "list_onscreen_keyboard_align_mode";
 
@@ -165,6 +166,7 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_GAMEPAD_TOUCHPAD_AS_MOUSE = false;
     private static final boolean DEFAULT_GAMEPAD_MOTION_SENSORS = true;
     private static final boolean DEFAULT_GAMEPAD_MOTION_FALLBACK = false;
+    private static final boolean DEFAULT_FORCE_MOTION_SENSORS_FALLBACK = false;
     private static final boolean DEFAULT_GAMEPAD_ENABLE_BATTERY_REPORT = true;
     private static final boolean DEFAULT_FORCE_QWERTY = true;
     private static final boolean DEFAULT_SEND_META_ON_PHYSICAL_BACK = false;
@@ -315,6 +317,7 @@ public class PreferenceConfiguration {
     public boolean gamepadMotionSensors;
     public boolean gamepadTouchpadAsMouse;
     public boolean gamepadMotionSensorsFallbackToDevice;
+    public boolean forceMotionSensorsFallbackToDevice;
 
     public static boolean isNativeResolution(int width, int height) {
         // It's not a native resolution if it matches an existing resolution option
@@ -883,6 +886,7 @@ public class PreferenceConfiguration {
         config.gamepadTouchpadAsMouse = prefs.getBoolean(GAMEPAD_TOUCHPAD_AS_MOUSE_PREF_STRING, DEFAULT_GAMEPAD_TOUCHPAD_AS_MOUSE);
         config.gamepadMotionSensors = prefs.getBoolean(GAMEPAD_MOTION_SENSORS_PREF_STRING, DEFAULT_GAMEPAD_MOTION_SENSORS);
         config.gamepadMotionSensorsFallbackToDevice = prefs.getBoolean(GAMEPAD_MOTION_FALLBACK_PREF_STRING, DEFAULT_GAMEPAD_MOTION_FALLBACK);
+        config.forceMotionSensorsFallbackToDevice = prefs.getBoolean(FORCE_MOTION_SENSORS_FALLBACK_PREF_STRING, DEFAULT_FORCE_MOTION_SENSORS_FALLBACK);
 
 
         return config;

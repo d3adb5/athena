@@ -312,6 +312,8 @@
     <string name="summary_checkbox_gamepad_motion_fallback">如果你连接的游戏手柄或 Android 版本不支持游戏手柄传感器，请使用设备的内置运动传感器。
 \n注意：启用此选项可能会导致您的游戏手柄在主机上被识别为 PlayStation 4控制器。</string>
     <string name="title_checkbox_gamepad_motion_fallback">模拟游戏手柄运动传感器支持</string>
+    <string name="title_checkbox_force_device_motion">强制使用设备的运动传感器</string>
+    <string name="summary_checkbox_force_device_motion">强制使用设备内置的运动传感器，即使手柄报告支持运动传感器。</string>
     <string name="error_code_prefix">错误代码:</string>
     <string name="title_seekbar_vibrate_fallback_strength">调整模拟震动强度</string>
     <string name="suffix_seekbar_vibrate_fallback_strength">％</string>

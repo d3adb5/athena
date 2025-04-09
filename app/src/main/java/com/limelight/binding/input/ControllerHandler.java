@@ -529,7 +529,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             }
 
             // If the gamepad doesn't have motion sensors, use the on-device sensors as a fallback for player 1
-            if (prefConfig.gamepadMotionSensorsFallbackToDevice && context.controllerNumber == 0 && devContext.sensorManager == null) {
+            if (prefConfig.gamepadMotionSensorsFallbackToDevice && context.controllerNumber == 0 && (prefConfig.forceMotionSensorsFallbackToDevice || devContext.sensorManager == null)) {
                 devContext.sensorManager = deviceSensorManager;
             }
         }
