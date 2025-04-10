@@ -367,7 +367,6 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
                 category.removePreference(findPreference("checkbox_gamepad_motion_sensors"));
-                category.removePreference(findPreference("checkbox_force_device_motion"));
             }
 
             // Hide gamepad motion sensor fallback option if the device has no gyro or accelerometer
@@ -375,6 +374,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                     !activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_SENSOR_GYROSCOPE)) {
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_gamepad_settings");
+                category.removePreference(findPreference("checkbox_force_device_motion"));
                 category.removePreference(findPreference("checkbox_gamepad_motion_fallback"));
             }
 
