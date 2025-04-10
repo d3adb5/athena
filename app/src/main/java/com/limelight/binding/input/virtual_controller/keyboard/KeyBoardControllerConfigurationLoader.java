@@ -465,7 +465,7 @@ public class KeyBoardControllerConfigurationLoader {
                             w, w
                     );
                 }else{
-                    controller.addElement(createDigitalButton(elementId, code, type, 1, name, -1, isModifierKey(code), controller, context),
+                    controller.addElement(createDigitalButton(elementId, code, type, 1, name, -1, config.stickyModifierKey && isModifierKey(code), controller, context),
                             x, y,
                             w, w
                     );

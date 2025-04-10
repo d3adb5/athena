@@ -482,7 +482,7 @@
     <string name="title_checkbox_use_virtual_display">使用虚拟显示器</string>
     <string name="summary_checkbox_use_virtual_display">默认使用虚拟显示器。\n虚拟显示器可以自动匹配设备端的分辨率与刷新率设置，提供无缝的串流体验。\n需要使用 Apollo 作为服务端串流软件。</string>
     <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">粘滞修饰键</string>
-    <string name="summary_checkbox_enable_sticky_modifier_key_virtual_keyboard">在虚拟全键盘上使用粘滞修饰键。</string>
+    <string name="summary_checkbox_enable_sticky_modifier_key_virtual_keyboard">在虚拟全键盘以及自定义键盘上使用粘滞修饰键。</string>
     <string name="title_checkbox_resume_without_confirm">快速恢复</string>
     <string name="summary_checkbox_resume_without_confirm">在点击恢复按钮时不弹出菜单，直接恢复串流。</string>
     <string name="virtual_keyboard_hide">隐藏\n键盘</string>
