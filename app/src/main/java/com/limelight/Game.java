@@ -2592,7 +2592,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     if (prefConfig.enableMultiTouchScreen) {
                         int actionMasked = event.getActionMasked();
                         int pointerCount = event.getPointerCount();
-                        // long currentEventTime = event.getEventTime();
 
                         if (actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 3) {
                             threeFingerDownTime = event.getEventTime();
