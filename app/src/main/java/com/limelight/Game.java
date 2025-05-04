@@ -2595,11 +2595,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                         if (actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 3) {
                             threeFingerDownTime = event.getEventTime();
+                        } else if(actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 4) {
+                            threeFingerDownTime = 0;
+                            fourFingerDownTime = event.getEventTime();
                         } else if(actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 5) {
+                            threeFingerDownTime = 0;
+                            fourFingerDownTime = 0;
                             fiveFingerDownTime = event.getEventTime();
                         }
 
-                        if (handleMultiTouchInput(event, view)) { return true; }
+                        if (prefConfig.enableMultiTouchGestures && handleMultiTouchInput(event, view)) { return true; }
 
                         if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
                             // If this host supports touch events and absolute touch is enabled,
@@ -2616,6 +2621,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                             } else if (fingerCount == 4) {
                                 threeFingerDownTime = 0;
                                 fourFingerDownTime = event.getEventTime();
+                            } else if (fingerCount == 5) {
+                                threeFingerDownTime = 0;
+                                fourFingerDownTime = 0;
+                                fiveFingerDownTime = event.getEventTime();
                             }
 
                             if (fingerCount > 2) {
@@ -2690,6 +2699,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                             return true;
                         } else if (currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
                             showHidekeyBoardLayoutController();
+                            return true;
+                        } else if (currentEventTime - fiveFingerDownTime < FIVE_FINGER_TAP_THRESHOLD) {
+                            if(prefConfig.enableBackMenu) {
+                                showGameMenu(null);
+                            }
                             return true;
                         }
                     }
@@ -2786,33 +2800,25 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             case MotionEvent.ACTION_UP:
                 long currentEventTime = event.getEventTime();
                 if (pointerCount >= 5 && fiveFingerDownTime > 0 && currentEventTime - fiveFingerDownTime < FIVE_FINGER_TAP_THRESHOLD) {
-                    if(prefConfig.enableBackMenu && prefConfig.enableFiveFingerTapForBackMenu){
+                    if(prefConfig.enableBackMenu) {
                         showGameMenu(null);
                     }
                     fiveFingerDownTime = 0;
-                    MotionEvent cancelEvent = MotionEvent.obtain(event);
-                    cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-                    view.dispatchTouchEvent(cancelEvent);
-                    cancelEvent.recycle();
-                    for (TouchContext aTouchContext : touchContextMap) {
-                        aTouchContext.cancelTouch();
-                        aTouchContext.setPointerCount(0);
-                    }
+                    cancelStaleTouchState(event, view);
+                    break;
+                } else if (pointerCount == 4 && fourFingerDownTime > 0 && currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
+                    showHidekeyBoardLayoutController();
+                    fourFingerDownTime = 0;
+                    cancelStaleTouchState(event, view);
                     break;
                 } else if (pointerCount == 3 && threeFingerDownTime > 0 && currentEventTime - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
                     toggleKeyboard();
                     threeFingerDownTime = 0;
-                    MotionEvent cancelEvent = MotionEvent.obtain(event);
-                    cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-                    view.dispatchTouchEvent(cancelEvent);
-                    cancelEvent.recycle();
-                    for (TouchContext aTouchContext : touchContextMap) {
-                        aTouchContext.cancelTouch();
-                        aTouchContext.setPointerCount(0);
-                    }
+                    cancelStaleTouchState(event, view);
                     break;
                 }
                 threeFingerDownTime = 0;
+                fourFingerDownTime = 0;
                 fiveFingerDownTime = 0;
                 return false;
             default:
@@ -2820,6 +2826,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
         return true;
     }
+
+    private void cancelStaleTouchState(MotionEvent event, View view) {
+        MotionEvent cancelEvent = MotionEvent.obtain(event);
+        cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
+        view.dispatchTouchEvent(cancelEvent);
+        cancelEvent.recycle();
+        for (TouchContext aTouchContext : touchContextMap) {
+            aTouchContext.cancelTouch();
+            aTouchContext.setPointerCount(0);
+        }
+    }
+
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return handleMotionEvent(null, event) || super.onGenericMotionEvent(event);
