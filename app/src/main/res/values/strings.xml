@@ -406,6 +406,8 @@
     <!-- New Strings -->
     <string name="title_checkbox_mouse_local_cursor">Use local mouse cursor</string>
     <string name="summary_checkbox_mouse_local_cursor">Default external physical mouse cursor will be captured, this option can display Android system cursor</string>
+    <string name="title_checkbox_five_finger_tap_for_back_menu">Five-finger tap to open back menu</string>
+    <string name="summary_checkbox_five_finger_tap_for_back_menu">Tap the screen with five fingers at once to open the back menu</string>
     <string name="title_checkbox_onscreen_style_official">Official Virtual Gamepad Skin</string>
     <string name="summary_checkbox_onscreen_style_official">If you still like the old style of official virtual gamepad buttons, you can select this option.\nButton shapes can be square if you selected the bottom virtual button [Normal buttons are square buttons]</string>
     <string name="title_checkbox_enable_perf_overlay_lite">Enable Lite mode</string>

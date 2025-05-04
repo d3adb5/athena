@@ -124,6 +124,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private PanZoomHandler panZoomHandler;
     private long threeFingerDownTime = 0;
     private long fourFingerDownTime = 0;
+    private long fiveFingerDownTime = 0;
 
     private static final int REFERENCE_HORIZ_RES = 1280;
     private static final int REFERENCE_VERT_RES = 720;
@@ -136,6 +137,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private static final int THREE_FINGER_TAP_THRESHOLD = 300;
     private static final int FOUR_FINGER_TAP_THRESHOLD = 300;
+    private static final int FIVE_FINGER_TAP_THRESHOLD = 300;
 
     private ControllerHandler controllerHandler;
     private KeyboardTranslator keyboardTranslator;
@@ -2588,6 +2590,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     // cancelled touches from Android gestures and 3 finger taps to activate
                     // the software keyboard.
                     if (prefConfig.enableMultiTouchScreen) {
+                        int actionMasked = event.getActionMasked();
+                        int pointerCount = event.getPointerCount();
+                        // long currentEventTime = event.getEventTime();
+
+                        if (actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 3) {
+                            threeFingerDownTime = event.getEventTime();
+                        } else if(actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 5) {
+                            fiveFingerDownTime = event.getEventTime();
+                        }
+
+                        if (handleMultiTouchInput(event, view)) { return true; }
+
                         if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
                             // If this host supports touch events and absolute touch is enabled,
                             // send it directly as a touch event.
@@ -2763,6 +2777,50 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return true;
     }
 
+    private boolean handleMultiTouchInput(MotionEvent event, View view) {
+        int eventAction = event.getActionMasked();
+        int pointerCount = event.getPointerCount();
+
+        switch (eventAction)
+        {
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_UP:
+                long currentEventTime = event.getEventTime();
+                if (pointerCount >= 5 && fiveFingerDownTime > 0 && currentEventTime - fiveFingerDownTime < FIVE_FINGER_TAP_THRESHOLD) {
+                    if(prefConfig.enableBackMenu && prefConfig.enableFiveFingerTapForBackMenu){
+                        showGameMenu(null);
+                    }
+                    fiveFingerDownTime = 0;
+                    MotionEvent cancelEvent = MotionEvent.obtain(event);
+                    cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
+                    view.dispatchTouchEvent(cancelEvent);
+                    cancelEvent.recycle();
+                    for (TouchContext aTouchContext : touchContextMap) {
+                        aTouchContext.cancelTouch();
+                        aTouchContext.setPointerCount(0);
+                    }
+                    break;
+                } else if (pointerCount == 3 && threeFingerDownTime > 0 && currentEventTime - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
+                    toggleKeyboard();
+                    threeFingerDownTime = 0;
+                    MotionEvent cancelEvent = MotionEvent.obtain(event);
+                    cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
+                    view.dispatchTouchEvent(cancelEvent);
+                    cancelEvent.recycle();
+                    for (TouchContext aTouchContext : touchContextMap) {
+                        aTouchContext.cancelTouch();
+                        aTouchContext.setPointerCount(0);
+                    }
+                    break;
+                }
+                threeFingerDownTime = 0;
+                fiveFingerDownTime = 0;
+                return false;
+            default:
+                return false;
+        }
+        return true;
+    }
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         return handleMotionEvent(null, event) || super.onGenericMotionEvent(event);

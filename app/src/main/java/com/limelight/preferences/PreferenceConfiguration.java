@@ -245,6 +245,7 @@ public class PreferenceConfiguration {
     public boolean enableLatencyToast;
     //软键盘
     public boolean enableBackMenu;
+    public boolean enableFiveFingerTapForBackMenu;
     //Invert video width/height
     public boolean autoInvertVideoResolution;
     public int resolutionScaleFactor;
@@ -862,6 +863,8 @@ public class PreferenceConfiguration {
         config.enableTouchSensitivity=prefs.getBoolean("checkbox_enable_touch_sensitivity",false);
 
         config.enableMouseLocalCursor=prefs.getBoolean("checkbox_mouse_local_cursor",false);
+
+        config.enableFiveFingerTapForBackMenu=prefs.getBoolean("checkbox_five_finger_tap_for_back_menu",false);
 
         config.enablePerfOverlayLiteDialog=prefs.getBoolean("checkbox_enable_perf_overlay_lite_dialog",false);
 
