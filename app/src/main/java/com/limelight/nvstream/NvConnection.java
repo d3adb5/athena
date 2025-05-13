@@ -313,7 +313,7 @@ public class NvConnection {
         if (h.getCurrentGame(serverInfo) != 0) {
             try {
                 if (h.getCurrentGame(serverInfo) == app.getAppId()) {
-                    if (!h.launchApp(context, "resume", app.getAppId(), context.negotiatedHdr)) {
+                    if (!h.launchApp(context, "resume", app.getAppUUID(), app.getAppId(), context.negotiatedHdr)) {
                         context.connListener.displayMessage("Failed to resume existing session");
                         return false;
                     }
@@ -371,7 +371,7 @@ public class NvConnection {
     private boolean launchNotRunningApp(NvHTTP h, ConnectionContext context)
             throws IOException, XmlPullParserException {
         // Launch the app since it's not running
-        if (!h.launchApp(context, "launch", context.streamConfig.getApp().getAppId(), context.negotiatedHdr)) {
+        if (!h.launchApp(context, "launch", context.streamConfig.getApp().getAppUUID(), context.streamConfig.getApp().getAppId(), context.negotiatedHdr)) {
             context.connListener.displayMessage("Failed to launch application");
             return false;
         }

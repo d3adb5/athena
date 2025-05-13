@@ -179,7 +179,7 @@ public class ShortcutTrampoline extends Activity {
                                                 // If a game is running, we'll make the stream the top level activity
                                                 if (details.runningGameId != 0) {
                                                     intentStack.add(ServerHelper.createStartIntent(ShortcutTrampoline.this,
-                                                            new NvApp(null, details.runningGameId, false), details, managerBinder, false));
+                                                            new NvApp(null, null, details.runningGameId, false), details, managerBinder, false));
                                                 }
 
                                                 // Now start the activities
@@ -284,6 +284,7 @@ public class ShortcutTrampoline extends Activity {
         // App arguments, both are optional, but one must be provided in order to start an app
         String appIdString = getIntent().getStringExtra(Game.EXTRA_APP_ID);
         String appNameString = getIntent().getStringExtra(Game.EXTRA_APP_NAME);
+        String appUUIDString = getIntent().getStringExtra(Game.EXTRA_APP_UUID);
 
         if (!validateInput(uuidString, appIdString, nameString)) {
             // Invalid input, so just return
@@ -308,12 +309,18 @@ public class ShortcutTrampoline extends Activity {
             setIntent(new Intent(getIntent()).putExtra(AppView.UUID_EXTRA, uuidString));
         }
 
-        if (appIdString != null && !appIdString.isEmpty()) {
+        // If UUID presents, launch the app directly.
+        if (appUUIDString != null && !appUUIDString.isEmpty()) {
+            app = new NvApp(appNameString,
+                    appUUIDString,
+                    -1,
+                    getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
+        } else if (appIdString != null && !appIdString.isEmpty()) {
             app = new NvApp(getIntent().getStringExtra(Game.EXTRA_APP_NAME),
+                    getIntent().getStringExtra(Game.EXTRA_APP_UUID),
                     Integer.parseInt(appIdString),
                     getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
-        }
-        else if (appNameString != null && !appNameString.isEmpty()) {
+        } else if (appNameString != null && !appNameString.isEmpty()) {
             // Use appNameString to find the corresponding AppId
             try {
                 int appId = -1;
@@ -331,6 +338,7 @@ public class ShortcutTrampoline extends Activity {
                 for (NvApp _app : applist) {
                     if (_app.getAppName().equals(appNameString)) {
                         appId = _app.getAppId();
+                        appUUIDString = _app.getAppUUID();
                         break;
                     }
                 }
@@ -344,6 +352,7 @@ public class ShortcutTrampoline extends Activity {
                 setIntent(new Intent(getIntent()).putExtra(Game.EXTRA_APP_ID, appId));
                 app = new NvApp(
                         appNameString,
+                        appUUIDString,
                         appId,
                         getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
             } catch (IOException | XmlPullParserException e) {

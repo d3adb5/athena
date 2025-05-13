@@ -224,6 +224,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_PORT = "Port";
     public static final String EXTRA_HTTPS_PORT = "HttpsPort";
     public static final String EXTRA_APP_NAME = "AppName";
+    public static final String EXTRA_APP_UUID = "AppUUID";
     public static final String EXTRA_APP_ID = "AppId";
     public static final String EXTRA_UNIQUEID = "UniqueId";
     public static final String EXTRA_PC_UUID = "UUID";
@@ -235,6 +236,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     public static final String CLIPBOARD_IDENTIFIER = "ArtemisStreaming";
 
+    private String appUUID;
     private String host;
     private int port;
     private int httpsPort;
@@ -433,6 +435,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         host = Game.this.getIntent().getStringExtra(EXTRA_HOST);
         port = Game.this.getIntent().getIntExtra(EXTRA_PORT, NvHTTP.DEFAULT_HTTP_PORT);
         httpsPort = Game.this.getIntent().getIntExtra(EXTRA_HTTPS_PORT, 0); // 0 is treated as unknown
+        appUUID = Game.this.getIntent().getStringExtra(EXTRA_APP_UUID);
         appId = Game.this.getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
         uniqueId = Game.this.getIntent().getStringExtra(EXTRA_UNIQUEID);
         vDisplay = Game.this.getIntent().getBooleanExtra(EXTRA_VDISPLAY, false);
@@ -440,7 +443,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         boolean appSupportsHdr = Game.this.getIntent().getBooleanExtra(EXTRA_APP_HDR, false);
         byte[] derCertData = Game.this.getIntent().getByteArrayExtra(EXTRA_SERVER_CERT);
 
-        app = new NvApp(appName != null ? appName : "app", appId, appSupportsHdr);
+        app = new NvApp(appName != null ? appName : "app", appUUID, appId, appSupportsHdr);
 
         try {
             if (derCertData != null) {
