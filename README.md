@@ -2,14 +2,14 @@
 
 Previously named Moonlight Noir
 
-An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine).
+An open source client for [Artemis](https://github.com/ClassicOldSong/Artemis)/[Sunshine](https://github.com/LizardByte/Sunshine).
 
 Artemis Android will allow you to stream your collection of games from your Windows PC to your Android device,
 whether in your own home or over the internet.
 
 Artemis is currently the best fork of Moonlight with loads of optimizations for office usage.
 
-A more seamless experience with virtual display will be Artemis paired with [Apollo](https://github.com/ClassicOldSong/Apollo).
+A more seamless experience with virtual display will be Artemis paired with [Artemis](https://github.com/ClassicOldSong/Artemis).
 
 # Features
 
@@ -42,9 +42,9 @@ If you switch back to the main stream version, you'll be missing the following a
 25. Add option to quit app directly
 26. Samsung DeX scrolling support
 27. Proper click/scroll/right-click for trackpad on generic Android tablet when using local cursor
-28. Virtual Display integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
-29. Server Command integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
-30. Clipboard sync (requires Apollo)
+28. Virtual Display integration with [Artemis](https://github.com/ClassicOldSong/Artemis)
+29. Server Command integration with [Artemis](https://github.com/ClassicOldSong/Artemis)
+30. Clipboard sync (requires Artemis)
 
 # Disclaimer
 
@@ -54,7 +54,7 @@ I got kicked from Moonlight and Sunshine's Discord server literally for helping 
 
 This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else during the maintainance gap.
 
-Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either. I have also started [a fork of Sunshine called Apollo](https://github.com/ClassicOldSong/Apollo) and will add useful features that will never get merged by the main repo shortly. [Apollo](https://github.com/ClassicOldSong/Apollo) and [Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android) will no longer be compatible with OG Sunshine and OG Moonlight eventually, but they'll work even better with much more carefully designed features.
+Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either. I have also started [a fork of Sunshine called Artemis](https://github.com/ClassicOldSong/Artemis) and will add useful features that will never get merged by the main repo shortly. [Artemis](https://github.com/ClassicOldSong/Artemis) and [Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android) will no longer be compatible with OG Sunshine and OG Moonlight eventually, but they'll work even better with much more carefully designed features.
 
 The main repo had stayed silent for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others.
 
