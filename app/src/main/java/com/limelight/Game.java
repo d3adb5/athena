@@ -94,6 +94,7 @@ import android.widget.FrameLayout;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
@@ -224,7 +225,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public static final String EXTRA_PORT = "Port";
     public static final String EXTRA_HTTPS_PORT = "HttpsPort";
     public static final String EXTRA_APP_NAME = "AppName";
-    public static final String EXTRA_APP_UUID = "AppUUID";
     public static final String EXTRA_APP_ID = "AppId";
     public static final String EXTRA_UNIQUEID = "UniqueId";
     public static final String EXTRA_PC_UUID = "UUID";
@@ -236,7 +236,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     public static final String CLIPBOARD_IDENTIFIER = "ArtemisStreaming";
 
-    private String appUUID;
     private String host;
     private int port;
     private int httpsPort;
@@ -259,6 +258,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     public GameMenuCallbacks gameMenuCallbacks;
+
+    // Floating menu button
+    private ImageButton floatingMenuButton;
+    private float dX, dY;
+    private boolean isMovingButton = false;
+    private static final float CLICK_ACTION_THRESHOLD = 5;
+    private float startX, startY;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -435,7 +441,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         host = Game.this.getIntent().getStringExtra(EXTRA_HOST);
         port = Game.this.getIntent().getIntExtra(EXTRA_PORT, NvHTTP.DEFAULT_HTTP_PORT);
         httpsPort = Game.this.getIntent().getIntExtra(EXTRA_HTTPS_PORT, 0); // 0 is treated as unknown
-        appUUID = Game.this.getIntent().getStringExtra(EXTRA_APP_UUID);
         appId = Game.this.getIntent().getIntExtra(EXTRA_APP_ID, StreamConfiguration.INVALID_APP_ID);
         uniqueId = Game.this.getIntent().getStringExtra(EXTRA_UNIQUEID);
         vDisplay = Game.this.getIntent().getBooleanExtra(EXTRA_VDISPLAY, false);
@@ -443,7 +448,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         boolean appSupportsHdr = Game.this.getIntent().getBooleanExtra(EXTRA_APP_HDR, false);
         byte[] derCertData = Game.this.getIntent().getByteArrayExtra(EXTRA_SERVER_CERT);
 
-        app = new NvApp(appName != null ? appName : "app", appUUID, appId, appSupportsHdr);
+        app = new NvApp(appName != null ? appName : "app", appId, appSupportsHdr);
 
         try {
             if (derCertData != null) {
@@ -611,7 +616,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 .setVirtualDisplay(vDisplay)
                 .setResolutionScaleFactor(prefConfig.resolutionScaleFactor)
                 .setApp(app)
-                .setEnableUltraLowLatency(prefConfig.enableUltraLowLatency)
                 .setBitrate(isMetered ? prefConfig.meteredBitrate: prefConfig.bitrate)
                 .setEnableSops(prefConfig.enableSops)
                 .enableLocalAudioPlayback(prefConfig.playHostAudio)
@@ -683,6 +687,58 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         gameMenuCallbacks = new GameMenu(this, conn);
+
+        // Setup floating menu button
+        floatingMenuButton = findViewById(R.id.floatingMenuButton);
+        updateFloatingButtonVisibility();
+        
+        // Touch listener for drag and click
+        floatingMenuButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = event.getRawX();
+                        startY = event.getRawY();
+                        dX = view.getX() - event.getRawX();
+                        dY = view.getY() - event.getRawY();
+                        isMovingButton = false;
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        float newX = event.getRawX() + dX;
+                        float newY = event.getRawY() + dY;
+                        
+                        // Check if it's a move or just a tap
+                        if (Math.abs(event.getRawX() - startX) > CLICK_ACTION_THRESHOLD ||
+                                Math.abs(event.getRawY() - startY) > CLICK_ACTION_THRESHOLD) {
+                            isMovingButton = true;
+                        }
+                        
+                        // Ensure the button stays within screen bounds
+                        if (newX < 0) newX = 0;
+                        if (newY < 0) newY = 0;
+                        if (newX > getWindow().getDecorView().getWidth() - view.getWidth()) {
+                            newX = getWindow().getDecorView().getWidth() - view.getWidth();
+                        }
+                        if (newY > getWindow().getDecorView().getHeight() - view.getHeight()) {
+                            newY = getWindow().getDecorView().getHeight() - view.getHeight();
+                        }
+                        
+                        view.setX(newX);
+                        view.setY(newY);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (!isMovingButton) {
+                            // It's a click event, show menu
+                            showGameMenu(null);
+                        }
+                        isMovingButton = false;
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
     }
 
     private void initKeyboardController(){
@@ -3382,7 +3438,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public void onBackPressed() {
-        if(prefConfig.enableBackMenu){
+        if(prefConfig.enableBackMenu) {
+            // We still handle back button normally but keep the floating button visible
             showGameMenu(null);
             return;
         }
@@ -3581,5 +3638,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         });
         streamView.setClipToOutline(true);
+    }
+
+    private void updateFloatingButtonVisibility() {
+        if (floatingMenuButton != null) {
+            floatingMenuButton.setVisibility(prefConfig.enableBackMenu ? View.VISIBLE : View.GONE);
+        }
     }
 }
