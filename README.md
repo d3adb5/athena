@@ -2,7 +2,7 @@
  
 Previously named Moonlight Noir
 
-An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine).
+An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine). 
 
 Artemis Android will allow you to stream your collection of games from your Windows PC to your Android device,
 whether in your own home or over the internet.
