@@ -43,4 +43,4 @@ jobs:
       with:
         files: app/build/outputs/apk/nonRoot_game/release/app-nonRoot_game-release.apk
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
