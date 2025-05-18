@@ -3,7 +3,7 @@ name: Build & Upload APK
 on:
   push:
     branches:
-      - source
+      - moonlight-noir
   release:
     types: [created]
 
