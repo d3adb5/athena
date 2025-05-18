@@ -51,7 +51,7 @@
     <string name="pair_pairing_msg">Vui lòng nhập mã PIN sau trên PC mục tiêu:</string>
     <string name="pair_pairing_help">Nếu PC chủ của bạn đang chạy Sunshine, hãy điều hướng đến giao diện web của Sunshine để nhập mã PIN.</string>
     <string name="pair_otp_pairing_msg">Đang ghép nối, vui lòng đợi…</string>
-    <string name="pair_otp_pairing_help">Ghép nối OTP chỉ khả dụng với Artemis, nhập mã PIN bạn vừa cung cấp trên giao diện web theo cách thủ công nếu bạn đang sử dụng phần mềm máy chủ khác.</string>
+    <string name="pair_otp_pairing_help">Ghép nối OTP chỉ khả dụng với Apollo, nhập mã PIN bạn vừa cung cấp trên giao diện web theo cách thủ công nếu bạn đang sử dụng phần mềm máy chủ khác.</string>
     <string name="pair_incorrect_pin">Mã PIN hoặc mật khẩu không chính xác</string>
     <string name="pair_fail">Ghép nối thất bại</string>
     <string name="pair_already_in_progress">Ghép nối đã đang diễn ra</string>
@@ -177,7 +177,7 @@
     <string name="summary_seekbar_metered_bitrate">Tốc độ bit cao tiêu tốn nhiều dữ liệu hơn, tốc độ bit thấp hơn cải thiện độ mượt mà trên mạng di động.\nĐặt 0 cho ¼ tốc độ bit ở trên.</string>
     <string name="suffix_seekbar_bitrate_mbps">Mbps</string>
     <string name="title_resolution_scale_factor">Hệ số tỷ lệ độ phân giải</string>
-    <string name="summary_resolution_scale_factor">Độ phân giải màn hình ảo được yêu cầu phía máy chủ sẽ được nhân với hệ số này. Độ phân giải phát trực tuyến không bị ảnh hưởng.\nVí dụ: 120% sẽ làm cho 2000x1000 trở thành 2400x1200.\nĐặt hệ số tỷ lệ cao hơn sẽ cải thiện chất lượng hình ảnh cho một số trò chơi.\nYêu cầu Artemis để có hiệu lực.</string>
+    <string name="summary_resolution_scale_factor">Độ phân giải màn hình ảo được yêu cầu phía máy chủ sẽ được nhân với hệ số này. Độ phân giải phát trực tuyến không bị ảnh hưởng.\nVí dụ: 120% sẽ làm cho 2000x1000 trở thành 2400x1200.\nĐặt hệ số tỷ lệ cao hơn sẽ cải thiện chất lượng hình ảnh cho một số trò chơi.\nYêu cầu Apollo để có hiệu lực.</string>
     <string name="resolution_prefix_native">Gốc</string>
     <string name="resolution_prefix_native_fullscreen">Gốc Toàn màn hình</string>
     <string name="resolution_prefix_native_landscape">(Ngang)</string>
@@ -401,7 +401,7 @@
     <string name="dialog_manual_enter_bitrate">Nhập bitrate tính bằng Mbps. Làm tròn đến 0.5.</string>
 
     <string name="title_custom_refresh_rate">Tùy chỉnh tần số quét</string>
-    <string name="summary_custom_refresh_rate">Nhập tần số quét thủ công. Chỉ hỗ trợ Artemis.</string>
+    <string name="summary_custom_refresh_rate">Nhập tần số quét thủ công. Chỉ hỗ trợ Apollo.</string>
     <string name="dialog_custom_refresh_rate">Nhập tần số quét theo Hz. Có thể là số thập phân.</string>
 
     <string name="title_touchscreen_mode">Chế độ màn hình cảm ứng</string>
@@ -437,7 +437,7 @@
     <string name="summary_import_special_button">Sử dụng được trong Menu Quay lại và phím đặc biệt.\nLưu ý: Nhập sẽ ghi đè cấu hình hiện tại, vui lòng sao lưu trước.</string>
 
     <string name="title_software_update">Cập nhật phần mềm</string>
-    <string name="summary_software_update">Phiên bản Artemis của ZeronX - Truy cập GitHub Release để nhận phiên bản mới nhất</string>
+    <string name="summary_software_update">Phiên bản Artemis Việt Hóa bởi ZeronX - Truy cập GitHub Release để nhận phiên bản mới nhất</string>
 
     <string name="title_special_key_layout">Bố cục phím đặc biệt</string>
 
@@ -522,7 +522,7 @@
     <string name="title_checkbox_ignore_synth_events">Bỏ qua sự kiện tổng hợp</string>
     <string name="summary_ignore_synth_events">Bỏ qua các sự kiện tổng hợp do hệ thống Android gửi. Có thể giải quyết vấn đề nhấn chuột gây ra các phím không mong muốn trên một số thiết bị.\nBật tùy chọn này sẽ khiến bàn phím ảo hệ thống không hoạt động.</string>
     <string name="title_smart_clipboard_sync">Đồng bộ clipboard thông minh (Thử nghiệm)</string>
-    <string name="summary_smart_clipboard_sync">Tự động tải nội dung clipboard lên server khi bắt đầu/tái tục truyền phát, và tải clipboard từ server khi mất tiêu điểm (cần Artemis)</string>
+    <string name="summary_smart_clipboard_sync">Tự động tải nội dung clipboard lên server khi bắt đầu/tái tục truyền phát, và tải clipboard từ server khi mất tiêu điểm (cần Apollo)</string>
     <string name="title_smart_clipboard_sync_toast">Thông báo đồng bộ clipboard</string>
     <string name="summary_smart_clipboard_sync_toast">Hiển thị thông báo khi đồng bộ clipboard</string>
     <string name="title_hide_clipboard_content">Ẩn nội dung clipboard</string>
@@ -538,7 +538,7 @@
     <string name="title_checkbox_enforce_display_mode">Bắt buộc chế độ hiển thị</string>
     <string name="summary_checkbox_enforce_display_mode">Buộc surface sử dụng chế độ hiển thị tối ưu.\nCần thiết trên một số hệ thống (ví dụ như ColorOS) để thiết lập tốc độ làm tươi/độ phân giải chính xác.\nKhông bật trên ChromeCast 4K vì có thể gây lỗi.</string>
     <string name="title_checkbox_use_virtual_display">Sử dụng màn hình ảo</string>
-    <string name="summary_checkbox_use_virtual_display">Sử dụng màn hình ảo mặc định.\nMàn hình ảo có thể tự động khớp với độ phân giải và tốc độ khung hình của phía client, cho trải nghiệm truyền phát mượt mà.\nYêu cầu Artemis là phần mềm truyền phát trên máy chủ.</string>
+    <string name="summary_checkbox_use_virtual_display">Sử dụng màn hình ảo mặc định.\nMàn hình ảo có thể tự động khớp với độ phân giải và tốc độ khung hình của phía client, cho trải nghiệm truyền phát mượt mà.\nYêu cầu Apollo là phần mềm truyền phát trên máy chủ.</string>
     <string name="title_checkbox_resume_without_confirm">Tiếp tục nhanh</string>
 
         <string name="summary_checkbox_resume_without_confirm">Bỏ qua menu tiếp tục, mở lại ứng dụng ngay khi bấm nút.</string>
@@ -603,12 +603,12 @@
     <string name="game_menu_upload_clipboard">Gửi nội dung clipboard</string>
 
     <string name="game_dialog_title_server_cmd_empty">Không có lệnh máy chủ</string>
-    <string name="game_dialog_message_server_cmd_empty">Hãy đảm bảo bạn đang dùng phần mềm máy chủ Artemis và ứng dụng này đã được cấp quyền "Lệnh máy chủ".</string>
+    <string name="game_dialog_message_server_cmd_empty">Hãy đảm bảo bạn đang dùng phần mềm máy chủ Apollo và ứng dụng này đã được cấp quyền "Lệnh máy chủ".</string>
 
     <string name="vdisplay_not_ready">Driver hiển thị ảo trên máy chủ chưa sẵn sàng. Hãy kiểm tra xem bạn đã cài và bật driver SudoVDA chưa.</string>
-    <string name="vdisplay_not_supported"><![CDATA[Máy chủ không hỗ trợ hiển thị ảo. Vui lòng dùng phần mềm Artemis: <a href="https://github.com/ClassicOldSong/Artemis">Artemis</a> để stream.]]></string>
+    <string name="vdisplay_not_supported"><![CDATA[Máy chủ không hỗ trợ hiển thị ảo. Vui lòng dùng phần mềm Apollo: <a href="https://github.com/ClassicOldSong/Apollo">Apollo</a> để stream.]]></string>
 
-    <string name="clipboard_sync_unsupported">Máy chủ không hỗ trợ đồng bộ clipboard. Vui lòng cài hoặc nâng cấp lên phiên bản mới nhất của Artemis.</string>
+    <string name="clipboard_sync_unsupported">Máy chủ không hỗ trợ đồng bộ clipboard. Vui lòng cài hoặc nâng cấp lên phiên bản mới nhất của Apollo.</string>
     <string name="send_clipboard_failed">Gửi clipboard thất bại: </string>
     <string name="get_clipboard_failed">Lấy clipboard thất bại: </string>
     <string name="send_clipboard_success">Đã gửi clipboard thành công</string>
