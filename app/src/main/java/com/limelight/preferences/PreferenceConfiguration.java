@@ -560,6 +560,11 @@ public class PreferenceConfiguration {
         }
     }
 
+    public static String getSelectedFramePacingName(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(FRAME_PACING_PREF_STRING, DEFAULT_FRAME_PACING);
+    }
+
     private static int getFramePacingValue(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 

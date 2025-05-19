@@ -21,6 +21,7 @@ import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.utils.TrafficStatsHelper;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -118,6 +119,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private int lastFrameNumber;
     private int refreshRate;
     private PreferenceConfiguration prefs;
+
+    private float minDecodeTime = Float.MAX_VALUE;
+    private String minDecodeTimeFullLog = "";
 
     private long lastNetDataNum;
     private LinkedBlockingQueue<Integer> outputBufferQueue = new LinkedBlockingQueue<>();
@@ -1507,8 +1511,14 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                     }
                     sb.append(context.getString(R.string.perf_overlay_dectime, decodeTimeMs));
                 }
-
-                perfListener.onPerfUpdate(sb.toString());
+                String fullLog = sb.toString();
+                perfListener.onPerfUpdate(fullLog);
+                // Best latency is only met at requested highest fps, rest can be ignored
+                Boolean targetFpsMatched = ((int) fps.totalFps == (int) prefs.fps);
+                if(minDecodeTime > decodeTimeMs && targetFpsMatched) {
+                    minDecodeTime = decodeTimeMs;
+                    minDecodeTimeFullLog = fullLog;
+                }
             }
 
             globalVideoStats.add(activeWindowVideoStats);
@@ -1865,6 +1875,19 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             return 0;
         }
         return (int)(globalVideoStats.decoderTimeMs / globalVideoStats.totalFramesReceived);
+    }
+
+    public Boolean performanceWasTracked() {
+        return minDecodeTime < Float.MAX_VALUE;
+    }
+
+    @SuppressLint("DefaultLocale")
+    public String getMinDecoderLatency() {
+        return String.format("%1$.2f ms", minDecodeTime);
+    }
+
+    public String getMinDecoderLatencyFullLog() {
+        return minDecodeTimeFullLog;
     }
 
     static class DecoderHungException extends RuntimeException {
