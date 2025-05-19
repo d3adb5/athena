@@ -1883,7 +1883,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @SuppressLint("DefaultLocale")
     public String getMinDecoderLatency() {
-        return String.format("%1$.2f ms", minDecodeTime);
+        return String.format("%1$.2f", minDecodeTime);
     }
 
     public String getMinDecoderLatencyFullLog() {
