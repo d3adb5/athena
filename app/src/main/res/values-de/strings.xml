@@ -286,4 +286,14 @@
     <string name="summary_checkbox_gamepad_motion_fallback">Verwendet die integrierten Bewegungssensoren Ihres Geräts, wenn Gamepad-Sensoren von Ihrem angeschlossenen Gamepad oder Ihrer Android-Version nicht unterstützt werden.
 \nHinweis: Die Aktivierung dieser Option kann dazu führen, dass Ihr Gamepad auf dem Host als PlayStation-Controller angezeigt wird.</string>
     <string name="pcview_menu_eol">NVIDIA GameStream End-of-Service</string>
+    <string name="email_prefix_message">
+    Bitte sende diesen Anhang unverändert an artemistics.logs@gmail.com, wenn du unsere Community unterstützen möchtest.\n
+    Deine geteilten Leistungsdaten helfen, den verfügbaren Datensatz zu verbessern und zu erweitern:\n
+    https://tinyurl.com/artemistics\n\n</string>
+    <string name="email_recipient">artemistics.logs@gmail.com</string>
+    <string name="email_subject">Artemistics - Performance Log</string>
+    <string name="email_chooser_title">Performance Log senden...</string>
+    <string name="toast_no_email_clients">Keine E-Mail-Clients installiert.</string>
+    <string name="toast_no_logs">Es sind noch keine Leistungsdaten gespeichert.</string>
+
 </resources>

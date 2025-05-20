@@ -62,13 +62,25 @@
         style="?android:attr/borderlessButtonStyle"/>
 
     <ImageButton
+        android:id="@+id/sharePerfLogsButton"
+        android:layout_width="75dp"
+        android:layout_height="65dp"
+        android:cropToPadding="false"
+        android:scaleType="fitXY"
+        android:layout_toRightOf="@+id/settingsButton"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_share_log"
+        android:preferKeepClear="true"
+        style="?android:attr/borderlessButtonStyle"/>
+
+    <ImageButton
         android:id="@+id/helpButton"
-        android:layout_width="70dp"
+        android:layout_width="75dp"
         android:layout_height="65dp"
         android:cropToPadding="false"
         android:scaleType="fitXY"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/settingsButton"
+        android:layout_toRightOf="@+id/sharePerfLogsButton"
         android:layout_toEndOf="@+id/settingsButton"
         android:src="@drawable/ic_help"
         android:preferKeepClear="true"

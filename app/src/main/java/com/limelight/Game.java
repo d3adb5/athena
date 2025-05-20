@@ -1394,18 +1394,19 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
             if(decoderRenderer.performanceWasTracked()) {
                 new PerformanceDataTracker().sendPerformanceStatistics(
-                    Build.MODEL,
-                    Build.VERSION.SDK_INT + "",
-                    BuildConfig.VERSION_NAME,
-                    selectedVideoFormat,
-                    decoderRenderer.getMinDecoderLatency(),
-                    decoderRenderer.getMinDecoderLatencyFullLog(),
+                        getBaseContext(),
+                        Build.MODEL,
+                        Build.VERSION.SDK_INT + "",
+                        BuildConfig.VERSION_NAME,
+                        selectedVideoFormat,
+                        decoderRenderer.getMinDecoderLatency(),
+                        decoderRenderer.getMinDecoderLatencyFullLog(),
                     prefConfig.bitrate + " Mbit/s",
                     displayWidth + "x" + displayHeight,
                     prefConfig.fps + " hz",
                     decoderRenderer.getAverageDecoderLatency() + " ms",
-                    PreferenceConfiguration.getSelectedFramePacingName(getBaseContext()),
-                    formatCurrentTime(System.currentTimeMillis())
+                        PreferenceConfiguration.getSelectedFramePacingName(getBaseContext()),
+                        formatCurrentTime(System.currentTimeMillis())
                 );
             }
 

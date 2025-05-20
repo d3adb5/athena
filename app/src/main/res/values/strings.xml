@@ -129,6 +129,19 @@
     <string name="perf_overlay_netlatency">Average network latency: %1$d ms (variance: %2$d ms)</string>
     <string name="perf_overlay_dectime">Average decoding time: %1$.2f ms</string>
 
+    <!-- Performance Report Sharing -->
+    <string name="email_prefix_message">
+        Please send this email as-is to artemistics.logs@gmail.com to support our community.\n
+        Your shared performance data will help improve and expand the dataset available at:\n
+        https://tinyurl.com/artemistics\n\n
+    </string>
+
+    <string name="email_recipient">artemistics.logs@gmail.com</string>
+    <string name="email_subject">Artemistics - Performance Log</string>
+    <string name="email_chooser_title">Send performance log...</string>
+    <string name="toast_no_email_clients">No email clients installed.</string>
+    <string name="toast_no_logs">There is no performance data stored yet.</string>
+
     <!-- AppList activity -->
     <string name="applist_connect_msg">Connecting to PC…</string>
     <string name="applist_menu_resume">Resume Session</string>
