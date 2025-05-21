@@ -369,6 +369,8 @@
     <string name="summary_touchscreen_mode">选择多点触控/单点触控/触摸板/禁用。\n禁用时手写笔仍可使用。\n在使用外接屏幕时强制为触摸板(自然)模式。</string>
     <string name="title_checkbox_mouse_local_cursor">使用本地鼠标光标</string>
     <string name="summary_checkbox_mouse_local_cursor">默认外接物理鼠标的光标会被捕获，此选项可显示安卓系统光标</string>
+    <string name="title_checkbox_multi_touch_gestures">多点触控手势</string>
+    <string name="summary_checkbox_multi_touch_gestures">开启后，可在多点触控时使用三指唤出键盘、四指唤出全键盘、五指唤出快捷菜单。</string>
     <string name="title_checkbox_onscreen_style_official">官方虚拟手柄皮肤</string>
     <string name="summary_checkbox_onscreen_style_official">如果你还是喜欢官方旧版虚拟手柄按键风格可以勾选此选项。\n按键形状可以为方形，如果你勾选了底部虚拟按键【普通按钮为方形按钮】</string>
     <string name="title_checkbox_enable_perf_overlay_lite">开启Lite精简模式</string>
