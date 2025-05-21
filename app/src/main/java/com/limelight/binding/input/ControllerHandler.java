@@ -2515,12 +2515,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             break;
         case KeyEvent.KEYCODE_BACK:
             if (prefConfig.backAsGuide) {
-                if (context.needsClickpadEmulation) {
-                    context.inputMap &= ~ControllerPacket.SPECIAL_BUTTON_FLAG;
-                }
-                else {
-                    context.inputMap &= ~ControllerPacket.MISC_FLAG;
-                }
+                context.inputMap &= ~ControllerPacket.SPECIAL_BUTTON_FLAG;
                 break;
             }
         case KeyEvent.KEYCODE_BUTTON_SELECT:
@@ -2743,12 +2738,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         case KeyEvent.KEYCODE_BACK:
             if (prefConfig.backAsGuide) {
                 context.hasSelect = true;
-                if (context.needsClickpadEmulation) {
-                    context.inputMap |= ControllerPacket.SPECIAL_BUTTON_FLAG;
-                }
-                else {
-                    context.inputMap |= ControllerPacket.MISC_FLAG;
-                }
+                context.inputMap |= ControllerPacket.SPECIAL_BUTTON_FLAG;
                 break;
             }
         case KeyEvent.KEYCODE_BUTTON_SELECT:
