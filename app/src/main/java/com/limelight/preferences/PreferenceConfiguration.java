@@ -287,6 +287,8 @@ public class PreferenceConfiguration {
     //物理光标捕获
     public boolean enableMouseLocalCursor;
 
+    public boolean enableMultiTouchGestures;
+
     //禁用内置的特殊指令
     public boolean enableClearDefaultSpecial;
 
@@ -862,6 +864,9 @@ public class PreferenceConfiguration {
         config.enableTouchSensitivity=prefs.getBoolean("checkbox_enable_touch_sensitivity",false);
 
         config.enableMouseLocalCursor=prefs.getBoolean("checkbox_mouse_local_cursor",false);
+
+        config.enableMultiTouchGestures = prefs.getBoolean("checkbox_multi_touch_gestures", false);
+
 
         config.enablePerfOverlayLiteDialog=prefs.getBoolean("checkbox_enable_perf_overlay_lite_dialog",false);
 
