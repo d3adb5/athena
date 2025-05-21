@@ -2589,57 +2589,27 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         return true;
                     }
 
-                    // TODO: Re-enable native touch when have a better solution for handling
-                    // cancelled touches from Android gestures and 3 finger taps to activate
-                    // the software keyboard.
-                    if (prefConfig.enableMultiTouchScreen) {
-                        int actionMasked = event.getActionMasked();
+                    if (prefConfig.enableMultiTouchGestures || !prefConfig.enableMultiTouchScreen) {
                         int pointerCount = event.getPointerCount();
-
-                        if (actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 3) {
-                            threeFingerDownTime = event.getEventTime();
-                        } else if(actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 4) {
-                            threeFingerDownTime = 0;
-                            fourFingerDownTime = event.getEventTime();
-                        } else if(actionMasked == MotionEvent.ACTION_POINTER_DOWN && pointerCount == 5) {
-                            threeFingerDownTime = 0;
-                            fourFingerDownTime = 0;
-                            fiveFingerDownTime = event.getEventTime();
-                        }
-
-                        if (prefConfig.enableMultiTouchGestures && handleMultiTouchInput(event, view)) { return true; }
-
-                        if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
-                            // If this host supports touch events and absolute touch is enabled,
-                            // send it directly as a touch event.
-                            return true;
-                        }
-                    } else {
-                        // Special handling for 3 finger gesture
-                        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-                            int fingerCount = event.getPointerCount();
-                            if (fingerCount == 3) {
-                                // Three fingers down
-                                threeFingerDownTime = event.getEventTime();
-                            } else if (fingerCount == 4) {
-                                threeFingerDownTime = 0;
-                                fourFingerDownTime = event.getEventTime();
-                            } else if (fingerCount == 5) {
-                                threeFingerDownTime = 0;
-                                fourFingerDownTime = 0;
-                                fiveFingerDownTime = event.getEventTime();
-                            }
-
-                            if (fingerCount > 2) {
-                                // Cancel previous touches to avoid
-                                // erroneous events
-                                for (TouchContext aTouchContext : touchContextMap) {
-                                    aTouchContext.cancelTouch();
-                                }
-
+                        if (pointerCount > 2) {
+                            int eventAction = event.getActionMasked();
+                            if (
+                                    (
+                                            eventAction == MotionEvent.ACTION_POINTER_DOWN
+                                                    || eventAction == MotionEvent.ACTION_POINTER_UP
+                                                    || eventAction == MotionEvent.ACTION_UP
+                                    )
+                                            && handleMultiTouchGesture(event, eventAction, pointerCount, view)
+                            ) {
                                 return true;
                             }
                         }
+                    }
+
+                    if (prefConfig.enableMultiTouchScreen && !prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
+                        // If this host supports touch events and absolute touch is enabled,
+                        // send it directly as a touch event.
+                        return true;
                     }
 
                     return handleTouchInput(event, touchContextMap, true);
@@ -2793,12 +2763,22 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         return true;
     }
 
-    private boolean handleMultiTouchInput(MotionEvent event, View view) {
-        int eventAction = event.getActionMasked();
-        int pointerCount = event.getPointerCount();
+    private boolean handleMultiTouchGesture(MotionEvent event, int eventAction, int pointerCount, View view) {
 
-        switch (eventAction)
-        {
+        if (eventAction == MotionEvent.ACTION_POINTER_DOWN) {
+            if (pointerCount == 3) {
+                threeFingerDownTime = event.getEventTime();
+            } else if (pointerCount == 4) {
+                threeFingerDownTime = 0;
+                fourFingerDownTime = event.getEventTime();
+            } else if (pointerCount == 5) {
+                threeFingerDownTime = 0;
+                fourFingerDownTime = 0;
+                fiveFingerDownTime = event.getEventTime();
+            }
+        }
+
+        switch (eventAction) {
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
                 long currentEventTime = event.getEventTime();
@@ -2807,26 +2787,27 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         showGameMenu(null);
                     }
                     fiveFingerDownTime = 0;
-                    cancelStaleTouchState(event, view);
                     break;
                 } else if (pointerCount == 4 && fourFingerDownTime > 0 && currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
                     showHidekeyBoardLayoutController();
                     fourFingerDownTime = 0;
-                    cancelStaleTouchState(event, view);
                     break;
                 } else if (pointerCount == 3 && threeFingerDownTime > 0 && currentEventTime - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
                     toggleKeyboard();
                     threeFingerDownTime = 0;
-                    cancelStaleTouchState(event, view);
                     break;
                 }
                 threeFingerDownTime = 0;
                 fourFingerDownTime = 0;
                 fiveFingerDownTime = 0;
+
+                cancelStaleTouchState(event, view);
                 return false;
             default:
                 return false;
         }
+
+        cancelStaleTouchState(event, view);
         return true;
     }
 
