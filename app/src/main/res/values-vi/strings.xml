@@ -341,7 +341,7 @@
 
     <!-- In Game menu -->
     <string name="game_menu_toggle_keyboard">Hiển thị bàn phím mềm</string>
-    <string name="game_menu_hud">Hiển thị lớp phủ hiệu suất</string>
+    <string name="game_menu_toggle_hud">Hiển thị lớp phủ hiệu suất</string>
     <string name="game_menu_select_mouse_mode">Chọn chế độ chuột</string>
     <string name="game_menu_enable_zoom_mode">Bật Pan/Zoom</string>
     <string name="game_menu_disable_zoom_mode">Tắt Pan/Zoom</string>

@@ -321,7 +321,8 @@
     <string name="keyboard_service_label"> Artemis 物理键盘</string>
     <string name="accessibility_description_text">此功能仅用于外接实体键盘时，某些系统存在特定的键盘快捷键，此情况会影响串流过程中，无法将相关按键指令传输给目标PC。            Artemis 不会观察您输入的文本，也不会收集您的密码、信用卡号或任何其他信息。</string>
     <string name="game_menu_toggle_keyboard">弹出软键盘</string>
-    <string name="game_menu_hud">(显示/隐藏)性能信息</string>
+    <string name="game_menu_toggle_hud">(显示/隐藏)性能信息</string>
+    <string name="game_menu_toggle_floating_button">(显示/隐藏)悬浮按钮</string>
     <string name="game_menu_select_mouse_mode">选择鼠标模式</string>
     <string name="game_menu_enable_zoom_mode">启用平移/缩放</string>
     <string name="game_menu_disable_zoom_mode">禁用平移/缩放</string>
@@ -379,8 +380,9 @@
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">代替返回键逻辑，弹出游戏快捷菜单。</string>
     <string name="title_virtual_trackpad_settings">虚拟触摸板设置</string>
     <string name="title_quit_dialog">返回菜单</string>
-    <string name="summary_quit_dialog">开启后，串流界面点击手机返回键 展示相关选项！
-            \n软键盘、性能信息、触控模式切换、发送特殊按键</string>
+    <string name="summary_quit_dialog">启用返回菜单</string>
+    <string name="title_floating_button">悬浮按钮</string>
+    <string name="summary_floating_button">启用悬浮按钮</string>
     <string name="dialog_custom_resolution">设置完分辨率后，退出设置页面 重新打开生效！</string>
     <string name="summary_custom_resolution">添加一个自定义分辨率,x号分割,比较奇怪的分辨率可能无法生效。
             \n例如：1920x1080

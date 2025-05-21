@@ -346,7 +346,8 @@
 
     <!-- In Game menu -->
     <string name="game_menu_toggle_keyboard">Show soft keyboard</string>
-    <string name="game_menu_hud">Toggle Performance Overlay</string>
+    <string name="game_menu_toggle_hud">Toggle Performance Overlay</string>
+    <string name="game_menu_toggle_floating_button">Toggle Floating Button</string>
     <string name="game_menu_select_mouse_mode">Select Mouse mode</string>
     <string name="game_menu_enable_zoom_mode">Enable Pan/Zoom</string>
     <string name="game_menu_disable_zoom_mode">Disable Pan/Zoom</string>
@@ -422,6 +423,8 @@
     <string name="title_virtual_trackpad_settings">Virtual Trackpad Settings</string>
     <string name="title_quit_dialog">Back Menu</string>
     <string name="summary_quit_dialog">When enabled, clicking the physical back button on the streaming interface will show related options!\nSoft keyboard, performance information, touch mode switching, send special keys</string>
+    <string name="title_floating_button">Floating Button</string>
+    <string name="summary_floating_button">Enable floating button</string>
     <string name="dialog_custom_resolution">Set the resolution and exit the settings page to take effect!</string>
     <string name="summary_custom_resolution">Add a custom resolution, separated by x, strange resolutions may not work.\nFor example: 1920x1080\nIf it is a non-native resolution, it may not fill the notch area by default. If the aspect ratio is the same, you can manually set to stretch the screen to fill the full screen</string>
     <string name="title_custom_resolution">Custom Resolution</string>
@@ -508,7 +511,6 @@
     <string name="perf_overlay_lite_bandwidth">Bandwidth</string>
     <string name="perf_overlay_lite_network_decoding_delay">Network/Decoding delay</string>
     <string name="perf_overlay_lite_packet_loss">Packet loss</string>
-    <string name="quick_menu_title">Quick Menu</string>
     <string name="wrong_import_format">Wrong import format, please check!</string>
     <string name="title_checkbox_gamepad_enable_battery_report">Enable battery status report for gamepad</string>
     <string name="summary_checkbox_gamepad_enable_battery_report">Report gamepad battery status when possible.\nDisable this option might help if you experience stutter with touch screen/touch pad/stylus/mouse input occasionally.</string>
@@ -589,10 +591,6 @@
     <string name="get_clipboard_success">Clipboard get successfully</string>
     <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
-    <string name="configuration_mode_disable_enable_buttons">Configuration Mode (Disable/Enable buttons)</string>
-    <string name="configuration_mode_move_buttons">Configuration Mode (Move buttons)</string>
-    <string name="configuration_mode_resize_buttons">Configuration Mode (Resize buttons)</string>
-    <string name="configuration_mode_exiting">Exiting Configuration Mode</string>
     <string name="unlocking_or_starting">Server is starting or computer is unlocking, please wait…</string>
     <string name="error_msg_permission_denied">Permission Denied</string>
     <string name="error_msg_timeout">Connection Timeout</string>
@@ -609,5 +607,4 @@
     <!-- Compliance -->
     <string name="category_basic_settings" />
     <string name="title_checkbox_stretch_video" />
-    <string name="menu_button">Menu</string>
 </resources>

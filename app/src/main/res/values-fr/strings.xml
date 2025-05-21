@@ -333,7 +333,7 @@
 
     <!-- In Game menu -->
     <string name="game_menu_toggle_keyboard">Afficher le clavier logiciel</string>
-    <string name="game_menu_hud">Basculer l\'affichage des performances</string>
+    <string name="game_menu_toggle_hud">Basculer l\'affichage des performances</string>
     <string name="game_menu_select_mouse_mode">Sélectionner le mode de la souris</string>
     <string name="game_menu_enable_zoom_mode">Activer le mode Zoom/Panoramique</string>
     <string name="game_menu_disable_zoom_mode">Désactiver le mode Zoom/Panoramique</string>

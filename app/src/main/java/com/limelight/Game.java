@@ -263,12 +263,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public GameMenuCallbacks gameMenuCallbacks;
 
     private ImageButton floatingMenuButton;
-    private float dX, dY;
-    private boolean isMovingButton = false;
+    private float floatingButtonDX, floatingButtonDY;
+    private boolean isButtonMoving = false;
     private static final float CLICK_ACTION_THRESHOLD = 5;
-    private float startX, startY;
+    private float floatingButtonStartX, floatingButtonStartY;
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint({"MissingInflatedId", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -693,55 +693,62 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         gameMenuCallbacks = new GameMenu(this, conn);
         
         floatingMenuButton = findViewById(R.id.floatingMenuButton);
-        updateFloatingButtonVisibility();
+        updateFloatingButtonVisibility(prefConfig.enableBackMenu && prefConfig.enableFloatingButton);
+        initFloatingButton();
+    }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private void initFloatingButton() {
         // Touch listener for drag and click
-        floatingMenuButton.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
+        if (floatingMenuButton != null) {
+            floatingMenuButton.setOnTouchListener((view, event) -> {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        startX = event.getRawX();
-                        startY = event.getRawY();
-                        dX = view.getX() - event.getRawX();
-                        dY = view.getY() - event.getRawY();
-                        isMovingButton = false;
+                        floatingButtonStartX = event.getRawX();
+                        floatingButtonStartY = event.getRawY();
+                        floatingButtonDX = view.getX() - event.getRawX();
+                        floatingButtonDY = view.getY() - event.getRawY();
+                        isButtonMoving = false;
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        float newX = event.getRawX() + dX;
-                        float newY = event.getRawY() + dY;
+                        float newX = event.getRawX() + floatingButtonDX;
+                        float newY = event.getRawY() + floatingButtonDY;
 
                         // Check if it's a move or just a tap
-                        if (Math.abs(event.getRawX() - startX) > CLICK_ACTION_THRESHOLD ||
-                                Math.abs(event.getRawY() - startY) > CLICK_ACTION_THRESHOLD) {
-                            isMovingButton = true;
+                        if (Math.abs(event.getRawX() - floatingButtonStartX) > CLICK_ACTION_THRESHOLD ||
+                                Math.abs(event.getRawY() - floatingButtonStartY) > CLICK_ACTION_THRESHOLD) {
+                            isButtonMoving = true;
                         }
 
                         // Ensure the button stays within screen bounds
                         if (newX < 0) newX = 0;
                         if (newY < 0) newY = 0;
-                        if (newX > getWindow().getDecorView().getWidth() - view.getWidth()) {
-                            newX = getWindow().getDecorView().getWidth() - view.getWidth();
+
+                        int maxOffsetX = getWindow().getDecorView().getWidth() - view.getWidth();
+                        if (newX > maxOffsetX) {
+                            newX = maxOffsetX;
                         }
-                        if (newY > getWindow().getDecorView().getHeight() - view.getHeight()) {
-                            newY = getWindow().getDecorView().getHeight() - view.getHeight();
+
+                        int maxOffsetY = getWindow().getDecorView().getHeight() - view.getHeight();
+                        if (newY > maxOffsetY) {
+                            newY = maxOffsetY;
                         }
 
                         view.setX(newX);
                         view.setY(newY);
                         return true;
                     case MotionEvent.ACTION_UP:
-                        if (!isMovingButton) {
+                        if (!isButtonMoving) {
                             // It's a click event, show menu
                             showGameMenu(null);
                         }
-                        isMovingButton = false;
+                        isButtonMoving = false;
                         return true;
                     default:
                         return false;
                 }
-            }
-        });
+            });
+        }
     }
 
     private void initKeyboardController(){
@@ -3678,6 +3685,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
+    private void updateFloatingButtonVisibility(boolean show) {
+        floatingMenuButton.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    public void toggleFloatingButtonVisibility() {
+        if (floatingMenuButton != null) {
+            updateFloatingButtonVisibility(floatingMenuButton.getVisibility() == View.GONE);
+        }
+    }
+
 
     // 设置surfaceView的圆角 setSurfaceviewCorner(UiHelper.dpToPx(this,24));
     private void setSurfaceviewCorner(final float radius) {
@@ -3694,10 +3711,5 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         });
         streamView.setClipToOutline(true);
-    }
-    private void updateFloatingButtonVisibility() {
-        if (floatingMenuButton != null) {
-            floatingMenuButton.setVisibility(prefConfig.enableBackMenu ? View.VISIBLE : View.GONE);
-        }
     }
 }
