@@ -604,4 +604,5 @@
     <!-- Compliance -->
     <string name="category_basic_settings" />
     <string name="title_checkbox_stretch_video" />
+    <string name="menu_button">Menu</string>
 </resources>
