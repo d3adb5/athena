@@ -776,6 +776,20 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
             });
 
+            findPreference("checkbox_enable_perf_logging").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    Boolean loggingEnabled = (Boolean) newValue;
+
+                    if(!loggingEnabled) {
+                        new PerformanceDataTracker().clearLogs(preference.getContext());
+                    }
+
+                    // Allow the original preference change to take place
+                    return true;
+                }
+            });
+
             Preference _pref;
             _pref = findPreference("import_keyboard_file");
             if (_pref != null) {
