@@ -96,7 +96,7 @@ import android.widget.FrameLayout;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
@@ -128,6 +128,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private PanZoomHandler panZoomHandler;
     private long threeFingerDownTime = 0;
     private long fourFingerDownTime = 0;
+    private long fiveFingerDownTime = 0;
 
     private static final int REFERENCE_HORIZ_RES = 1280;
     private static final int REFERENCE_VERT_RES = 720;
@@ -140,6 +141,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private static final int THREE_FINGER_TAP_THRESHOLD = 300;
     private static final int FOUR_FINGER_TAP_THRESHOLD = 300;
+    private static final int FIVE_FINGER_TAP_THRESHOLD = 300;
 
     private ControllerHandler controllerHandler;
     private KeyboardTranslator keyboardTranslator;
@@ -264,7 +266,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     public GameMenuCallbacks gameMenuCallbacks;
 
-    @SuppressLint("MissingInflatedId")
+    private ImageButton floatingMenuButton;
+    private float floatingButtonDX, floatingButtonDY;
+    private boolean isButtonMoving = false;
+    private static final float CLICK_ACTION_THRESHOLD = 5;
+    private float floatingButtonStartX, floatingButtonStartY;
+
+    @SuppressLint({"MissingInflatedId", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -687,6 +695,64 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         gameMenuCallbacks = new GameMenu(this, conn);
+        
+        floatingMenuButton = findViewById(R.id.floatingMenuButton);
+        updateFloatingButtonVisibility(prefConfig.enableBackMenu && prefConfig.enableFloatingButton);
+        initFloatingButton();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void initFloatingButton() {
+        // Touch listener for drag and click
+        if (floatingMenuButton != null) {
+            floatingMenuButton.setOnTouchListener((view, event) -> {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        floatingButtonStartX = event.getRawX();
+                        floatingButtonStartY = event.getRawY();
+                        floatingButtonDX = view.getX() - event.getRawX();
+                        floatingButtonDY = view.getY() - event.getRawY();
+                        isButtonMoving = false;
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        float newX = event.getRawX() + floatingButtonDX;
+                        float newY = event.getRawY() + floatingButtonDY;
+
+                        // Check if it's a move or just a tap
+                        if (Math.abs(event.getRawX() - floatingButtonStartX) > CLICK_ACTION_THRESHOLD ||
+                                Math.abs(event.getRawY() - floatingButtonStartY) > CLICK_ACTION_THRESHOLD) {
+                            isButtonMoving = true;
+                        }
+
+                        // Ensure the button stays within screen bounds
+                        if (newX < 0) newX = 0;
+                        if (newY < 0) newY = 0;
+
+                        int maxOffsetX = getWindow().getDecorView().getWidth() - view.getWidth();
+                        if (newX > maxOffsetX) {
+                            newX = maxOffsetX;
+                        }
+
+                        int maxOffsetY = getWindow().getDecorView().getHeight() - view.getHeight();
+                        if (newY > maxOffsetY) {
+                            newY = maxOffsetY;
+                        }
+
+                        view.setX(newX);
+                        view.setY(newY);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (!isButtonMoving) {
+                            // It's a click event, show menu
+                            showGameMenu(null);
+                        }
+                        isButtonMoving = false;
+                        return true;
+                    default:
+                        return false;
+                }
+            });
+        }
     }
 
     private void initKeyboardController(){
@@ -2616,37 +2682,27 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         return true;
                     }
 
-                    // TODO: Re-enable native touch when have a better solution for handling
-                    // cancelled touches from Android gestures and 3 finger taps to activate
-                    // the software keyboard.
-                    if (prefConfig.enableMultiTouchScreen) {
-                        if (!prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
-                            // If this host supports touch events and absolute touch is enabled,
-                            // send it directly as a touch event.
-                            return true;
-                        }
-                    } else {
-                        // Special handling for 3 finger gesture
-                        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-                            int fingerCount = event.getPointerCount();
-                            if (fingerCount == 3) {
-                                // Three fingers down
-                                threeFingerDownTime = event.getEventTime();
-                            } else if (fingerCount == 4) {
-                                threeFingerDownTime = 0;
-                                fourFingerDownTime = event.getEventTime();
-                            }
-
-                            if (fingerCount > 2) {
-                                // Cancel previous touches to avoid
-                                // erroneous events
-                                for (TouchContext aTouchContext : touchContextMap) {
-                                    aTouchContext.cancelTouch();
-                                }
-
+                    if (prefConfig.enableMultiTouchGestures || !prefConfig.enableMultiTouchScreen) {
+                        int pointerCount = event.getPointerCount();
+                        if (pointerCount > 2) {
+                            int eventAction = event.getActionMasked();
+                            if (
+                                    (
+                                            eventAction == MotionEvent.ACTION_POINTER_DOWN
+                                                    || eventAction == MotionEvent.ACTION_POINTER_UP
+                                                    || eventAction == MotionEvent.ACTION_UP
+                                    )
+                                            && handleMultiTouchGesture(event, eventAction, pointerCount, view)
+                            ) {
                                 return true;
                             }
                         }
+                    }
+
+                    if (prefConfig.enableMultiTouchScreen && !prefConfig.touchscreenTrackpad && trySendTouchEvent(view, event)) {
+                        // If this host supports touch events and absolute touch is enabled,
+                        // send it directly as a touch event.
+                        return true;
                     }
 
                     return handleTouchInput(event, touchContextMap, true);
@@ -2709,6 +2765,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                             return true;
                         } else if (currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
                             showHidekeyBoardLayoutController();
+                            return true;
+                        } else if (currentEventTime - fiveFingerDownTime < FIVE_FINGER_TAP_THRESHOLD) {
+                            if(prefConfig.enableBackMenu) {
+                                showGameMenu(null);
+                            }
                             return true;
                         }
                     }
@@ -2793,6 +2854,65 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         return true;
+    }
+
+    private boolean handleMultiTouchGesture(MotionEvent event, int eventAction, int pointerCount, View view) {
+
+        if (eventAction == MotionEvent.ACTION_POINTER_DOWN) {
+            if (pointerCount == 3) {
+                threeFingerDownTime = event.getEventTime();
+            } else if (pointerCount == 4) {
+                threeFingerDownTime = 0;
+                fourFingerDownTime = event.getEventTime();
+            } else if (pointerCount == 5) {
+                threeFingerDownTime = 0;
+                fourFingerDownTime = 0;
+                fiveFingerDownTime = event.getEventTime();
+            }
+        }
+
+        switch (eventAction) {
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_UP:
+                long currentEventTime = event.getEventTime();
+                if (pointerCount >= 5 && fiveFingerDownTime > 0 && currentEventTime - fiveFingerDownTime < FIVE_FINGER_TAP_THRESHOLD) {
+                    if(prefConfig.enableBackMenu) {
+                        showGameMenu(null);
+                    }
+                    fiveFingerDownTime = 0;
+                    break;
+                } else if (pointerCount == 4 && fourFingerDownTime > 0 && currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
+                    showHidekeyBoardLayoutController();
+                    fourFingerDownTime = 0;
+                    break;
+                } else if (pointerCount == 3 && threeFingerDownTime > 0 && currentEventTime - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
+                    toggleKeyboard();
+                    threeFingerDownTime = 0;
+                    break;
+                }
+                threeFingerDownTime = 0;
+                fourFingerDownTime = 0;
+                fiveFingerDownTime = 0;
+
+                cancelStaleTouchState(event, view);
+                return false;
+            default:
+                return false;
+        }
+
+        cancelStaleTouchState(event, view);
+        return true;
+    }
+
+    private void cancelStaleTouchState(MotionEvent event, View view) {
+        MotionEvent cancelEvent = MotionEvent.obtain(event);
+        cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
+        view.dispatchTouchEvent(cancelEvent);
+        cancelEvent.recycle();
+        for (TouchContext aTouchContext : touchContextMap) {
+            aTouchContext.cancelTouch();
+            aTouchContext.setPointerCount(0);
+        }
     }
 
     @Override
@@ -3591,6 +3711,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
             // Force mouse mode as trackpad during presentation as user won't see anything on device screen
             applyMouseMode(2);
+        }
+    }
+
+    private void updateFloatingButtonVisibility(boolean show) {
+        floatingMenuButton.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    public void toggleFloatingButtonVisibility() {
+        if (floatingMenuButton != null) {
+            updateFloatingButtonVisibility(floatingMenuButton.getVisibility() == View.GONE);
         }
     }
 
