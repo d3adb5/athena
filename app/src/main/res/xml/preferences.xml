@@ -323,6 +323,13 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="checkbox_multi_touch_gestures"
+            android:summary="@string/summary_checkbox_multi_touch_gestures"
+            android:title="@string/title_checkbox_multi_touch_gestures"
+            app:iconSpaceReserved="false" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="checkbox_mouse_nav_buttons"
             android:summary="@string/summary_checkbox_mouse_nav_buttons"
             android:title="@string/title_checkbox_mouse_nav_buttons"
@@ -459,6 +466,13 @@
             android:key="checkbox_enable_quit_dialog"
             android:summary="@string/summary_quit_dialog"
             android:title="@string/title_quit_dialog"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:dependency="checkbox_enable_quit_dialog"
+            android:defaultValue="false"
+            android:key="checkbox_enable_floating_button"
+            android:summary="@string/summary_floating_button"
+            android:title="@string/title_floating_button"
             app:iconSpaceReserved="false" />
         <com.limelight.preferences.SeekBarPreference
             android:defaultValue="90"

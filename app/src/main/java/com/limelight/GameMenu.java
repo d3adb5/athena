@@ -296,8 +296,11 @@ public class GameMenu implements Game.GameMenuCallbacks {
                     game::selectMouseMode));
         }
 
-        options.add(new MenuOption(getString(R.string.game_menu_hud), true,
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_hud), true,
                 game::toggleHUD));
+
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_floating_button), true,
+                game::toggleFloatingButtonVisibility));
 
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true,
                 game::showHideKeyboardController));
