@@ -138,7 +138,7 @@
     <string name="email_prefix_message">
         Please send this email as-is to artemistics.logs@gmail.com to support the community.\n
         Your shared performance data will help improve and expand the dataset available at:\n
-        https://tinyurl.com/artemistics\n\n
+        https://tinyurl.com/artemis-performance\n\n
     </string>
 
     <string name="email_recipient">artemistics.logs@gmail.com</string>
@@ -317,6 +317,8 @@
     <string name="summary_privacy_policy">View Artemis\'s privacy policy</string>
     <string name="title_special_key_help">Custom Keys help</string>
     <string name="summary_special_key_help">Instructions about how to setup custom special keys</string>
+    <string name="summary_performance_link">See performance of other devices</string>
+    <string name="title_performance_link">Performance Dashboard</string>
 
     <!-- Toasts -->
     <string name="toast_controller_type_changed">Gamepad type may be changed due to motion sensor emulation</string>
