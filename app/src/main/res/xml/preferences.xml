@@ -848,7 +848,8 @@
             android:key="share_performance_logs"
             android:summary="@string/summary_share_performance_logs"
             android:title="@string/title_share_performance_logs_button"
-            android:icon="@android:drawable/ic_menu_share"
+            android:dependency="checkbox_enable_perf_logging"
+            android:icon="@drawable/ic_share_log"
             app:iconSpaceReserved="false" />
 
         <Preference
