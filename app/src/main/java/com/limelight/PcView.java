@@ -180,8 +180,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         }
 
         getFragmentManager().beginTransaction()
-                .replace(R.id.pcFragmentContainer, new AdapterFragment())
-                .commitAllowingStateLoss();
+            .replace(R.id.pcFragmentContainer, new AdapterFragment())
+            .commitAllowingStateLoss();
 
         noPcFoundLayout = findViewById(R.id.no_pc_found_layout);
         if (pcGridAdapter.getCount() == 0) {
@@ -291,10 +291,10 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                             shortcutHelper.createAppViewShortcutForOnlineHost(details);
 //                        } else
                         }
-                        if (pendingPairingAddress != null) {
+                            if (pendingPairingAddress != null) {
                             if (
-                                    details.state == ComputerDetails.State.ONLINE &&
-                                            details.activeAddress.equals(pendingPairingAddress)
+                                details.state == ComputerDetails.State.ONLINE &&
+                                details.activeAddress.equals(pendingPairingAddress)
                             ) {
                                 PcView.this.runOnUiThread(() -> {
                                     doPair(details, pendingPairingPin, pendingPairingPassphrase);
@@ -395,7 +395,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
         // Inflate the context menu
         if (computer.details.state == ComputerDetails.State.OFFLINE ||
-                computer.details.state == ComputerDetails.State.UNKNOWN) {
+            computer.details.state == ComputerDetails.State.UNKNOWN) {
             menu.add(Menu.NONE, WOL_ID, 1, getResources().getString(R.string.pcview_menu_send_wol));
             menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 2, getResources().getString(R.string.pcview_menu_eol));
         }
@@ -865,7 +865,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                                     long id) {
                 ComputerObject computer = (ComputerObject) pcGridAdapter.getItem(pos);
                 if (computer.details.state == ComputerDetails.State.UNKNOWN ||
-                        computer.details.state == ComputerDetails.State.OFFLINE) {
+                    computer.details.state == ComputerDetails.State.OFFLINE) {
                     // Open the context menu if a PC is offline or refreshing
                     openContextMenu(arg1);
                 } else if (computer.details.pairState != PairState.PAIRED) {
