@@ -449,7 +449,7 @@
     <string name="summary_auto_orientation">The streaming screen will be displayed according to the device\'s orientation when the stream begins.</string>
     <string name="title_import_special_button">Import Custom Keys</string>
     <string name="summary_import_special_button">Available in Back Menu and special keys.\nNote: Importing will overwrite current configuration, please backup accordingly.</string>
-    <string name="summary_share_performance_logs">Share your performance with yourself, friends or our community to be seen on https://tinyurl.com/artemistics</string>
+    <string name="summary_share_performance_logs">Share your performance with friends or the community to be seen on https://tinyurl.com/artemis-performance automatically when send to artemistics.logs@gmail.com</string>
     <string name="title_share_performance_logs_button">Share Performance Logs</string>
     <string name="title_software_update">Software Update</string>
     <string name="summary_software_update">Artemis Nior Version by ClassicOldSong - Visit GitHub Release to get latest version</string>
