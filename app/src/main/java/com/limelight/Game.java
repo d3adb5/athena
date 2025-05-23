@@ -1392,8 +1392,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         .putInt("LastNotifiedCrashCount", 0)
                         .apply();
             }
-            if(decoderRenderer.performanceWasTracked()) {
-                new PerformanceDataTracker().sendPerformanceStatistics(
+            if(prefConfig.enablePerfLogging && decoderRenderer.performanceWasTracked()) {
+                new PerformanceDataTracker().savePerformanceStatistics(
                         getBaseContext(),
                         Build.MODEL,
                         Build.VERSION.SDK_INT + "",
@@ -1401,7 +1401,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         selectedVideoFormat,
                         decoderRenderer.getMinDecoderLatency(),
                         decoderRenderer.getMinDecoderLatencyFullLog(),
-                    prefConfig.bitrate + " Mbit/s",
+                        String.valueOf((prefConfig.bitrate / 1000)),
                     displayWidth + "x" + displayHeight,
                     prefConfig.fps + " hz",
                     decoderRenderer.getAverageDecoderLatency() + " ms",

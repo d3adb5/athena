@@ -1,11 +1,8 @@
 package com.limelight;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 
 import com.limelight.binding.PlatformBinding;
 import com.limelight.binding.crypto.AndroidCryptoProvider;
@@ -27,7 +24,6 @@ import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.HelpLauncher;
-import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.UiHelper;
@@ -41,14 +37,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -65,7 +59,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 
-import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -156,7 +149,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
         // Setup the list view
         ImageButton settingsButton = findViewById(R.id.settingsButton);
-        ImageButton performanceShareButton = findViewById(R.id.sharePerfLogsButton);
         ImageButton addComputerButton = findViewById(R.id.manuallyAddPc);
         ImageButton helpButton = findViewById(R.id.helpButton);
 
@@ -166,52 +158,6 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                 startActivity(new Intent(PcView.this, StreamSettings.class));
             }
         });
-        performanceShareButton.setOnClickListener(v -> {
-            Context context = v.getContext();
-            PerformanceDataTracker tracker = new PerformanceDataTracker();
-            String logs = tracker.getLog(context);
-
-            if (logs == null || logs.trim().isEmpty()) {
-                Toast.makeText(context, context.getString(R.string.toast_no_logs), Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String prefixMessage = context.getString(R.string.email_prefix_message);
-            String emailRecipient = context.getString(R.string.email_recipient);
-            String emailSubject = context.getString(R.string.email_subject);
-            String chooserTitle = context.getString(R.string.email_chooser_title);
-            String noEmailClientsMsg = context.getString(R.string.toast_no_email_clients);
-
-            try {
-                File cacheDir = context.getCacheDir();
-                File logFile = new File(cacheDir, "artemistics_logs.txt");
-                try (FileOutputStream fos = new FileOutputStream(logFile)) {
-                    fos.write(logs.getBytes(StandardCharsets.UTF_8));
-                }
-
-                Uri logFileUri = FileProvider.getUriForFile(context,
-                        context.getPackageName() + ".fileprovider",
-                        logFile);
-
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-                emailIntent.setType("text/plain");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{emailRecipient});
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailSubject);
-                emailIntent.putExtra(Intent.EXTRA_TEXT, prefixMessage);
-                emailIntent.putExtra(Intent.EXTRA_STREAM, logFileUri);
-
-                emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                context.startActivity(Intent.createChooser(emailIntent, chooserTitle));
-            } catch (IOException e) {
-                Log.d("PerformanceDataTracker", "Error creating log file");
-            } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(context, noEmailClientsMsg, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
-
         addComputerButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -234,8 +180,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         }
 
         getFragmentManager().beginTransaction()
-            .replace(R.id.pcFragmentContainer, new AdapterFragment())
-            .commitAllowingStateLoss();
+                .replace(R.id.pcFragmentContainer, new AdapterFragment())
+                .commitAllowingStateLoss();
 
         noPcFoundLayout = findViewById(R.id.no_pc_found_layout);
         if (pcGridAdapter.getCount() == 0) {
@@ -345,10 +291,10 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                             shortcutHelper.createAppViewShortcutForOnlineHost(details);
 //                        } else
                         }
-                            if (pendingPairingAddress != null) {
+                        if (pendingPairingAddress != null) {
                             if (
-                                details.state == ComputerDetails.State.ONLINE &&
-                                details.activeAddress.equals(pendingPairingAddress)
+                                    details.state == ComputerDetails.State.ONLINE &&
+                                            details.activeAddress.equals(pendingPairingAddress)
                             ) {
                                 PcView.this.runOnUiThread(() -> {
                                     doPair(details, pendingPairingPin, pendingPairingPassphrase);
@@ -424,7 +370,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
         // Call superclass
         super.onCreateContextMenu(menu, v, menuInfo);
-                
+
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
         ComputerObject computer = (ComputerObject) pcGridAdapter.getItem(info.position);
 
@@ -449,7 +395,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
         // Inflate the context menu
         if (computer.details.state == ComputerDetails.State.OFFLINE ||
-            computer.details.state == ComputerDetails.State.UNKNOWN) {
+                computer.details.state == ComputerDetails.State.UNKNOWN) {
             menu.add(Menu.NONE, WOL_ID, 1, getResources().getString(R.string.pcview_menu_send_wol));
             menu.add(Menu.NONE, GAMESTREAM_EOL_ID, 2, getResources().getString(R.string.pcview_menu_eol));
         }
@@ -843,7 +789,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                 return super.onContextItemSelected(item);
         }
     }
-    
+
     private void removeComputer(ComputerDetails details) {
         managerBinder.removeComputer(details);
 
@@ -875,7 +821,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
             }
         }
     }
-    
+
     private void updateComputer(ComputerDetails details) {
         ComputerObject existingEntry = null;
 
@@ -919,7 +865,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
                                     long id) {
                 ComputerObject computer = (ComputerObject) pcGridAdapter.getItem(pos);
                 if (computer.details.state == ComputerDetails.State.UNKNOWN ||
-                    computer.details.state == ComputerDetails.State.OFFLINE) {
+                        computer.details.state == ComputerDetails.State.OFFLINE) {
                     // Open the context menu if a PC is offline or refreshing
                     openContextMenu(arg1);
                 } else if (computer.details.pairState != PairState.PAIRED) {

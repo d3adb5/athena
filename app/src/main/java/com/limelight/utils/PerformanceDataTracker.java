@@ -31,7 +31,7 @@ public class PerformanceDataTracker {
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    public void sendPerformanceStatistics(
+    public void savePerformanceStatistics(
             Context context,
             String device,
             String osVersion,
