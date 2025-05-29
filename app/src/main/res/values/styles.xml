@@ -22,6 +22,8 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:statusBarColor">#1A1A1A</item>
         <item name="android:navigationBarColor">#1A1A1A</item>
+        <item name="android:colorBackground">#1A1A1A</item>
+        <item name="android:windowBackground">#1A1A1A</item>
     </style>
 
     <style name="StreamBaseTheme" parent="AppBaseTheme">
