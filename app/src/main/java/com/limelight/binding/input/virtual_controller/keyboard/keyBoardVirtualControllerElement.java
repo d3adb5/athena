@@ -68,6 +68,9 @@ public abstract class keyBoardVirtualControllerElement extends View {
 
     private Mode currentMode = Mode.Normal;
 
+    private int lastMoveX;
+    private int lastMoveY;
+
     protected keyBoardVirtualControllerElement(KeyBoardController controller, Context context, String elementId) {
         super(context);
 
@@ -78,6 +81,10 @@ public abstract class keyBoardVirtualControllerElement extends View {
     protected void moveElement(int pressed_x, int pressed_y, int x, int y) {
         int newPos_x = (int) getX() + x - pressed_x;
         int newPos_y = (int) getY() + y - pressed_y;
+
+        // Save last position for potential resize on ACTION_UP
+        lastMoveX = newPos_x;
+        lastMoveY = newPos_y;
 
         // Only apply snapping in move mode
         if (virtualController.getControllerMode() == KeyBoardController.ControllerMode.MoveButtons) {
@@ -90,7 +97,7 @@ public abstract class keyBoardVirtualControllerElement extends View {
                 }
             }
 
-            // Calculate snapped position
+            // Calculate snapped position without resize during movement
             LayoutSnappingHelper.SnapResult snapResult = LayoutSnappingHelper.calculateSnappedPosition(
                 this, otherViews, newPos_x, newPos_y
             );
@@ -99,15 +106,8 @@ public abstract class keyBoardVirtualControllerElement extends View {
             newPos_y = snapResult.newY;
 
             // Provide haptic feedback if snapping occurred
-            if (snapResult.didSnap || snapResult.didResize || snapResult.didAdjustSpacing) {
+            if (snapResult.didSnap || snapResult.didAdjustSpacing) {
                 virtualController.vibrate(KeyEvent.ACTION_DOWN);
-            }
-
-            // Update size if overlap occurred
-            if (snapResult.didResize) {
-                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
-                layoutParams.width = snapResult.newWidth;
-                layoutParams.height = snapResult.newHeight;
             }
         }
 
@@ -131,6 +131,32 @@ public abstract class keyBoardVirtualControllerElement extends View {
         layoutParams.width = newWidth > 20 ? newWidth : 20;
 
         requestLayout();
+    }
+
+    protected void checkAndApplyResize() {
+        if (virtualController.getControllerMode() == KeyBoardController.ControllerMode.MoveButtons) {
+            // Convert other elements to array for overlap check
+            View[] otherViews = new View[virtualController.getElements().size() - 1];
+            int index = 0;
+            for (keyBoardVirtualControllerElement element : virtualController.getElements()) {
+                if (element != this) {
+                    otherViews[index++] = element;
+                }
+            }
+
+            // Check final position for resize
+            LayoutSnappingHelper.SnapResult snapResult = LayoutSnappingHelper.calculateSnappedPosition(
+                this, otherViews, lastMoveX, lastMoveY
+            );
+
+            if (snapResult.didResize) {
+                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
+                layoutParams.width = snapResult.newWidth;
+                layoutParams.height = snapResult.newHeight;
+                virtualController.vibrate(KeyEvent.ACTION_DOWN);
+                requestLayout();
+            }
+        }
     }
 
     @Override
@@ -318,6 +344,9 @@ public abstract class keyBoardVirtualControllerElement extends View {
             }
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP: {
+                if (currentMode == Mode.Move) {
+                    checkAndApplyResize();
+                }
                 actionCancel();
                 return true;
             }
