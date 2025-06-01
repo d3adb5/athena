@@ -4,10 +4,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 public class LayoutSnappingHelper {
-    private static final int SNAP_THRESHOLD = 5; // Pixels threshold for snapping
+    private static final int SNAP_THRESHOLD = 10; // Pixels threshold for snapping
     private static final float OVERLAP_THRESHOLD = 0.5f; // 50% overlap required to trigger size matching
     private static final int SPACING_MIN = 4; // Minimum spacing between parallel edges
-    private static final int SPACING_THRESHOLD = 15; // Maximum distance to trigger spacing adjustment
+    private static final int SPACING_THRESHOLD = 30; // Maximum distance to trigger spacing adjustment
 
     public static class SnapResult {
         public int newX;

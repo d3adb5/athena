@@ -4,12 +4,16 @@
 
 package com.limelight.binding.input.virtual_controller.keyboard;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,6 +28,11 @@ import com.limelight.binding.input.ControllerHandler;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.preferences.PreferenceConfiguration;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +62,8 @@ public class KeyBoardController {
     private Map<Integer, Runnable> keyEventRunnableMap = new HashMap<>();
 
     private Button buttonConfigure = null;
+    private Button buttonClearAll = null;
+    private Button buttonAddKeys = null;
 
     private Vibrator vibrator;
     private List<keyBoardVirtualControllerElement> elements = new ArrayList<>();
@@ -65,6 +76,7 @@ public class KeyBoardController {
 
         this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
+        // Configure button
         buttonConfigure = new Button(context);
         buttonConfigure.setAlpha(0.5f);
         buttonConfigure.setFocusable(false);
@@ -77,10 +89,12 @@ public class KeyBoardController {
                 if (currentMode == ControllerMode.Active) {
                     currentMode = ControllerMode.DisableEnableButtons;
                     showElements();
+                    showControlButtons(true);
                     message = context.getString(R.string.configuration_mode_disable_enable_buttons);
                 } else if (currentMode == ControllerMode.DisableEnableButtons) {
                     currentMode = ControllerMode.MoveButtons;
                     showEnabledElements();
+                    showControlButtons(false);
                     message = context.getString(R.string.configuration_mode_move_buttons);
                 } else if (currentMode == ControllerMode.MoveButtons) {
                     currentMode = ControllerMode.ResizeButtons;
@@ -101,6 +115,37 @@ public class KeyBoardController {
             }
         });
 
+        // Clear All button
+        buttonClearAll = new Button(context);
+        buttonClearAll.setText("Clear All");
+        buttonClearAll.setAlpha(0.7f);
+        buttonClearAll.setVisibility(View.GONE);
+        buttonClearAll.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("Clear All Keys");
+            builder.setMessage("Are you sure you want to remove all keys?");
+            builder.setPositiveButton("Yes", (dialog, which) -> {
+                // Instead of removing elements, mark them as hidden
+                for (keyBoardVirtualControllerElement element : elements) {
+                    element.hidden = true;
+                    element.setVisibility(View.GONE);
+                }
+                // Save the new state
+                KeyBoardControllerConfigurationLoader.saveProfile(KeyBoardController.this, context);
+                vibrate(KeyEvent.ACTION_DOWN);
+            });
+            builder.setNegativeButton("No", null);
+            builder.show();
+        });
+
+        // Add Keys button
+        buttonAddKeys = new Button(context);
+        buttonAddKeys.setText("Add Keys");
+        buttonAddKeys.setAlpha(0.7f);
+        buttonAddKeys.setVisibility(View.GONE);
+        buttonAddKeys.setOnClickListener(v -> showKeySelectionDialog());
+
+        refreshLayout();
     }
 
     Handler getHandler() {
@@ -130,13 +175,23 @@ public class KeyBoardController {
 
     public void showElements() {
         for (keyBoardVirtualControllerElement element : elements) {
-            element.setVisibility(View.VISIBLE);
+            // In configuration mode, show all non-hidden elements
+            if (currentMode == ControllerMode.DisableEnableButtons) {
+                element.setVisibility(element.hidden ? View.GONE : View.VISIBLE);
+            } else {
+                element.setVisibility((element.hidden || !element.enabled) ? View.GONE : View.VISIBLE);
+            }
         }
     }
 
     public void showEnabledElements() {
         for (keyBoardVirtualControllerElement element : elements) {
-            element.setVisibility(element.enabled ? View.VISIBLE : View.GONE);
+            // In configuration mode, show all non-hidden elements
+            if (currentMode == ControllerMode.DisableEnableButtons) {
+                element.setVisibility(element.hidden ? View.GONE : View.VISIBLE);
+            } else {
+                element.setVisibility((!element.hidden && element.enabled) ? View.VISIBLE : View.GONE);
+            }
         }
     }
 
@@ -155,6 +210,8 @@ public class KeyBoardController {
         elements.clear();
 
         frame_layout.removeView(buttonConfigure);
+        frame_layout.removeView(buttonClearAll);
+        frame_layout.removeView(buttonAddKeys);
     }
 
     public void setOpacity(int opacity) {
@@ -186,17 +243,45 @@ public class KeyBoardController {
         removeElements();
 
         DisplayMetrics screen = context.getResources().getDisplayMetrics();
-
         int buttonSize = (int) (screen.heightPixels * 0.06f);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(buttonSize, buttonSize);
-        params.leftMargin = 20 + buttonSize;
-        params.topMargin = 15;
-        frame_layout.addView(buttonConfigure, params);
 
-        // Start with the default layout
+        // Configure button at original position
+        FrameLayout.LayoutParams configParams = new FrameLayout.LayoutParams(buttonSize, buttonSize);
+        configParams.leftMargin = 20 + buttonSize;
+        configParams.topMargin = 15;
+        frame_layout.addView(buttonConfigure, configParams);
+
+        // Measure the widths of both buttons
+        buttonClearAll.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        buttonAddKeys.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        int clearAllWidth = buttonClearAll.getMeasuredWidth();
+        int addKeysWidth = buttonAddKeys.getMeasuredWidth();
+        
+        // Calculate center positions
+        int totalWidth = clearAllWidth + addKeysWidth + 3; // 3 pixels spacing
+        int screenCenter = screen.widthPixels / 2;
+        int startX = screenCenter - (totalWidth / 2);
+
+        // Clear All button
+        FrameLayout.LayoutParams clearParams = new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        clearParams.leftMargin = startX;
+        clearParams.topMargin = 15;
+        frame_layout.addView(buttonClearAll, clearParams);
+
+        // Add Keys button
+        FrameLayout.LayoutParams addParams = new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        );
+        addParams.leftMargin = startX + clearAllWidth + 3; // Position right after Clear All with 3px spacing
+        addParams.topMargin = 15;
+        frame_layout.addView(buttonAddKeys, addParams);
+
+        // Apply default layout
         KeyBoardControllerConfigurationLoader.createDefaultLayout(this, context, conn);
-
-        // Apply user preferences onto the default layout
         KeyBoardControllerConfigurationLoader.loadFromPreferences(this, context);
     }
 
@@ -244,5 +329,174 @@ public class KeyBoardController {
                     frame_layout.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
             }
         }
+    }
+
+    private void showControlButtons(boolean show) {
+        int visibility = show ? View.VISIBLE : View.GONE;
+        buttonClearAll.setVisibility(visibility);
+        buttonAddKeys.setVisibility(visibility);
+    }
+
+    private void showKeySelectionDialog() {
+        try {
+            InputStream is = context.getAssets().open("config/keyboard.json");
+            int length = is.available();
+            byte[] buffer = new byte[length];
+            is.read(buffer);
+            String jsonConfig = new String(buffer, "utf8");
+            
+            JSONObject json = new JSONObject(jsonConfig);
+            JSONObject data = json.getJSONObject("data");
+            JSONArray keystrokeList = data.getJSONArray("keystroke");
+            JSONArray mouseList = data.getJSONArray("mouse");
+
+            // Add backspace key
+            JSONObject backspaceKey = new JSONObject();
+            backspaceKey.put("name", "⌫");
+            backspaceKey.put("type", 0);  // keyboard type
+            backspaceKey.put("code", KeyEvent.KEYCODE_DEL);
+            keystrokeList.put(backspaceKey);
+
+            // Combine keyboard and mouse buttons into one list
+            for (int i = 0; i < mouseList.length(); i++) {
+                JSONObject obj = mouseList.getJSONObject(i);
+                obj.put("type", 1);
+                keystrokeList.put(obj);
+            }
+
+            // Create list of key names
+            String[] keyNames = new String[keystrokeList.length()];
+            boolean[] checkedItems = new boolean[keystrokeList.length()];
+            for (int i = 0; i < keystrokeList.length(); i++) {
+                JSONObject key = keystrokeList.getJSONObject(i);
+                keyNames[i] = key.getString("name");
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("Select Keys to Add");
+            builder.setMultiChoiceItems(keyNames, checkedItems, (dialog, which, isChecked) -> {
+                checkedItems[which] = isChecked;
+            });
+
+            builder.setPositiveButton("Add", (dialog, which) -> {
+                DisplayMetrics screen = context.getResources().getDisplayMetrics();
+                int height = screen.heightPixels;
+                
+                // Calculate button size using the same logic as createDefaultLayout
+                int BUTTON_SIZE = 10;
+                int w = KeyBoardControllerConfigurationLoader.screenScale(BUTTON_SIZE, height);
+                int maxW = screen.widthPixels / 18;
+
+                if (w > maxW) {
+                    BUTTON_SIZE = KeyBoardControllerConfigurationLoader.screenScaleSwitch(maxW, height);
+                    w = KeyBoardControllerConfigurationLoader.screenScale(BUTTON_SIZE, height);
+                }
+
+                // Get current element positions to avoid overlap
+                List<Rect> existingPositions = new ArrayList<>();
+                for (keyBoardVirtualControllerElement element : elements) {
+                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) element.getLayoutParams();
+                    existingPositions.add(new Rect(
+                        params.leftMargin,
+                        params.topMargin,
+                        params.leftMargin + params.width,
+                        params.topMargin + params.height
+                    ));
+                }
+
+                // Add selected keys
+                for (int i = 0; i < checkedItems.length; i++) {
+                    if (checkedItems[i]) {
+                        try {
+                            JSONObject keyObj = keystrokeList.getJSONObject(i);
+                            String name = keyObj.getString("name");
+                            int type = keyObj.optInt("type", 0);
+                            int code = keyObj.getInt("code");
+                            int switchButton = keyObj.optInt("switchButton");
+                            String elementId = type == 0 ? "key_" + code : "m_" + code;
+                            if (switchButton == 1) {
+                                elementId = type == 0 ? "key_s_" + code : "m_s_" + code;
+                            }
+
+                            // Find non-overlapping position
+                            Point position = findNonOverlappingPosition(existingPositions, w);
+                            
+                            // Create and add the element with the same size as default buttons
+                            if (elementId.equals("m_9") || elementId.equals("m_10") || elementId.equals("m_11")) {
+                                addElement(KeyBoardControllerConfigurationLoader.createDigitalTouchButton(
+                                    elementId, code, type, 1, name, -1, KeyBoardController.this, context),
+                                    position.x, position.y, w, w);
+                            } else {
+                                addElement(KeyBoardControllerConfigurationLoader.createDigitalButton(
+                                    elementId, code, type, 1, name, -1, 
+                                    PreferenceConfiguration.readPreferences(context).stickyModifierKey && 
+                                    KeyBoardControllerConfigurationLoader.isModifierKey(code), 
+                                    KeyBoardController.this, context),
+                                    position.x, position.y, w, w);
+                            }
+
+                            // Add new position to existing positions
+                            existingPositions.add(new Rect(position.x, position.y, position.x + w, position.y + w));
+                            
+                            vibrate(KeyEvent.ACTION_DOWN);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Toast.makeText(context, "Error adding key: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            });
+
+            builder.setNegativeButton("Cancel", null);
+            builder.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Error loading keyboard configuration: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private Point findNonOverlappingPosition(List<Rect> existingPositions, int elementSize) {
+        DisplayMetrics screen = context.getResources().getDisplayMetrics();
+        int screenWidth = screen.widthPixels;
+        int screenHeight = screen.heightPixels;
+        int spacing = 10; // Minimum spacing between elements
+
+        // Start from top of screen with some margin
+        int startY = 100;
+        int x = spacing;
+        int y = startY;
+
+        while (y + elementSize < screenHeight) {
+            boolean overlaps = false;
+            Rect newPosition = new Rect(x, y, x + elementSize, y + elementSize);
+
+            for (Rect existing : existingPositions) {
+                if (Rect.intersects(existing, newPosition)) {
+                    overlaps = true;
+                    break;
+                }
+            }
+
+            if (!overlaps) {
+                return new Point(x, y);
+            }
+
+            // Move right
+            x += elementSize + spacing;
+
+            // If reached screen width, move to next row
+            if (x + elementSize > screenWidth) {
+                x = spacing;
+                y += elementSize + spacing;
+            }
+        }
+
+        // If no space found, start a new row at the top
+        return new Point(spacing, startY);
+    }
+
+    private int screenScale(int units, int height) {
+        return (int) (((float) height / (float) 72) * (float) units);
     }
 }

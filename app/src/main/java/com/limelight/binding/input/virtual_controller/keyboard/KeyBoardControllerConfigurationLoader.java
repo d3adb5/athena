@@ -57,11 +57,11 @@ public class KeyBoardControllerConfigurationLoader {
     }
 
     // The default controls are specified using a grid of 128*72 cells at 16:9
-    private static int screenScale(int units, int height) {
+    public static int screenScale(int units, int height) {
         return (int) (((float) height / (float) 72) * (float) units);
     }
 
-    private static int screenScaleSwicth(int result, int height) {
+    public static int screenScaleSwitch(int result, int height) {
         return result * 72 / height;
     }
 
@@ -144,7 +144,7 @@ public class KeyBoardControllerConfigurationLoader {
 
     }
 
-    private static KeyBoardDigitalButton createDigitalButton(
+    public static KeyBoardDigitalButton createDigitalButton(
             final String elementId,
             final int keyShort,
             final int type,
@@ -298,7 +298,7 @@ public class KeyBoardControllerConfigurationLoader {
     }
 
 
-    private static KeyBoardTouchPadButton createDigitalTouchButton(
+    public static KeyBoardTouchPadButton createDigitalTouchButton(
             final String elementId,
             final int keyShort,
             final int type,
@@ -358,7 +358,7 @@ public class KeyBoardControllerConfigurationLoader {
         int maxW = screen.widthPixels / 18;
 
         if (w > maxW) {
-            BUTTON_SIZE = screenScaleSwicth(maxW, height);
+            BUTTON_SIZE = screenScaleSwitch(maxW, height);
             w = screenScale(BUTTON_SIZE, height);
         }
 

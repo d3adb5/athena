@@ -60,6 +60,8 @@ public abstract class keyBoardVirtualControllerElement extends View {
     float position_pressed_y = 0;
 
     public boolean enabled = true;
+    public boolean hidden = false;
+
     private enum Mode {
         Normal,
         Resize,
@@ -401,6 +403,7 @@ public abstract class keyBoardVirtualControllerElement extends View {
         configuration.put("WIDTH", layoutParams.width);
         configuration.put("HEIGHT", layoutParams.height);
         configuration.put("ENABLED", enabled);
+        configuration.put("HIDDEN", hidden);
         return configuration;
     }
 
@@ -411,15 +414,25 @@ public abstract class keyBoardVirtualControllerElement extends View {
         layoutParams.topMargin = configuration.getInt("TOP");
         layoutParams.width = configuration.getInt("WIDTH");
         layoutParams.height = configuration.getInt("HEIGHT");
-
         enabled = configuration.getBoolean("ENABLED");
-
-        setVisibility(enabled ? VISIBLE: GONE);
+        hidden = configuration.optBoolean("HIDDEN", false);
+        
+        // Only hide if not in configuration mode
+        if (virtualController.getControllerMode() != KeyBoardController.ControllerMode.DisableEnableButtons) {
+            setVisibility(!hidden && enabled ? VISIBLE : GONE);
+        } else {
+            setVisibility(!hidden ? VISIBLE : GONE);
+        }
         requestLayout();
     }
 
-    protected  void actionDisableEnableButton(){
+    protected void actionDisableEnableButton() {
         enabled = !enabled;
+        // In configuration mode, keep the button visible
+        if (!hidden && virtualController.getControllerMode() != KeyBoardController.ControllerMode.DisableEnableButtons) {
+            setVisibility(enabled ? VISIBLE : GONE);
+        }
+        invalidate(); // Redraw to show enabled/disabled state
     }
 
 }
