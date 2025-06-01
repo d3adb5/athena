@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -77,6 +78,38 @@ public abstract class keyBoardVirtualControllerElement extends View {
     protected void moveElement(int pressed_x, int pressed_y, int x, int y) {
         int newPos_x = (int) getX() + x - pressed_x;
         int newPos_y = (int) getY() + y - pressed_y;
+
+        // Only apply snapping in move mode
+        if (virtualController.getControllerMode() == KeyBoardController.ControllerMode.MoveButtons) {
+            // Convert other elements to array for snapping calculation
+            View[] otherViews = new View[virtualController.getElements().size() - 1];
+            int index = 0;
+            for (keyBoardVirtualControllerElement element : virtualController.getElements()) {
+                if (element != this) {
+                    otherViews[index++] = element;
+                }
+            }
+
+            // Calculate snapped position
+            LayoutSnappingHelper.SnapResult snapResult = LayoutSnappingHelper.calculateSnappedPosition(
+                this, otherViews, newPos_x, newPos_y
+            );
+
+            newPos_x = snapResult.newX;
+            newPos_y = snapResult.newY;
+
+            // Provide haptic feedback if snapping occurred
+            if (snapResult.didSnap || snapResult.didResize || snapResult.didAdjustSpacing) {
+                virtualController.vibrate(KeyEvent.ACTION_DOWN);
+            }
+
+            // Update size if overlap occurred
+            if (snapResult.didResize) {
+                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
+                layoutParams.width = snapResult.newWidth;
+                layoutParams.height = snapResult.newHeight;
+            }
+        }
 
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
 
