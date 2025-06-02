@@ -182,14 +182,14 @@ public class KeyBoardController {
 
         // Clear All button
         buttonClearAll = new Button(context);
-        buttonClearAll.setText("Clear All");
+        buttonClearAll.setText(context.getString(R.string.keyboard_clear_all));
         buttonClearAll.setAlpha(0.7f);
         buttonClearAll.setVisibility(View.GONE);
         buttonClearAll.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle("Clear All Keys");
-            builder.setMessage("Are you sure you want to remove all keys?");
-            builder.setPositiveButton("Yes", (dialog, which) -> {
+            builder.setTitle(context.getString(R.string.keyboard_clear_all_confirm_title));
+            builder.setMessage(context.getString(R.string.keyboard_clear_all_confirm_message));
+            builder.setPositiveButton(context.getString(R.string.yes), (dialog, which) -> {
                 // Instead of removing elements, mark them as hidden
                 for (keyBoardVirtualControllerElement element : elements) {
                     element.hidden = true;
@@ -199,13 +199,13 @@ public class KeyBoardController {
                 KeyBoardControllerConfigurationLoader.saveProfile(KeyBoardController.this, context);
                 vibrate(KeyEvent.ACTION_DOWN);
             });
-            builder.setNegativeButton("No", null);
+            builder.setNegativeButton(context.getString(R.string.no), null);
             builder.show();
         });
 
         // Add Keys button
         buttonAddKeys = new Button(context);
-        buttonAddKeys.setText("Add Keys");
+        buttonAddKeys.setText(context.getString(R.string.keyboard_add_keys));
         buttonAddKeys.setAlpha(0.7f);
         buttonAddKeys.setVisibility(View.GONE);
         buttonAddKeys.setOnClickListener(v -> showKeySelectionDialog());
@@ -466,12 +466,12 @@ public class KeyBoardController {
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle("Select Keys to Add");
+            builder.setTitle(context.getString(R.string.keyboard_select_keys));
             builder.setMultiChoiceItems(keyNames, checkedItems, (dialog, which, isChecked) -> {
                 checkedItems[which] = isChecked;
             });
 
-            builder.setPositiveButton("Add", (dialog, which) -> {
+            builder.setPositiveButton(context.getString(R.string.keyboard_add), (dialog, which) -> {
                 DisplayMetrics screen = context.getResources().getDisplayMetrics();
                 int height = screen.heightPixels;
                 
@@ -578,7 +578,7 @@ public class KeyBoardController {
                 }
             });
 
-            builder.setNegativeButton("Cancel", null);
+            builder.setNegativeButton(context.getString(R.string.cancel), null);
             builder.show();
 
         } catch (Exception e) {

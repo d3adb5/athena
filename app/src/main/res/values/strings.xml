@@ -607,4 +607,10 @@
     <!-- Compliance -->
     <string name="category_basic_settings" />
     <string name="title_checkbox_stretch_video" />
+    <string name="keyboard_clear_all">Clear All</string>
+    <string name="keyboard_add_keys">Add Keys</string>
+    <string name="keyboard_select_keys">Select Keys to Add</string>
+    <string name="keyboard_clear_all_confirm_title">Clear All Keys</string>
+    <string name="keyboard_clear_all_confirm_message">Are you sure you want to remove all keys?</string>
+    <string name="keyboard_add">Add</string>
 </resources>
