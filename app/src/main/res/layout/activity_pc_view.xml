@@ -73,7 +73,7 @@
         android:src="@drawable/ic_help"
         android:preferKeepClear="true"
         style="?android:attr/borderlessButtonStyle"/>
-    
+
     <ImageButton
         android:id="@+id/manuallyAddPc"
         android:layout_width="70dp"

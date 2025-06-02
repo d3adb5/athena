@@ -134,6 +134,19 @@
     <string name="perf_overlay_netlatency">Average network latency: %1$d ms (variance: %2$d ms)</string>
     <string name="perf_overlay_dectime">Average decoding time: %1$.2f ms</string>
 
+    <!-- Performance Report Sharing -->
+    <string name="email_prefix_message">
+        Please send this email as-is to artemistics.logs@gmail.com to support the community.\n
+        Your shared performance data will help improve and expand the dataset available at:\n
+        https://tinyurl.com/artemis-performance\n\n
+    </string>
+
+    <string name="email_recipient">artemistics.logs@gmail.com</string>
+    <string name="email_subject">Artemistics - Performance Log</string>
+    <string name="email_chooser_title">Send performance log...</string>
+    <string name="toast_no_email_clients">No email clients installed.</string>
+    <string name="toast_no_logs">There is no performance data stored yet.</string>
+
     <!-- AppList activity -->
     <string name="applist_connect_msg">Connecting to PC…</string>
     <string name="applist_menu_resume">Resume Session</string>
@@ -304,6 +317,8 @@
     <string name="summary_privacy_policy">View Artemis\'s privacy policy</string>
     <string name="title_special_key_help">Custom Keys help</string>
     <string name="summary_special_key_help">Instructions about how to setup custom special keys</string>
+    <string name="summary_performance_link">See performance of other devices</string>
+    <string name="title_performance_link">Performance Dashboard</string>
 
     <!-- Toasts -->
     <string name="toast_controller_type_changed">Gamepad type may be changed due to motion sensor emulation</string>
@@ -418,6 +433,8 @@
     <string name="summary_checkbox_onscreen_style_official">If you still like the old style of official virtual gamepad buttons, you can select this option.\nButton shapes can be square if you selected the bottom virtual button [Normal buttons are square buttons]</string>
     <string name="title_checkbox_enable_perf_overlay_lite">Enable Lite mode</string>
     <string name="summary_checkbox_enable_perf_overlay_lite">Display simplified performance information: Network Speed / Latency / Decode / Packet Loss Rate / FPS</string>
+    <string name="title_checkbox_enable_perf_logging">Enable Performance Logging</string>
+    <string name="summary_checkbox_enable_perf_logging">Stores sharable performance data per configuration. (Offline only) </string>
     <string name="title_checkbox_enable_perf_overlay_lite_dialog">Lite mode click to pop up quick options</string>
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">Replace the back button logic, pop up the game quick menu.</string>
     <string name="title_virtual_trackpad_settings">Virtual Trackpad Settings</string>
@@ -432,6 +449,8 @@
     <string name="summary_auto_orientation">The streaming screen will be displayed according to the device\'s orientation when the stream begins.</string>
     <string name="title_import_special_button">Import Custom Keys</string>
     <string name="summary_import_special_button">Available in Back Menu and special keys.\nNote: Importing will overwrite current configuration, please backup accordingly.</string>
+    <string name="summary_share_performance_logs">Share your performance with friends or the community to be seen on https://tinyurl.com/artemis-performance automatically when send to artemistics.logs@gmail.com</string>
+    <string name="title_share_performance_logs_button">Share Performance Logs</string>
     <string name="title_software_update">Software Update</string>
     <string name="summary_software_update">Artemis Nior Version by ClassicOldSong - Visit GitHub Release to get latest version</string>
     <string name="title_follow_update">Follow Update</string>

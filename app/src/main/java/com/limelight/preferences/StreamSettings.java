@@ -34,6 +34,7 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Range;
 import android.view.Display;
 import android.view.DisplayCutout;
@@ -55,9 +56,13 @@ import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardControlle
 import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.FileUriUtils;
+import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.UiHelper;
 import org.json.JSONObject;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -771,6 +776,20 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
             });
 
+            findPreference("checkbox_enable_perf_logging").setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    Boolean loggingEnabled = (Boolean) newValue;
+
+                    if(!loggingEnabled) {
+                        new PerformanceDataTracker().clearLogs(preference.getContext());
+                    }
+
+                    // Allow the original preference change to take place
+                    return true;
+                }
+            });
+
             Preference _pref;
             _pref = findPreference("import_keyboard_file");
             if (_pref != null) {
@@ -795,6 +814,57 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                         intent.addCategory(Intent.CATEGORY_OPENABLE);
                         intent.setType("application/json");
                         startActivityForResult(intent, READ_REQUEST_SPECIAL_CODE);
+                        return false;
+                    }
+                });
+            }
+
+            _pref = findPreference("share_performance_logs");
+            if (_pref != null) {
+                _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                    @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        Context context = preference.getContext();
+                        PerformanceDataTracker tracker = new PerformanceDataTracker();
+                        String logs = tracker.getLog(context);
+
+                        if (logs == null || logs.trim().isEmpty()) {
+                            Toast.makeText(context, context.getString(R.string.toast_no_logs), Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+
+                        String prefixMessage = context.getString(R.string.email_prefix_message);
+                        String emailRecipient = context.getString(R.string.email_recipient);
+                        String emailSubject = context.getString(R.string.email_subject);
+                        String chooserTitle = context.getString(R.string.email_chooser_title);
+                        String noEmailClientsMsg = context.getString(R.string.toast_no_email_clients);
+
+                        try {
+                            File cacheDir = context.getCacheDir();
+                            File logFile = new File(cacheDir, "artemistics_logs.txt");
+                            try (FileOutputStream fos = new FileOutputStream(logFile)) {
+                                fos.write(logs.getBytes(StandardCharsets.UTF_8));
+                            }
+
+                            Uri logFileUri = FileProvider.getUriForFile(context,
+                                    context.getPackageName() + ".fileprovider",
+                                    logFile);
+
+                            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                            emailIntent.setType("text/plain");
+                            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{emailRecipient});
+                            emailIntent.putExtra(Intent.EXTRA_SUBJECT, emailSubject);
+                            emailIntent.putExtra(Intent.EXTRA_TEXT, prefixMessage);
+                            emailIntent.putExtra(Intent.EXTRA_STREAM, logFileUri);
+
+                            emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                            context.startActivity(Intent.createChooser(emailIntent, chooserTitle));
+                        } catch (IOException e) {
+                            Log.d("PerformanceDataTracker", "Error creating log file");
+                        } catch (android.content.ActivityNotFoundException ex) {
+                            Toast.makeText(context, noEmailClientsMsg, Toast.LENGTH_SHORT).show();
+                        }
                         return false;
                     }
                 });
