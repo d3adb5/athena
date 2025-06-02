@@ -140,7 +140,7 @@ public class ShortcutTrampoline extends Activity {
                                             
                                             // Launch game if provided app ID, otherwise launch app view
                                             if (app != null) {
-                                                if (details.runningGameId == 0 || details.runningGameId == app.getAppId()) {
+                                                if (details.runningGameId == 0 || details.runningGameId == app.getAppId() || details.runningGameUUID == app.getAppUUID()) {
                                                     intentStack.add(ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, false));
 
                                                     // Close this activity
