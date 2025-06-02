@@ -31,6 +31,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -46,6 +47,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+
+import androidx.annotation.Nullable;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -71,7 +74,8 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
     private final static int START_WITH_QUIT = 4;
     private final static int VIEW_DETAILS_ID = 5;
     private final static int CREATE_SHORTCUT_ID = 6;
-    private final static int HIDE_APP_ID = 7;
+    private final static int EXPORT_LAUNCHER_FILE_ID = 7;
+    private final static int HIDE_APP_ID = 8;
     private final static int START_WITH_VDISPLAY = 20;
     private final static int START_WITH_QUIT_VDISPLAY = 21;
 
@@ -397,6 +401,25 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ShortcutHelper.REQUEST_CODE_EXPORT_ART_FILE) {
+            if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                Uri uri = data.getData();
+                ShortcutHelper.writeArtFileToUri(this, uri);
+            } else {
+                // Clear the content if the user cancelled or if there was an error before this point
+                ShortcutHelper.artFileContentToExport = null;
+                // Show "File export cancelled." toast only if the user explicitly cancelled.
+                if (resultCode == Activity.RESULT_CANCELED) { 
+                    Toast.makeText(this, "File export cancelled.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
@@ -449,6 +472,8 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 }
             }
         }
+
+        menu.add(Menu.NONE, EXPORT_LAUNCHER_FILE_ID, 6, getResources().getString(R.string.applist_menu_export_launcher));
     }
 
     @Override
@@ -550,6 +575,11 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 if (!shortcutHelper.createPinnedGameShortcut(computer, app.app, appBits)) {
                     Toast.makeText(AppView.this, getResources().getString(R.string.unable_to_pin_shortcut), Toast.LENGTH_LONG).show();
                 }
+                return true;
+            }
+
+            case EXPORT_LAUNCHER_FILE_ID: {
+                shortcutHelper.exportLauncherFile(computer, app.app);
                 return true;
             }
 

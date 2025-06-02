@@ -159,6 +159,7 @@
     <string name="applist_menu_cancel">Cancel</string>
     <string name="applist_menu_details">View Details</string>
     <string name="applist_menu_scut">Create Shortcut</string>
+    <string name="applist_menu_export_launcher">Export Launcher File</string>
     <string name="applist_menu_tv_channel">Add to Channel</string>
     <string name="applist_menu_hide_app">Hide App</string>
     <string name="applist_refresh_title">App List</string>
