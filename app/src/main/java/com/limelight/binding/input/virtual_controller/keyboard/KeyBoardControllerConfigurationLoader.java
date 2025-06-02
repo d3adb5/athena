@@ -65,7 +65,7 @@ public class KeyBoardControllerConfigurationLoader {
         return result * 72 / height;
     }
 
-    private static KeyboardDigitalPadButton createDiaitalPadButton(String elementId, int keyCodeLeft, int keyCodeRight, int keyCodeUp, int keyCodeDown, final KeyBoardController controller, final Context context) {
+    public static KeyboardDigitalPadButton createDiaitalPadButton(String elementId, int keyCodeLeft, int keyCodeRight, int keyCodeUp, int keyCodeDown, final KeyBoardController controller, final Context context) {
         KeyboardDigitalPadButton button = new KeyboardDigitalPadButton(controller, context, elementId);
         button.addDigitalPadListener(new KeyboardDigitalPadButton.DigitalPadListener() {
             @Override
@@ -112,7 +112,7 @@ public class KeyBoardControllerConfigurationLoader {
     }
 
 
-    private static KeyBoardAnalogStickButton createKeyBoardAnalogStickButton(final KeyBoardController controller, String elementId, final Context context, int[] keylist) {
+    public static KeyBoardAnalogStickButton createKeyBoardAnalogStickButton(final KeyBoardController controller, String elementId, final Context context, int[] keylist) {
 
         KeyBoardAnalogStickButton analogStick = new KeyBoardAnalogStickButton(controller, elementId, context, keylist);
         analogStick.setListener(new KeyBoardAnalogStickButton.KeyBoardAnalogStickListener() {

@@ -349,6 +349,8 @@ public class KeyBoardController {
             JSONObject data = json.getJSONObject("data");
             JSONArray keystrokeList = data.getJSONArray("keystroke");
             JSONArray mouseList = data.getJSONArray("mouse");
+            JSONArray rockerList = data.getJSONArray("rocker");
+            JSONArray dpadList = data.getJSONArray("dpad");
 
             // Add backspace key
             JSONObject backspaceKey = new JSONObject();
@@ -357,19 +359,45 @@ public class KeyBoardController {
             backspaceKey.put("code", KeyEvent.KEYCODE_DEL);
             keystrokeList.put(backspaceKey);
 
-            // Combine keyboard and mouse buttons into one list
-            for (int i = 0; i < mouseList.length(); i++) {
-                JSONObject obj = mouseList.getJSONObject(i);
-                obj.put("type", 1);
-                keystrokeList.put(obj);
-            }
+            // Calculate total number of items
+            int totalItems = keystrokeList.length() + mouseList.length() + rockerList.length() + dpadList.length();
+            String[] keyNames = new String[totalItems];
+            boolean[] checkedItems = new boolean[totalItems];
+            JSONArray allItems = new JSONArray();
 
-            // Create list of key names
-            String[] keyNames = new String[keystrokeList.length()];
-            boolean[] checkedItems = new boolean[keystrokeList.length()];
+            // Add keyboard keys
             for (int i = 0; i < keystrokeList.length(); i++) {
                 JSONObject key = keystrokeList.getJSONObject(i);
+                key.put("type", 0); // keyboard type
+                allItems.put(key);
                 keyNames[i] = key.getString("name");
+            }
+
+            // Add mouse buttons
+            int currentIndex = keystrokeList.length();
+            for (int i = 0; i < mouseList.length(); i++) {
+                JSONObject obj = mouseList.getJSONObject(i);
+                obj.put("type", 1); // mouse type
+                allItems.put(obj);
+                keyNames[currentIndex + i] = obj.getString("name");
+            }
+
+            // Add rocker (joystick) controls
+            currentIndex += mouseList.length();
+            for (int i = 0; i < rockerList.length(); i++) {
+                JSONObject obj = rockerList.getJSONObject(i);
+                obj.put("type", 2); // rocker type
+                allItems.put(obj);
+                keyNames[currentIndex + i] = obj.getString("name") + " (Joystick)";
+            }
+
+            // Add dpad controls
+            currentIndex += rockerList.length();
+            for (int i = 0; i < dpadList.length(); i++) {
+                JSONObject obj = dpadList.getJSONObject(i);
+                obj.put("type", 3); // dpad type
+                allItems.put(obj);
+                keyNames[currentIndex + i] = obj.getString("name") + " (D-Pad)";
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -395,48 +423,86 @@ public class KeyBoardController {
                 // Get current element positions to avoid overlap
                 List<Rect> existingPositions = new ArrayList<>();
                 for (keyBoardVirtualControllerElement element : elements) {
-                    FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) element.getLayoutParams();
-                    existingPositions.add(new Rect(
-                        params.leftMargin,
-                        params.topMargin,
-                        params.leftMargin + params.width,
-                        params.topMargin + params.height
-                    ));
+                    if (element.getVisibility() == View.VISIBLE) {
+                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) element.getLayoutParams();
+                        existingPositions.add(new Rect(
+                            params.leftMargin,
+                            params.topMargin,
+                            params.leftMargin + params.width,
+                            params.topMargin + params.height
+                        ));
+                    }
                 }
 
                 // Add selected keys
                 for (int i = 0; i < checkedItems.length; i++) {
                     if (checkedItems[i]) {
                         try {
-                            JSONObject keyObj = keystrokeList.getJSONObject(i);
-                            String name = keyObj.getString("name");
-                            int type = keyObj.optInt("type", 0);
-                            int code = keyObj.getInt("code");
-                            int switchButton = keyObj.optInt("switchButton");
-                            String elementId = type == 0 ? "key_" + code : "m_" + code;
-                            if (switchButton == 1) {
-                                elementId = type == 0 ? "key_s_" + code : "m_s_" + code;
-                            }
-
-                            // Find non-overlapping position
-                            Point position = findNonOverlappingPosition(existingPositions, w);
+                            JSONObject obj = allItems.getJSONObject(i);
+                            int type = obj.optInt("type", 0);
                             
-                            // Create and add the element with the same size as default buttons
-                            if (elementId.equals("m_9") || elementId.equals("m_10") || elementId.equals("m_11")) {
-                                addElement(KeyBoardControllerConfigurationLoader.createDigitalTouchButton(
-                                    elementId, code, type, 1, name, -1, KeyBoardController.this, context),
-                                    position.x, position.y, w, w);
+                            // Find non-overlapping position
+                            Point position = findNonOverlappingPosition(existingPositions, type >= 2 ? (int)(w * 2.5) : w);
+                            
+                            if (type == 2) { // Rocker (joystick)
+                                String elementId = obj.getString("elementId");
+                                int[] keys = new int[]{
+                                    obj.getInt("upCode"),
+                                    obj.getInt("downCode"),
+                                    obj.getInt("leftCode"),
+                                    obj.getInt("rightCode"),
+                                    obj.getInt("middleCode")
+                                };
+                                
+                                addElement(KeyBoardControllerConfigurationLoader.createKeyBoardAnalogStickButton(
+                                    this, elementId, context, keys),
+                                    position.x, position.y,
+                                    (int)(w * 2.5), (int)(w * 2.5)
+                                );
+                                
+                                existingPositions.add(new Rect(position.x, position.y, 
+                                    position.x + (int)(w * 2.5), position.y + (int)(w * 2.5)));
+                                
+                            } else if (type == 3) { // D-pad
+                                String elementId = obj.getString("elementId");
+                                addElement(KeyBoardControllerConfigurationLoader.createDiaitalPadButton(
+                                    elementId,
+                                    obj.getInt("leftCode"),
+                                    obj.getInt("rightCode"),
+                                    obj.getInt("upCode"),
+                                    obj.getInt("downCode"),
+                                    this, context),
+                                    position.x, position.y,
+                                    (int)(w * 2.5), (int)(w * 2.5)
+                                );
+                                
+                                existingPositions.add(new Rect(position.x, position.y, 
+                                    position.x + (int)(w * 2.5), position.y + (int)(w * 2.5)));
+                                
                             } else {
-                                addElement(KeyBoardControllerConfigurationLoader.createDigitalButton(
-                                    elementId, code, type, 1, name, -1, 
-                                    PreferenceConfiguration.readPreferences(context).stickyModifierKey && 
-                                    KeyBoardControllerConfigurationLoader.isModifierKey(code), 
-                                    KeyBoardController.this, context),
-                                    position.x, position.y, w, w);
-                            }
+                                String name = obj.getString("name");
+                                int code = obj.getInt("code");
+                                int switchButton = obj.optInt("switchButton");
+                                String elementId = type == 0 ? "key_" + code : "m_" + code;
+                                if (switchButton == 1) {
+                                    elementId = type == 0 ? "key_s_" + code : "m_s_" + code;
+                                }
 
-                            // Add new position to existing positions
-                            existingPositions.add(new Rect(position.x, position.y, position.x + w, position.y + w));
+                                if (elementId.equals("m_9") || elementId.equals("m_10") || elementId.equals("m_11")) {
+                                    addElement(KeyBoardControllerConfigurationLoader.createDigitalTouchButton(
+                                        elementId, code, type, 1, name, -1, this, context),
+                                        position.x, position.y, w, w);
+                                } else {
+                                    addElement(KeyBoardControllerConfigurationLoader.createDigitalButton(
+                                        elementId, code, type, 1, name, -1, 
+                                        PreferenceConfiguration.readPreferences(context).stickyModifierKey && 
+                                        KeyBoardControllerConfigurationLoader.isModifierKey(code), 
+                                        this, context),
+                                        position.x, position.y, w, w);
+                                }
+
+                                existingPositions.add(new Rect(position.x, position.y, position.x + w, position.y + w));
+                            }
                             
                             vibrate(KeyEvent.ACTION_DOWN);
                         } catch (JSONException e) {
