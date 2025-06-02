@@ -57,15 +57,15 @@ public class KeyBoardControllerConfigurationLoader {
     }
 
     // The default controls are specified using a grid of 128*72 cells at 16:9
-    private static int screenScale(int units, int height) {
+    public static int screenScale(int units, int height) {
         return (int) (((float) height / (float) 72) * (float) units);
     }
 
-    private static int screenScaleSwicth(int result, int height) {
+    public static int screenScaleSwitch(int result, int height) {
         return result * 72 / height;
     }
 
-    private static KeyboardDigitalPadButton createDiaitalPadButton(String elementId, int keyCodeLeft, int keyCodeRight, int keyCodeUp, int keyCodeDown, final KeyBoardController controller, final Context context) {
+    public static KeyboardDigitalPadButton createDiaitalPadButton(String elementId, int keyCodeLeft, int keyCodeRight, int keyCodeUp, int keyCodeDown, final KeyBoardController controller, final Context context) {
         KeyboardDigitalPadButton button = new KeyboardDigitalPadButton(controller, context, elementId);
         button.addDigitalPadListener(new KeyboardDigitalPadButton.DigitalPadListener() {
             @Override
@@ -112,7 +112,7 @@ public class KeyBoardControllerConfigurationLoader {
     }
 
 
-    private static KeyBoardAnalogStickButton createKeyBoardAnalogStickButton(final KeyBoardController controller, String elementId, final Context context, int[] keylist) {
+    public static KeyBoardAnalogStickButton createKeyBoardAnalogStickButton(final KeyBoardController controller, String elementId, final Context context, int[] keylist) {
 
         KeyBoardAnalogStickButton analogStick = new KeyBoardAnalogStickButton(controller, elementId, context, keylist);
         analogStick.setListener(new KeyBoardAnalogStickButton.KeyBoardAnalogStickListener() {
@@ -144,7 +144,7 @@ public class KeyBoardControllerConfigurationLoader {
 
     }
 
-    private static KeyBoardDigitalButton createDigitalButton(
+    public static KeyBoardDigitalButton createDigitalButton(
             final String elementId,
             final int keyShort,
             final int type,
@@ -298,7 +298,7 @@ public class KeyBoardControllerConfigurationLoader {
     }
 
 
-    private static KeyBoardTouchPadButton createDigitalTouchButton(
+    public static KeyBoardTouchPadButton createDigitalTouchButton(
             final String elementId,
             final int keyShort,
             final int type,
@@ -358,7 +358,7 @@ public class KeyBoardControllerConfigurationLoader {
         int maxW = screen.widthPixels / 18;
 
         if (w > maxW) {
-            BUTTON_SIZE = screenScaleSwicth(maxW, height);
+            BUTTON_SIZE = screenScaleSwitch(maxW, height);
             w = screenScale(BUTTON_SIZE, height);
         }
 
