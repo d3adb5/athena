@@ -16,6 +16,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -81,6 +82,70 @@ public class KeyBoardController {
         buttonConfigure.setAlpha(0.5f);
         buttonConfigure.setFocusable(false);
         buttonConfigure.setBackgroundResource(R.drawable.ic_keyboard_setting);
+
+        // Add long click listener for moving the configure button
+        buttonConfigure.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(context, "You can now move the Configure button", Toast.LENGTH_SHORT).show();
+                buttonConfigure.setTag("movable");
+                vibrator.vibrate(100); // Give haptic feedback
+                return true;
+            }
+        });
+
+        // Add touch listener for moving
+        buttonConfigure.setOnTouchListener(new View.OnTouchListener() {
+            private float dX, dY;
+            private float lastTouchX, lastTouchY;
+            private boolean isMoving = false;
+
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                if ("movable".equals(view.getTag())) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            dX = view.getX() - event.getRawX();
+                            dY = view.getY() - event.getRawY();
+                            lastTouchX = event.getRawX();
+                            lastTouchY = event.getRawY();
+                            isMoving = false;
+                            break;
+
+                        case MotionEvent.ACTION_MOVE:
+                            float newX = event.getRawX() + dX;
+                            float newY = event.getRawY() + dY;
+                            
+                            // Check if actually moving (to differentiate from simple touch)
+                            if (Math.abs(event.getRawX() - lastTouchX) > 5 || 
+                                Math.abs(event.getRawY() - lastTouchY) > 5) {
+                                isMoving = true;
+                            }
+                            
+                            if (isMoving) {
+                                // Keep button within screen bounds
+                                newX = Math.max(0, Math.min(newX, frame_layout.getWidth() - view.getWidth()));
+                                newY = Math.max(0, Math.min(newY, frame_layout.getHeight() - view.getHeight()));
+                                
+                                view.setX(newX);
+                                view.setY(newY);
+                            }
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            view.setTag(null);
+                            if (!isMoving) {
+                                // If not moving, trigger the click event
+                                view.performClick();
+                            }
+                            break;
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
         buttonConfigure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
