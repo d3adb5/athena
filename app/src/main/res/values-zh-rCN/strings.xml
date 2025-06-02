@@ -92,6 +92,7 @@
     <string name="perf_overlay_netdrops">网络丢失帧： %1$.2f%%</string>
     <string name="perf_overlay_dectime">平均解码时间： %1$.2f ms</string>
     <!-- AppList activity -->
+    <string name="toast_no_logs">还没有统计过性能数据</string>
     <string name="applist_connect_msg"> 正在连接电脑…… </string>
     <string name="applist_menu_resume"> 恢复串流 </string>
     <string name="applist_menu_start_vdisplay"> 在虚拟显示器中启动 </string>
@@ -267,7 +268,7 @@
     <string name="summary_video_scale_mode">选择适应/填充/拉伸</string>
     <string name="video_scale_mode_fit">适应</string>
     <string name="video_scale_mode_fill">填充</string>
-    <string name="video_scale_mode_stretch">拉伸</string>
+    <string name="video_scale_mode_stretch">启用性能数据记录</string>
     <string name="title_privacy_policy">隐私政策</string>
     <string name="summary_privacy_policy">查看  Artemis  隐私政策</string>
     <string name="category_help">帮助</string>
@@ -307,6 +308,7 @@
     <string name="summary_checkbox_gamepad_motion_sensors">使支持的主机能够在模拟具有运动传感器的游戏手柄时请求运动传感器数据。如果在游戏中未使用运动传感器，禁用可能会略微降低电源和网络使用量。</string>
     <string name="videoformat_av1always">首选 AV1（实验性）</string>
     <string name="videoformat_h264always">首选 H.264</string>
+    <string name="title_performance_link">性能统计表</string>
     <string name="toast_controller_type_changed">游戏手柄类型可能会因运动传感器模拟而改变</string>
     <string name="title_special_key_help">自定义按键说明</string>
     <string name="summary_special_key_help">关于如何自定义特殊按键的介绍</string>
@@ -331,6 +333,7 @@
     <string name="game_menu_toggle_virtual_model">(显示/隐藏)虚拟手柄</string>
     <string name="game_menu_toggle_virtual_keyboard_model">(显示/隐藏)虚拟全键盘</string>
     <string name="game_menu_switch_touch_sensitivity_model">触控灵敏度切换</string>
+    <string name="game_menu_toggle_mouse_off">禁用手柄鼠标模拟</string>
     <string name="game_menu_disconnect">断开连接</string>
     <string name="game_menu_cancel">取消</string>
     <string name="game_menu_task_manager">打开任务管理器</string>
@@ -376,6 +379,8 @@
     <string name="summary_checkbox_onscreen_style_official">如果你还是喜欢官方旧版虚拟手柄按键风格可以勾选此选项。\n按键形状可以为方形，如果你勾选了底部虚拟按键【普通按钮为方形按钮】</string>
     <string name="title_checkbox_enable_perf_overlay_lite">开启Lite精简模式</string>
     <string name="summary_checkbox_enable_perf_overlay_lite">展示简化版性能信息：网速/延迟/解码/丢包率/FPS</string>
+    <string name="title_checkbox_enable_perf_logging">启用性能数据统计</string>
+    <string name="summary_checkbox_enable_perf_logging">存储性能记录（仅本地）</string>
     <string name="title_checkbox_enable_perf_overlay_lite_dialog">Lite精简模式点击弹出快捷选项</string>
     <string name="summary_checkbox_enable_perf_overlay_lite_dialog">代替返回键逻辑，弹出游戏快捷菜单。</string>
     <string name="title_virtual_trackpad_settings">虚拟触摸板设置</string>
@@ -430,6 +435,7 @@
     <string name="summary_clear_default_special_button">如果你感觉返回菜单内置的指令对你没什么用的话，可以禁用，只使用自己导入的。</string>
     <string name="title_import_special_button">导入自定义按键</string>
     <string name="summary_import_special_button">在返回菜单及特殊按键中可用。\n注意：导入会覆盖当前配置，请注意备份。</string>
+    <string name="title_share_performance_logs_button">分享性能统计信息</string>
     <string name="title_software_update">软件更新</string>
     <string name="summary_software_update">ClassicOldSong 黑月光修改版 - 访问 GitHub Release 以获取更新</string>
     <string name="title_follow_update">订阅更新</string>
@@ -477,6 +483,7 @@
     <string name="perf_overlay_lite_bandwidth">带宽</string>
     <string name="perf_overlay_lite_network_decoding_delay">网络/解码延迟</string>
     <string name="perf_overlay_lite_packet_loss">丢包率</string>
+    <string name="menu_button">菜单</string>
     <string name="quick_menu_title">快捷菜单</string>
     <string name="wrong_import_format">自定义导入格式错误，请检查！</string>
     <string name="title_checkbox_gamepad_enable_battery_report">启用手柄电池状态报告</string>
@@ -574,4 +581,18 @@
     <string name="searchpreference_more">更多</string>
     <string name="searchpreference_clear_history">清除历史</string>
     <string name="searchpreference_no_results">无结果</string>
+    <string name="keyboard_clear_all">清除全部</string>
+    <string name="keyboard_add_keys">添加按键</string>
+    <string name="keyboard_select_keys">选择要添加的按键</string>
+    <string name="keyboard_clear_all_confirm_title">清除全部按键</string>
+    <string name="keyboard_clear_all_confirm_message">确定要移除全部按键吗？</string>
+    <string name="keyboard_add">添加</string>
+    <string name="keyboard_configure_movable">设置按钮已可移动</string>
+    <string name="game_menu_toggle_mouse_on">启用手柄鼠标模拟</string>
+    <string name="summary_performance_link">查看其他设备的性能数据</string>
+    <string name="email_chooser_title">发送性能统计...</string>
+    <string name="toast_no_email_clients">找不到电子邮件客户端</string>
+    <string name="email_subject">Artemistics - 性能统计</string>
+    <string name="summary_share_performance_logs">与朋友或社区分享你的性能统计数据</string>
+    <string name="email_prefix_message">"\n        请按原样将此邮件发送至 artemistics.logs@gmail.com 以帮助社区。\n\n        您分享的性能数据将会帮助改进和扩充以下地址的统计数据：\n\n        https://tinyurl.com/artemis-performance\n\n\n    "</string>
 </resources>
