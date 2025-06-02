@@ -213,7 +213,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                         @Override
                         public void run() {
                             // Display a toast to the user and quit the activity
-                            Toast.makeText(AppView.this, getResources().getText(R.string.lost_connection), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AppView.this, R.string.lost_connection, Toast.LENGTH_SHORT).show();
                             finish();
                         }
                     });
@@ -231,7 +231,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                                     getResources().getString(R.string.scut_not_paired));
 
                             // Display a toast to the user and quit the activity
-                            Toast.makeText(AppView.this, getResources().getText(R.string.scut_not_paired), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AppView.this, R.string.scut_not_paired, Toast.LENGTH_SHORT).show();
                             finish();
                         }
                     });
@@ -413,7 +413,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
                 ShortcutHelper.artFileContentToExport = null;
                 // Show "File export cancelled." toast only if the user explicitly cancelled.
                 if (resultCode == Activity.RESULT_CANCELED) { 
-                    Toast.makeText(this, "File export cancelled.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.file_export_cancelled, Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -681,7 +681,7 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
                     // This app was removed in the latest app list
                     if (!foundExistingApp) {
-                        shortcutHelper.disableAppShortcut(computer, existingApp.app, "App removed from PC");
+                        shortcutHelper.disableAppShortcut(computer, existingApp.app, getString(R.string.app_removed_from_pc));
                         appGridAdapter.removeApp(existingApp);
                         updated = true;
 

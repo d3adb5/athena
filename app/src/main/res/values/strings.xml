@@ -634,4 +634,19 @@
     <string name="keyboard_clear_all_confirm_message">Are you sure you want to remove all keys?</string>
     <string name="keyboard_add">Add</string>
     <string name="keyboard_configure_movable">You can now move the Configure button</string>
+
+    <!-- ShortcutHelper Toast Messages -->
+    <string name="export_launcher_computer_details_incomplete">Cannot export: Computer details are incomplete.</string>
+    <string name="export_launcher_app_details_incomplete">Cannot export: App details are incomplete.</string>
+    <string name="failed_to_initiate_file_export">Failed to initiate file export: %s</string>
+    <string name="file_export_failed_no_location_selected">File export failed: No location selected.</string>
+    <string name="file_export_failed_no_content_to_write">File export failed: No content to write.</string>
+    <string name="file_exported_successfully">File exported successfully.</string>
+    <string name="failed_to_open_file_for_writing">Failed to open file for writing.</string>
+    <string name="error_writing_file">Error writing file: %s</string>
+    <string name="unexpected_error_during_file_export">An unexpected error occurred during file export.</string>
+
+    <!-- AppView Toast Messages -->
+    <string name="file_export_cancelled">File export cancelled.</string>
+    <string name="app_removed_from_pc">App removed from PC</string>
 </resources>

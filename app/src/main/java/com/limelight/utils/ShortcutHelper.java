@@ -224,13 +224,13 @@ public class ShortcutHelper {
     public void exportLauncherFile(ComputerDetails computer, NvApp app) {
         if (computer == null || computer.uuid == null || computer.uuid.isEmpty() ||
             computer.name == null || computer.name.isEmpty()) {
-            Toast.makeText(context, "Cannot export: Computer details are incomplete.", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, R.string.export_launcher_computer_details_incomplete, Toast.LENGTH_LONG).show();
             LimeLog.warning("exportLauncherFile: Computer details incomplete.");
             return;
         }
 
         if (app == null || app.getAppName() == null || app.getAppName().isEmpty() || app.getAppUUID() == null || app.getAppUUID().isEmpty()) {
-            Toast.makeText(context, "Cannot export: App details are incomplete.", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, R.string.export_launcher_app_details_incomplete, Toast.LENGTH_LONG).show();
             LimeLog.warning("exportLauncherFile: App details incomplete.");
             return;
         }
@@ -264,7 +264,7 @@ public class ShortcutHelper {
             context.startActivityForResult(intent, REQUEST_CODE_EXPORT_ART_FILE);
         } catch (Exception e) {
             LimeLog.severe("Failed to start activity for file export: " + e.getMessage());
-            Toast.makeText(context, "Failed to initiate file export: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(context, context.getString(R.string.failed_to_initiate_file_export, e.getMessage()), Toast.LENGTH_LONG).show();
             artFileContentToExport = null; // Clear content if we can't even start the activity
         }
     }
@@ -272,7 +272,7 @@ public class ShortcutHelper {
     public static void writeArtFileToUri(Activity activityContext, Uri uri) {
         if (uri == null) {
             LimeLog.warning("writeArtFileToUri: URI is null.");
-            Toast.makeText(activityContext, "File export failed: No location selected.", Toast.LENGTH_LONG).show();
+            Toast.makeText(activityContext, R.string.file_export_failed_no_location_selected, Toast.LENGTH_LONG).show();
             artFileContentToExport = null; // Clear if URI is null
             return;
         }
@@ -281,7 +281,7 @@ public class ShortcutHelper {
             LimeLog.warning("writeArtFileToUri: No content to export.");
             // Potentially the content was cleared due to an earlier error or state loss.
             // Or this method was called inappropriately.
-            Toast.makeText(activityContext, "File export failed: No content to write.", Toast.LENGTH_LONG).show();
+            Toast.makeText(activityContext, R.string.file_export_failed_no_content_to_write, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -290,17 +290,17 @@ public class ShortcutHelper {
                 outputStream.write(artFileContentToExport.getBytes());
                 outputStream.flush(); // Ensure all data is written
                 LimeLog.info("Successfully wrote .art file to: " + uri.toString());
-                Toast.makeText(activityContext, "File exported successfully.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activityContext, R.string.file_exported_successfully, Toast.LENGTH_SHORT).show();
             } else {
                 LimeLog.severe("Failed to open output stream for URI: " + uri.toString());
-                Toast.makeText(activityContext, "Failed to open file for writing.", Toast.LENGTH_LONG).show();
+                Toast.makeText(activityContext, R.string.failed_to_open_file_for_writing, Toast.LENGTH_LONG).show();
             }
         } catch (IOException e) {
             LimeLog.severe("Error writing .art file to URI: " + uri.toString() + " - " + e.getMessage());
-            Toast.makeText(activityContext, "Error writing file: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(activityContext, activityContext.getString(R.string.error_writing_file, e.getMessage()), Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             LimeLog.severe("Unexpected error writing .art file to URI: " + uri.toString() + " - " + e.getMessage());
-            Toast.makeText(activityContext, "An unexpected error occurred during file export.", Toast.LENGTH_LONG).show();
+            Toast.makeText(activityContext, R.string.unexpected_error_during_file_export, Toast.LENGTH_LONG).show();
         }
         finally {
             artFileContentToExport = null; // Clear content after attempt

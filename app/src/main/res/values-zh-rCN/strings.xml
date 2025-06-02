@@ -556,7 +556,7 @@
     <string name="game_menu_fetch_clipboard">获取剪贴板</string>
     <string name="game_menu_upload_clipboard">上传剪贴板</string>
     <string name="game_dialog_title_server_cmd_empty">无服务端命令</string>
-    <string name="game_dialog_message_server_cmd_empty">请确保你的服务端为 Apollo，并已授予此客户端“服务端命令”权限。</string>
+    <string name="game_dialog_message_server_cmd_empty">请确保你的服务端为 Apollo，并已授予此客户端"服务端命令"权限。</string>
     <string name="vdisplay_not_ready">服务端虚拟显示器驱动未就绪。请确保 SudoVDA 驱动已正确安装并启用。</string>
     <string name="vdisplay_not_supported"><![CDATA[此服务端不支持虚拟显示器。请使用 <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> 作为服务端串流软件。]]></string>
     <string name="clipboard_sync_unsupported">此服务器不支持剪贴板同步，请安装或升级服务端至最新的 Apollo。</string>
@@ -596,4 +596,19 @@
     <string name="email_subject">Artemistics - 性能统计</string>
     <string name="summary_share_performance_logs">与朋友或社区分享你的性能统计数据</string>
     <string name="email_prefix_message">"\n        请按原样将此邮件发送至 artemistics.logs@gmail.com 以帮助社区。\n\n        您分享的性能数据将会帮助改进和扩充以下地址的统计数据：\n\n        https://tinyurl.com/artemis-performance\n\n\n    "</string>
+
+    <!-- ShortcutHelper Toast Messages -->
+    <string name="export_launcher_computer_details_incomplete">无法导出：电脑详情不完整。</string>
+    <string name="export_launcher_app_details_incomplete">无法导出：应用详情不完整。</string>
+    <string name="failed_to_initiate_file_export">无法初始化文件导出：%s</string>
+    <string name="file_export_failed_no_location_selected">文件导出失败：未选择位置。</string>
+    <string name="file_export_failed_no_content_to_write">文件导出失败：没有内容可写。</string>
+    <string name="file_exported_successfully">文件导出成功。</string>
+    <string name="failed_to_open_file_for_writing">无法打开文件进行写入。</string>
+    <string name="error_writing_file">写入文件时出错：%s</string>
+    <string name="unexpected_error_during_file_export">文件导出期间发生意外错误。</string>
+
+    <!-- AppView Toast Messages -->
+    <string name="file_export_cancelled">文件导出已取消。</string>
+    <string name="app_removed_from_pc">应用已从电脑上移除</string>
 </resources>
