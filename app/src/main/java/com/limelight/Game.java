@@ -195,6 +195,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private boolean quitOnStop = false;
     private boolean isHidingOverlays;
+    private boolean floatingButtonShown;
     private TextView notificationOverlayView;
     private int requestedNotificationOverlayVisibility = View.GONE;
     private View performanceOverlayView;
@@ -869,6 +870,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             if (isInPictureInPictureMode()) {
                 isHidingOverlays = true;
 
+                floatingButtonShown = floatingMenuButton.isShown();
+
+                if (floatingButtonShown) {
+                    floatingMenuButton.setVisibility(View.GONE);
+                }
+
                 if (virtualController != null) {
                     virtualController.hide();
                 }
@@ -877,7 +884,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     keyBoardController.hide(true);
                 }
 
-                if (keyBoardLayoutController!=null && keyBoardLayoutController.shown) {
+                if (keyBoardLayoutController != null && keyBoardLayoutController.shown) {
                     keyBoardLayoutController.hide(true);
                 }
 
@@ -894,6 +901,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
             else {
                 isHidingOverlays = false;
+
+                if (floatingButtonShown) {
+                    floatingMenuButton.setVisibility(View.VISIBLE);
+                }
 
                 // Restore overlays to previous state when leaving PiP
 
