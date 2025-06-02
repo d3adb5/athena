@@ -87,7 +87,7 @@ public class KeyBoardController {
         buttonConfigure.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Toast.makeText(context, "You can now move the Configure button", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(R.string.keyboard_configure_movable), Toast.LENGTH_SHORT).show();
                 buttonConfigure.setTag("movable");
                 vibrator.vibrate(100); // Give haptic feedback
                 return true;

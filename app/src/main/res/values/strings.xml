@@ -613,4 +613,5 @@
     <string name="keyboard_clear_all_confirm_title">Clear All Keys</string>
     <string name="keyboard_clear_all_confirm_message">Are you sure you want to remove all keys?</string>
     <string name="keyboard_add">Add</string>
+    <string name="keyboard_configure_movable">You can now move the Configure button</string>
 </resources>
