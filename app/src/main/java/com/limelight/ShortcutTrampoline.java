@@ -5,8 +5,10 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.limelight.computers.ComputerDatabaseManager;
 import com.limelight.computers.ComputerManagerListener;
@@ -24,10 +26,15 @@ import com.limelight.utils.UiHelper;
 
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class ShortcutTrampoline extends Activity {
@@ -40,6 +47,11 @@ public class ShortcutTrampoline extends Activity {
     private SpinnerDialog blockingLoadSpinner;
 
     private ComputerManagerService.ComputerManagerBinder managerBinder;
+
+    private static final String TAG = "ShortcutTrampoline";
+    private static final String ART_FILE_HOST_UUID_KEY = "host_uuid";
+    private static final String ART_FILE_APP_NAME_KEY = "app_name";
+    private static final String ART_FILE_APP_UUID_KEY = "app_uuid";
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -269,6 +281,41 @@ public class ShortcutTrampoline extends Activity {
         return true;
     }
 
+    private Map<String, String> parseArtFileData(Uri fileUri) {
+        if (fileUri == null) {
+            return null;
+        }
+
+        Map<String, String> artData = new HashMap<>();
+
+        try (InputStream inputStream = getContentResolver().openInputStream(fileUri);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("#") || line.isEmpty()) {
+                    continue; // Skip comments and empty lines
+                }
+                int separatorIndex = line.indexOf(' ');
+                if (separatorIndex > 0 && separatorIndex < line.length() - 1) {
+                    String key = line.substring(0, separatorIndex).trim();
+                    String value = line.substring(separatorIndex + 1).trim();
+                    if (key.startsWith("[") && key.endsWith("]")) {
+                        key = key.substring(1, key.length() - 1);
+                        artData.put(key, value);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading .art file", e);
+            Dialog.displayDialog(ShortcutTrampoline.this,
+                    getResources().getString(R.string.conn_error_title),
+                    "Error reading .art file: " + e.getMessage(),
+                    true);
+        }
+        return artData;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -277,89 +324,158 @@ public class ShortcutTrampoline extends Activity {
         ComputerDatabaseManager dbManager = new ComputerDatabaseManager(this);
         ComputerDetails _computer = null;
 
-        // PC arguments, both are optional, but at least one must be provided
-        uuidString = getIntent().getStringExtra(AppView.UUID_EXTRA);
-        String nameString = getIntent().getStringExtra(AppView.NAME_EXTRA);
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        Uri dataUri = intent.getData();
 
-        // App arguments, both are optional, but one must be provided in order to start an app
-        String appIdString = getIntent().getStringExtra(Game.EXTRA_APP_ID);
-        String appNameString = getIntent().getStringExtra(Game.EXTRA_APP_NAME);
-        String appUUIDString = getIntent().getStringExtra(Game.EXTRA_APP_UUID);
+        String artFileHostUuid = null;
+        String artFileAppName = null;
+        String artFileAppUuid = null;
 
-        if (!validateInput(uuidString, appIdString, nameString)) {
-            // Invalid input, so just return
-            return;
-        }
+        if (Intent.ACTION_VIEW.equals(action) && dataUri != null) {
+            Map<String, String> artData = parseArtFileData(dataUri);
 
-        if (uuidString == null || uuidString.isEmpty()) {
-            // Use nameString to find the corresponding UUID
-            _computer = dbManager.getComputerByName(nameString);
-
-            if (_computer == null) {
-                Dialog.displayDialog(ShortcutTrampoline.this,
-                        getResources().getString(R.string.conn_error_title),
-                        getResources().getString(R.string.scut_pc_not_found),
-                        true);
+            if (artData == null) {
                 return;
             }
 
-            uuidString = _computer.uuid;
+            artFileHostUuid = artData.get(ART_FILE_HOST_UUID_KEY);
+            artFileAppName = artData.get(ART_FILE_APP_NAME_KEY);
+            artFileAppUuid = artData.get(ART_FILE_APP_UUID_KEY);
 
-            // Set the AppView UUID intent, since it wasn't provided
+            if (artFileHostUuid == null || artFileHostUuid.isEmpty()) {
+                Dialog.displayDialog(ShortcutTrampoline.this,
+                        getResources().getString(R.string.conn_error_title),
+                        "Missing 'host_uuid' in provided file.",
+                        true);
+//                finish();
+                return;
+            }
+            try {
+                UUID.fromString(artFileHostUuid);
+            } catch (IllegalArgumentException ex) {
+                Dialog.displayDialog(ShortcutTrampoline.this,
+                        getResources().getString(R.string.conn_error_title),
+                        "Invalid 'host_uuid' in provided file.",
+                        true);
+//                finish();
+                return;
+            }
+            uuidString = artFileHostUuid;
+            // Set the AppView UUID intent, so it can be used later if needed
             setIntent(new Intent(getIntent()).putExtra(AppView.UUID_EXTRA, uuidString));
+        } else {
+            // PC arguments, both are optional, but at least one must be provided
+            uuidString = getIntent().getStringExtra(AppView.UUID_EXTRA);
+            String nameString = getIntent().getStringExtra(AppView.NAME_EXTRA);
+
+            // App arguments, both are optional, but one must be provided in order to start an app
+            String appIdString = getIntent().getStringExtra(Game.EXTRA_APP_ID);
+            String appNameString = getIntent().getStringExtra(Game.EXTRA_APP_NAME);
+            String appUUIDStringExtra = getIntent().getStringExtra(Game.EXTRA_APP_UUID);
+
+            if (!validateInput(uuidString, appIdString, nameString)) {
+                // Invalid input, so just return
+                finish();
+                return;
+            }
+
+            if (uuidString == null || uuidString.isEmpty()) {
+                // Use nameString to find the corresponding UUID
+                _computer = dbManager.getComputerByName(nameString);
+
+                if (_computer == null) {
+                    Dialog.displayDialog(ShortcutTrampoline.this,
+                            getResources().getString(R.string.conn_error_title),
+                            getResources().getString(R.string.scut_pc_not_found),
+                            true);
+//                    finish();
+                    return;
+                }
+
+                uuidString = _computer.uuid;
+
+                // Set the AppView UUID intent, since it wasn't provided
+                setIntent(new Intent(getIntent()).putExtra(AppView.UUID_EXTRA, uuidString));
+            }
+
+            // Determine app from intent extras if not overridden by .art file
+            if (artFileAppUuid == null && artFileAppName == null) {
+                 if (appUUIDStringExtra != null && !appUUIDStringExtra.isEmpty()) {
+                    app = new NvApp(appNameString,
+                            appUUIDStringExtra,
+                            -1, // App ID is not strictly needed if UUID is present
+                            getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
+                } else if (appIdString != null && !appIdString.isEmpty()) {
+                    app = new NvApp(getIntent().getStringExtra(Game.EXTRA_APP_NAME),
+                            null, // App UUID may or may not be present with App ID
+                            Integer.parseInt(appIdString),
+                            getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
+                } else if (appNameString != null && !appNameString.isEmpty()) {
+                     // Fallback to appNameString if appUUIDString is null
+                    artFileAppName = appNameString;
+                }
+            }
         }
 
-        // If UUID presents, launch the app directly.
-        if (appUUIDString != null && !appUUIDString.isEmpty()) {
-            app = new NvApp(appNameString,
-                    appUUIDString,
-                    -1,
-                    getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
-        } else if (appIdString != null && !appIdString.isEmpty()) {
-            app = new NvApp(getIntent().getStringExtra(Game.EXTRA_APP_NAME),
-                    getIntent().getStringExtra(Game.EXTRA_APP_UUID),
-                    Integer.parseInt(appIdString),
-                    getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
-        } else if (appNameString != null && !appNameString.isEmpty()) {
-            // Use appNameString to find the corresponding AppId
+        // If app data came from .art file or was determined by appNameString from extras
+        if (artFileAppUuid != null && !artFileAppUuid.isEmpty()) {
+            app = new NvApp(artFileAppName, // appName can be null if only UUID is provided
+                    artFileAppUuid,
+                    -1, // App ID is not strictly needed if UUID is present
+                    getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false)); // HDR info still from intent
+        } else if (artFileAppName != null && !artFileAppName.isEmpty()) {
+            // Use appNameString (from .art file or intent extra) to find the corresponding AppId and AppUUID
             try {
                 int appId = -1;
+                String appUuidFromFile = null;
                 String rawAppList = CacheHelper.readInputStreamToString(CacheHelper.openCacheFileForInput(getCacheDir(), "applist", uuidString));
 
                 if (rawAppList.isEmpty()) {
                     Dialog.displayDialog(ShortcutTrampoline.this,
                             getResources().getString(R.string.conn_error_title),
-                            getResources().getString(R.string.scut_invalid_app_id),
+                            getResources().getString(R.string.scut_invalid_app_id) + " (applist cache empty or unreadable)",
                             true);
+//                    finish();
                     return;
                 }
                 List<NvApp> applist = NvHTTP.getAppListByReader(new StringReader(rawAppList));
 
                 for (NvApp _app : applist) {
-                    if (_app.getAppName().equals(appNameString)) {
+                    if (_app.getAppName().equalsIgnoreCase(artFileAppName)) {
                         appId = _app.getAppId();
-                        appUUIDString = _app.getAppUUID();
+                        appUuidFromFile = _app.getAppUUID();
                         break;
                     }
                 }
-                if (appId < 0) {
+                if (appId < 0 && appUuidFromFile == null) { // Need at least one
                     Dialog.displayDialog(ShortcutTrampoline.this,
                             getResources().getString(R.string.conn_error_title),
-                            getResources().getString(R.string.scut_invalid_app_id),
+                            getResources().getString(R.string.scut_invalid_app_id) + " (app not found in cache)",
                             true);
+//                    finish();
                     return;
                 }
-                setIntent(new Intent(getIntent()).putExtra(Game.EXTRA_APP_ID, appId));
+                // Update intent with found app ID and UUID if they weren't originally there
+                Intent currentIntent = getIntent();
+                if (currentIntent.getStringExtra(Game.EXTRA_APP_ID) == null && appId != -1) {
+                    currentIntent.putExtra(Game.EXTRA_APP_ID, String.valueOf(appId));
+                }
+                if (currentIntent.getStringExtra(Game.EXTRA_APP_UUID) == null && appUuidFromFile != null) {
+                    currentIntent.putExtra(Game.EXTRA_APP_UUID, appUuidFromFile);
+                }
                 app = new NvApp(
-                        appNameString,
-                        appUUIDString,
+                        artFileAppName,
+                        appUuidFromFile,
                         appId,
                         getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
             } catch (IOException | XmlPullParserException e) {
+                Log.e(TAG, "Error processing app list from cache", e);
                 Dialog.displayDialog(ShortcutTrampoline.this,
                         getResources().getString(R.string.conn_error_title),
-                        getResources().getString(R.string.scut_invalid_app_id),
+                        getResources().getString(R.string.scut_invalid_app_id) + " (error parsing applist cache)",
                         true);
+//                finish();
                 return;
             }
         }
