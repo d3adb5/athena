@@ -44,7 +44,14 @@ public class LayoutSnappingHelper {
         // Calculate overlap percentage
         float overlapArea = overlapX * overlapY;
         float view1Area = view1.getWidth() * view1.getHeight();
-        float overlapPercentage = overlapArea / view1Area;
+        float view2Area = view2.getWidth() * view2.getHeight();
+
+        float overlapPercentage;
+        if (view1Area > view2Area) {
+            overlapPercentage = overlapArea / view2Area;
+        } else {
+            overlapPercentage = overlapArea / view1Area;
+        }
 
         return overlapPercentage >= OVERLAP_THRESHOLD;
     }
