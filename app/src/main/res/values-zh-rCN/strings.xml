@@ -611,4 +611,6 @@
     <!-- AppView Toast Messages -->
     <string name="file_export_cancelled">文件导出已取消。</string>
     <string name="app_removed_from_pc">应用已从电脑上移除</string>
+    <string name="title_export_sunshine_launcher_file">为 Sunshine 导出启动文件</string>
+    <string name="message_export_sunshine_launcher_file">为 Sunsihne 导出启动文件不稳定且随时可能失效。你需要在每次修改 APP 名称或图片以后重新导出。\n使用 Apollo 可获得更稳定的体验。</string>
 </resources>

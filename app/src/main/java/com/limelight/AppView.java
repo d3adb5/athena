@@ -579,7 +579,19 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
             }
 
             case EXPORT_LAUNCHER_FILE_ID: {
-                shortcutHelper.exportLauncherFile(computer, app.app);
+                if (app.app.getAppUUID() == null || (app.app.getAppUUID() != null && app.app.getAppUUID().isEmpty())) {
+                    UiHelper.displayConfirmationDialog(
+                            AppView.this,
+                            getResources().getString(R.string.title_export_sunshine_launcher_file),
+                            getResources().getString(R.string.message_export_sunshine_launcher_file),
+                            getResources().getString(R.string.proceed),
+                            getResources().getString(R.string.cancel),
+                            () -> shortcutHelper.exportLauncherFile(computer, app.app),
+                            null
+                    );
+                } else {
+                    shortcutHelper.exportLauncherFile(computer, app.app);
+                }
                 return true;
             }
 

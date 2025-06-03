@@ -649,4 +649,6 @@
     <!-- AppView Toast Messages -->
     <string name="file_export_cancelled">File export cancelled.</string>
     <string name="app_removed_from_pc">App removed from PC</string>
+    <string name="title_export_sunshine_launcher_file">Export Launcher File for Sunshine</string>
+    <string name="message_export_sunshine_launcher_file">Exporting launcher file for Sunshine is unstable, and may break at any moment. You\'ll need to export again every time if you changed the app name or image.\nUse Apollo for a more stable experience.</string>
 </resources>

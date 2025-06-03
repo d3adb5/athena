@@ -31,10 +31,11 @@ public class ShortcutHelper {
     public static final int REQUEST_CODE_EXPORT_ART_FILE = 778; // Unique request code
     public static String artFileContentToExport;
 
-    private static final String KEY_HOST_UUID = "host_uuid";
-    private static final String KEY_HOST_NAME = "host_name";
-    private static final String KEY_APP_UUID = "app_uuid";
-    private static final String KEY_APP_NAME = "app_name";
+    public static final String KEY_HOST_UUID = "host_uuid";
+    public static final String KEY_HOST_NAME = "host_name";
+    public static final String KEY_APP_UUID = "app_uuid";
+    public static final String KEY_APP_NAME = "app_name";
+    public static final String KEY_APP_ID = "app_id";
 
     public ShortcutHelper(Activity context) {
         this.context = context;
@@ -247,6 +248,10 @@ public class ShortcutHelper {
         }
         if (app.getAppName() != null && !app.getAppName().isEmpty()) {
             sb.append("[").append(KEY_APP_NAME).append("] ").append(app.getAppName()).append("\n");
+        } else {
+            if (app.getAppId() > 0) {
+                sb.append("[").append(KEY_APP_ID).append("] ").append(app.getAppId()).append("\n");
+            }
         }
 
         artFileContentToExport = sb.toString();
