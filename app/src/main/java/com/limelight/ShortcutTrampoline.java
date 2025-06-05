@@ -317,13 +317,20 @@ public class ShortcutTrampoline extends Activity {
                 if (line.startsWith("#") || line.isEmpty()) {
                     continue; // Skip comments and empty lines
                 }
+
+                if (!line.startsWith("[")) {
+                    throw new IOException("Invalid .art file format");
+                }
+
                 int separatorIndex = line.indexOf(' ');
                 if (separatorIndex > 0 && separatorIndex < line.length() - 1) {
                     String key = line.substring(0, separatorIndex).trim();
                     String value = line.substring(separatorIndex + 1).trim();
-                    if (key.startsWith("[") && key.endsWith("]")) {
+                    if (key.endsWith("]")) {
                         key = key.substring(1, key.length() - 1);
                         artData.put(key, value);
+                    } else {
+                        throw new IOException("Invalid .art file format");
                     }
                 }
             }
