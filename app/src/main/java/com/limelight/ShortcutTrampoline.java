@@ -18,6 +18,7 @@ import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
 import com.limelight.nvstream.http.PairingManager;
 import com.limelight.nvstream.wol.WakeOnLanSender;
+import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.utils.CacheHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.ServerHelper;
@@ -36,9 +37,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ShortcutTrampoline extends Activity {
+    private PreferenceConfiguration prefConfig;
     private String uuidString;
     private NvApp app;
     private ArrayList<Intent> intentStack = new ArrayList<>();
@@ -138,8 +141,8 @@ public class ShortcutTrampoline extends Activity {
                                             
                                             // Launch game if provided app ID, otherwise launch app view
                                             if (app != null) {
-                                                if (details.runningGameId == 0 || details.runningGameId == app.getAppId() || details.runningGameUUID == app.getAppUUID()) {
-                                                    intentStack.add(ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, false));
+                                                if (details.runningGameId == 0 || details.runningGameId == app.getAppId() || Objects.equals(details.runningGameUUID, app.getAppUUID())) {
+                                                    intentStack.add(ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, prefConfig.useVirtualDisplay));
 
                                                     // Close this activity
                                                     finish();
@@ -149,7 +152,7 @@ public class ShortcutTrampoline extends Activity {
                                                 } else {
                                                     // Create the start intent immediately, so we can safely unbind the managerBinder
                                                     // below before we return.
-                                                    final Intent startIntent = ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, false);
+                                                    final Intent startIntent = ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, prefConfig.useVirtualDisplay);
 
                                                     UiHelper.displayQuitConfirmationDialog(ShortcutTrampoline.this, new Runnable() {
                                                         @Override
@@ -189,7 +192,7 @@ public class ShortcutTrampoline extends Activity {
                                                 // If a game is running, we'll make the stream the top level activity
                                                 if (details.runningGameId != 0) {
                                                     intentStack.add(ServerHelper.createStartIntent(ShortcutTrampoline.this,
-                                                            new NvApp(null, null, details.runningGameId, false), details, managerBinder, false));
+                                                            new NvApp(null, null, details.runningGameId, false), details, managerBinder, prefConfig.useVirtualDisplay));
                                                 }
 
                                                 // Now start the activities
@@ -337,6 +340,8 @@ public class ShortcutTrampoline extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        prefConfig = PreferenceConfiguration.readPreferences(this);
 
         UiHelper.notifyNewRootView(this);
         ComputerDatabaseManager dbManager = new ComputerDatabaseManager(this);
