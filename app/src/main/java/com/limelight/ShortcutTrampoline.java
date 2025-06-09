@@ -235,7 +235,7 @@ public class ShortcutTrampoline extends Activity {
         }
     };
 
-    protected boolean validateInput(String hostUUID, String hostName, String appUUID, String appIDStr, String appName) {
+    protected boolean validateHostInput(String hostUUID, String hostName) {
         // Validate PC UUID/Name
         if (hostUUID == null && hostName == null) {
             Dialog.displayDialog(ShortcutTrampoline.this,
@@ -266,11 +266,13 @@ public class ShortcutTrampoline extends Activity {
             }
         }
 
+        return true;
+    }
+
+
+    protected boolean validateAppInput(String appUUID, String appIDStr, String appName) {
         if (appUUID == null && appIDStr == null && appName == null) {
-            Dialog.displayDialog(ShortcutTrampoline.this,
-                    getResources().getString(R.string.conn_error_title),
-                    getResources().getString(R.string.scut_invalid_app_id),
-                    true);
+            // We're just going to the AppView
             return false;
         }
 
@@ -397,7 +399,7 @@ public class ShortcutTrampoline extends Activity {
             }
         }
 
-        if (!validateInput(hostUUID, hostName, appUUID, appIDStr, appName)) {
+        if (!validateHostInput(hostUUID, hostName)) {
             // Invalid input, so just return
 //            finish();
             return;
@@ -424,71 +426,73 @@ public class ShortcutTrampoline extends Activity {
         // Set the AppView UUID intent
         setIntent(new Intent(getIntent()).putExtra(AppView.UUID_EXTRA, uuidString));
 
-        // If app data came from .art file or was determined by appNameString from extras
-        if (appUUID != null && !appUUID.isEmpty()) {
-            app = new NvApp(appName, // appName can be null if only UUID is provided
-                    appUUID,
-                    -1, // App ID is not strictly needed if UUID is present
-                    getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false)); // HDR info still from intent
-        } else if (appIDStr != null && !appIDStr.isEmpty()) {
-            int appID = Integer.parseInt(appIDStr);
-            app = new NvApp(appName, // appName can be null if only App ID is provided
-                    null,
-                    appID,
-                    getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false)); // HDR info still from intent
-        } else if (appName != null && !appName.isEmpty()) {
-            // Use appNameString (from .art file or intent extra) to find the corresponding AppId and AppUUID
-            try {
-                int appID = -1;
-                String appUuidFromFile = null;
-                String rawAppList = CacheHelper.readInputStreamToString(CacheHelper.openCacheFileForInput(getCacheDir(), "applist", uuidString));
-
-                if (rawAppList.isEmpty()) {
-                    Dialog.displayDialog(ShortcutTrampoline.this,
-                            getResources().getString(R.string.conn_error_title),
-                            getResources().getString(R.string.scut_invalid_app_id) + " (applist cache empty or unreadable)",
-                            true);
-//                    finish();
-                    return;
-                }
-                List<NvApp> applist = NvHTTP.getAppListByReader(new StringReader(rawAppList));
-
-                for (NvApp _app : applist) {
-                    if (_app.getAppName().equalsIgnoreCase(appName)) {
-                        appID = _app.getAppId();
-                        appUuidFromFile = _app.getAppUUID();
-                        break;
-                    }
-                }
-                if (appID < 0 && appUuidFromFile == null) { // Need at least one
-                    Dialog.displayDialog(ShortcutTrampoline.this,
-                            getResources().getString(R.string.conn_error_title),
-                            getResources().getString(R.string.scut_invalid_app_id) + " (app not found in cache)",
-                            true);
-//                    finish();
-                    return;
-                }
-                // Update intent with found app ID and UUID if they weren't originally there
-                Intent currentIntent = getIntent();
-                if (currentIntent.getStringExtra(Game.EXTRA_APP_ID) == null && appID != -1) {
-                    currentIntent.putExtra(Game.EXTRA_APP_ID, String.valueOf(appID));
-                }
-                if (currentIntent.getStringExtra(Game.EXTRA_APP_UUID) == null && appUuidFromFile != null) {
-                    currentIntent.putExtra(Game.EXTRA_APP_UUID, appUuidFromFile);
-                }
-                app = new NvApp(
-                        appName,
-                        appUuidFromFile,
+        if (validateAppInput(appUUID, appIDStr, appName)) {
+            // If app data came from .art file or was determined by appNameString from extras
+            if (appUUID != null && !appUUID.isEmpty()) {
+                app = new NvApp(appName, // appName can be null if only UUID is provided
+                        appUUID,
+                        -1, // App ID is not strictly needed if UUID is present
+                        getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false)); // HDR info still from intent
+            } else if (appIDStr != null && !appIDStr.isEmpty()) {
+                int appID = Integer.parseInt(appIDStr);
+                app = new NvApp(appName, // appName can be null if only App ID is provided
+                        null,
                         appID,
-                        getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
-            } catch (IOException | XmlPullParserException e) {
-                Log.e(TAG, "Error processing app list from cache", e);
-                Dialog.displayDialog(ShortcutTrampoline.this,
-                        getResources().getString(R.string.conn_error_title),
-                        getResources().getString(R.string.scut_invalid_app_id) + " (error parsing applist cache)",
-                        true);
+                        getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false)); // HDR info still from intent
+            } else if (appName != null && !appName.isEmpty()) {
+                // Use appNameString (from .art file or intent extra) to find the corresponding AppId and AppUUID
+                try {
+                    int appID = -1;
+                    String appUuidFromFile = null;
+                    String rawAppList = CacheHelper.readInputStreamToString(CacheHelper.openCacheFileForInput(getCacheDir(), "applist", uuidString));
+
+                    if (rawAppList.isEmpty()) {
+                        Dialog.displayDialog(ShortcutTrampoline.this,
+                                getResources().getString(R.string.conn_error_title),
+                                getResources().getString(R.string.scut_invalid_app_id) + " (applist cache empty or unreadable)",
+                                true);
+//                    finish();
+                        return;
+                    }
+                    List<NvApp> applist = NvHTTP.getAppListByReader(new StringReader(rawAppList));
+
+                    for (NvApp _app : applist) {
+                        if (_app.getAppName().equalsIgnoreCase(appName)) {
+                            appID = _app.getAppId();
+                            appUuidFromFile = _app.getAppUUID();
+                            break;
+                        }
+                    }
+                    if (appID < 0 && appUuidFromFile == null) { // Need at least one
+                        Dialog.displayDialog(ShortcutTrampoline.this,
+                                getResources().getString(R.string.conn_error_title),
+                                getResources().getString(R.string.scut_invalid_app_id) + " (app not found in cache)",
+                                true);
+//                    finish();
+                        return;
+                    }
+                    // Update intent with found app ID and UUID if they weren't originally there
+                    Intent currentIntent = getIntent();
+                    if (currentIntent.getStringExtra(Game.EXTRA_APP_ID) == null && appID != -1) {
+                        currentIntent.putExtra(Game.EXTRA_APP_ID, String.valueOf(appID));
+                    }
+                    if (currentIntent.getStringExtra(Game.EXTRA_APP_UUID) == null && appUuidFromFile != null) {
+                        currentIntent.putExtra(Game.EXTRA_APP_UUID, appUuidFromFile);
+                    }
+                    app = new NvApp(
+                            appName,
+                            appUuidFromFile,
+                            appID,
+                            getIntent().getBooleanExtra(Game.EXTRA_APP_HDR, false));
+                } catch (IOException | XmlPullParserException e) {
+                    Log.e(TAG, "Error processing app list from cache", e);
+                    Dialog.displayDialog(ShortcutTrampoline.this,
+                            getResources().getString(R.string.conn_error_title),
+                            getResources().getString(R.string.scut_invalid_app_id) + " (error parsing applist cache)",
+                            true);
 //                finish();
-                return;
+                    return;
+                }
             }
         }
 
