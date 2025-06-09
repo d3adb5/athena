@@ -28,6 +28,7 @@ public class TrackpadContext implements TouchContext {
     private double velocityX = 0.0;
     private double velocityY = 0.0;
     private long lastMoveTime;
+    private boolean isScrollTransitioning = false;
 
     private final NvConnection conn;
     private final int actionIndex;
@@ -49,6 +50,7 @@ public class TrackpadContext implements TouchContext {
     private static final double FLICK_THRESHOLD = 0.8;
     private static final int MOMENTUM_FRAME_INTERVAL_MS = 10;
     private static final int FLICK_VELOCITY_DECAY_TIMEOUT_MS = 50;
+    private static final int SCROLL_TRANSITION_TIMEOUT_MS = 200;
 
     public TrackpadContext(NvConnection conn, int actionIndex) {
         this.conn = conn;
@@ -62,6 +64,13 @@ public class TrackpadContext implements TouchContext {
         this.sensitivityX = (float) sensitivityX / 100;
         this.sensitivityY = (float) sensitivityY / 100;
     }
+
+    private final Runnable scrollTransitionRunnable = new Runnable() {
+        @Override
+        public void run() {
+            isScrollTransitioning = false;
+        }
+    };
 
     private final Runnable momentumRunnable = new Runnable() {
         @Override
@@ -179,6 +188,10 @@ public class TrackpadContext implements TouchContext {
         pendingDeltaX = pendingDeltaY = 0;
 
         if (isNewFinger) {
+            // A completely new gesture has started.
+            // Cancel any pending scroll->move transition.
+            handler.removeCallbacks(scrollTransitionRunnable);
+            isScrollTransitioning = false;
             maxPointerCountInGesture = pointerCount;
             originalTouchTime = eventTime;
             cancelled = confirmedMove = confirmedScroll = false;
@@ -201,6 +214,11 @@ public class TrackpadContext implements TouchContext {
                 confirmedDrag = false;
             }
         }
+
+        originalTouchX = lastTouchX = eventX;
+        originalTouchY = lastTouchY = eventY;
+
+        pendingDeltaX = pendingDeltaY = 0;
 
         return true;
     }
@@ -263,7 +281,10 @@ public class TrackpadContext implements TouchContext {
                 if (confirmedScroll) {
                     handler.post(scrollMomentumRunnable);
                 } else {
-                    handler.post(momentumRunnable);
+                    // A 1-finger move can flick. A >1 finger move that wasn't a scroll shouldn't cause a mouse move flick.
+                    if (maxPointerCountInGesture == 1) {
+                        handler.post(momentumRunnable);
+                    }
                 }
             }
         }
@@ -336,8 +357,11 @@ public class TrackpadContext implements TouchContext {
             short sendDeltaY = (short)pendingDeltaY;
 
             if (pointerCount == 1) {
-                if (sendDeltaX != 0 || sendDeltaY != 0) {
-                    conn.sendMouseMove(sendDeltaX, sendDeltaY);
+                // Don't move the mouse immediately after a scroll
+                if (!isScrollTransitioning) {
+                    if (sendDeltaX != 0 || sendDeltaY != 0) {
+                        conn.sendMouseMove(sendDeltaX, sendDeltaY);
+                    }
                 }
             } else {
                 if (actionIndex == 1) {
@@ -392,6 +416,18 @@ public class TrackpadContext implements TouchContext {
 
     @Override
     public void setPointerCount(int pointerCount) {
+        if (this.pointerCount == 2 && pointerCount == 1) {
+            // We just finished a 2-finger scroll.
+            // Block mouse movement for a short period to avoid stray movement
+            // from the remaining finger before it's lifted.
+            isScrollTransitioning = true;
+            handler.postDelayed(scrollTransitionRunnable, SCROLL_TRANSITION_TIMEOUT_MS);
+        } else if (this.pointerCount == 1 && pointerCount == 2) {
+            // User put a second finger down. If we were in a scroll transition, cancel it.
+            handler.removeCallbacks(scrollTransitionRunnable);
+            isScrollTransitioning = false;
+        }
+
         if (pointerCount < this.pointerCount && confirmedDrag && !isFlicking) {
             conn.sendMouseButtonUp(getMouseButtonIndex());
             confirmedDrag = false;
