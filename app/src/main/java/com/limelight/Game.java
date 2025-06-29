@@ -32,6 +32,7 @@ import com.limelight.nvstream.input.MouseButtonPacket;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.preferences.GlPreferences;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.GameGestures;
 import com.limelight.ui.StreamView;
 import com.limelight.utils.Dialog;
@@ -196,6 +197,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private boolean quitOnStop = false;
     private boolean isHidingOverlays;
     private boolean floatingButtonShown;
+    private boolean overlayToggleButtonShown;
     private TextView notificationOverlayView;
     private int requestedNotificationOverlayVisibility = View.GONE;
     private View performanceOverlayView;
@@ -268,10 +270,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public GameMenuCallbacks gameMenuCallbacks;
 
     private ImageButton floatingMenuButton;
+    private ImageButton overlayToggleButton;
     private float floatingButtonDX, floatingButtonDY;
     private boolean isButtonMoving = false;
     private static final float CLICK_ACTION_THRESHOLD = 5;
     private float floatingButtonStartX, floatingButtonStartY;
+
+    // Zoom button drag state
+    private float zoomButtonDX, zoomButtonDY;
+    private boolean isZoomButtonMoving = false;
+    private float zoomButtonStartX, zoomButtonStartY;
 
     @SuppressLint({"MissingInflatedId", "ClickableViewAccessibility"})
     @Override
@@ -375,6 +383,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 streamView,
                 prefConfig
         );
+
+        // Restore previous zoom & pan if enabled and saved
+        if (prefConfig.rememberZoomPan) {
+            streamView.post(() -> panZoomHandler.setInitialZoomAndPan(
+                    prefConfig.zoomScale,
+                    prefConfig.panOffsetX,
+                    prefConfig.panOffsetY));
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Request unbuffered input event dispatching for all input classes we handle here.
@@ -650,8 +666,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
 
-        // Initialize touch contexts
-        String mouseMode = PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_mode_list", "0");
+        // Initialize touch contexts based on preferences
+        // The mouse mode preference is also read in PreferenceConfiguration to set the boolean flags
+        String mouseMode = ProfilesManager.getInstance().getOverlayingSharedPreferences(this).getString("mouse_mode_list", "0");
         applyMouseMode(Integer.parseInt(mouseMode));
 
         // Initialize trackpad contexts
@@ -696,10 +713,87 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         gameMenuCallbacks = new GameMenu(this, conn);
-        
+
         floatingMenuButton = findViewById(R.id.floatingMenuButton);
         updateFloatingButtonVisibility(prefConfig.enableBackMenu && prefConfig.enableFloatingButton);
         initFloatingButton();
+
+        overlayToggleButton = findViewById(R.id.overlayToggleZoomButton);
+        setupOverlayToggleButton();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupOverlayToggleButton() {
+        if (overlayToggleButton != null) {
+            if (prefConfig.showOverlayZoomToggleButton) {
+                overlayToggleButton.setVisibility(View.VISIBLE);
+
+                // Set initial appearance based on current state
+                updateZoomButtonAppearance();
+
+                // Touch listener for drag and click
+                overlayToggleButton.setOnTouchListener((view, event) -> {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            zoomButtonStartX = event.getRawX();
+                            zoomButtonStartY = event.getRawY();
+                            zoomButtonDX = view.getX() - event.getRawX();
+                            zoomButtonDY = view.getY() - event.getRawY();
+                            isZoomButtonMoving = false;
+                            return true;
+                        case MotionEvent.ACTION_MOVE:
+                            float newX = event.getRawX() + zoomButtonDX;
+                            float newY = event.getRawY() + zoomButtonDY;
+
+                            // Check if it's a move or just a tap
+                            if (Math.abs(event.getRawX() - zoomButtonStartX) > CLICK_ACTION_THRESHOLD ||
+                                    Math.abs(event.getRawY() - zoomButtonStartY) > CLICK_ACTION_THRESHOLD) {
+                                isZoomButtonMoving = true;
+                            }
+
+                            // Ensure the button stays within screen bounds
+                            if (newX < 0) newX = 0;
+                            if (newY < 0) newY = 0;
+
+                            int maxOffsetX = getWindow().getDecorView().getWidth() - view.getWidth();
+                            if (newX > maxOffsetX) {
+                                newX = maxOffsetX;
+                            }
+
+                            int maxOffsetY = getWindow().getDecorView().getHeight() - view.getHeight();
+                            if (newY > maxOffsetY) {
+                                newY = maxOffsetY;
+                            }
+
+                            view.setX(newX);
+                            view.setY(newY);
+                            return true;
+                        case MotionEvent.ACTION_UP:
+                            if (!isZoomButtonMoving) {
+                                // It's a click event, toggle zoom mode
+                                toggleZoomMode();
+                                updateZoomButtonAppearance();
+                            }
+                            isZoomButtonMoving = false;
+                            return true;
+                        default:
+                            return false;
+                    }
+                });
+            } else {
+                overlayToggleButton.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void updateZoomButtonAppearance() {
+        if (overlayToggleButton != null) {
+            // Change background based on pan/zoom mode state
+            overlayToggleButton.setBackgroundResource(isPanZoomMode ?
+                R.drawable.floating_zoom_button_active : R.drawable.floating_zoom_button);
+            // No need for alpha changes since the color indicates the state
+            overlayToggleButton.setAlpha(1.0f);
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -876,6 +970,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     floatingMenuButton.setVisibility(View.GONE);
                 }
 
+                overlayToggleButtonShown = overlayToggleButton != null && overlayToggleButton.isShown();
+
+                if (overlayToggleButtonShown) {
+                    overlayToggleButton.setVisibility(View.GONE);
+                }
+
                 if (virtualController != null) {
                     virtualController.hide();
                 }
@@ -904,6 +1004,10 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
                 if (floatingButtonShown) {
                     floatingMenuButton.setVisibility(View.VISIBLE);
+                }
+
+                if (overlayToggleButtonShown) {
+                    overlayToggleButton.setVisibility(View.VISIBLE);
                 }
 
                 // Restore overlays to previous state when leaving PiP
@@ -1368,6 +1472,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
         if (highPerfWifiLock != null) {
             highPerfWifiLock.release();
+        }
+
+        // Save zoom/pan before other cleanup
+        if (prefConfig != null && prefConfig.rememberZoomPan && panZoomHandler != null) {
+            SharedPreferences basePrefs = PreferenceManager.getDefaultSharedPreferences(this);
+            basePrefs.edit()
+                    .putFloat("number_zoom_scale", panZoomHandler.getScaleFactor())
+                    .putFloat("number_pan_offset_x", panZoomHandler.getChildX())
+                    .putFloat("number_pan_offset_y", panZoomHandler.getChildY())
+                    .apply();
         }
 
         if (connectedToUsbDriverService) {
@@ -3261,6 +3375,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 // Sync local clipboard to host
                 handleFocusChange(true);
 
+                // Ensure overlay toggle button visibility is properly set
+                setupOverlayToggleButton();
+
                 hideSystemUi(1000);
             }
         });
@@ -3562,6 +3679,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
     public void toggleZoomMode() {
         this.isPanZoomMode = !this.isPanZoomMode;
+        updateZoomButtonAppearance();
     }
 
     public void rotateScreen() {
@@ -3585,6 +3703,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return;
             }
             applyMouseMode(which);
+            // Save the mouse mode preference
+            ProfilesManager.getInstance().getOverlayingSharedPreferences(this)
+                .edit()
+                .putString("mouse_mode_list", String.valueOf(which))
+                .apply();
         }).setTitle(getString(R.string.game_menu_select_mouse_mode)).create().show();
     }
 
@@ -3641,6 +3764,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // Always exit zoom mode if mouse mode has changed
         isPanZoomMode = false;
+        updateZoomButtonAppearance();
     }
 
     public void toggleHUD(){
