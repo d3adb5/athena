@@ -1084,8 +1084,36 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 (prefConfig.framePacing == PreferenceConfiguration.FRAME_PACING_BALANCED && prefConfig.reduceRefreshRate);
     }
 
+    private Display getSecondaryDisplay() {
+        DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+        Display display = null;
+            Display[] displays = displayManager.getDisplays();
+            int mainDisplayId = Display.DEFAULT_DISPLAY;
+            int secondaryDisplayId = -1;
+            for (Display displayVariant : displays) {
+                LimeLog.info(displayVariant.toString());
+                if (displayVariant.getDisplayId() != mainDisplayId) {
+                    secondaryDisplayId = displayVariant.getDisplayId();
+                    break;
+                }
+            }
+
+            if (secondaryDisplayId != -1) {
+               display = displayManager.getDisplay(secondaryDisplayId);
+            }
+            return display;
+        }
+
+        private Boolean isSecondaryDisplayActive() {
+            return secondaryDisplayPresentation != null;
+        }
+
     private float prepareDisplayForRendering() {
-        Display display = getWindowManager().getDefaultDisplay();
+       Display display = getWindowManager().getDefaultDisplay();;
+
+        if (prefConfig.enableExDisplay && isSecondaryDisplayActive()) {
+            display = getSecondaryDisplay();
+        }
         WindowManager.LayoutParams windowLayoutParams = getWindow().getAttributes();
         float displayRefreshRate;
 
@@ -1242,7 +1270,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             double screenAspectRatio = ((double)screenSize.y) / screenSize.x;
             double streamAspectRatio = ((double)displayHeight) / displayWidth;
-            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001) {
+            // Allows a different aspect ratio on external devices (3d 3840*1080)
+            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001
+                    || (prefConfig.enableExDisplay && isSecondaryDisplayActive())) {
                 LimeLog.info("Stream has compatible aspect ratio with output display");
                 aspectRatioMatch = true;
             }
@@ -1261,13 +1291,15 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         desiredRefreshRate = displayRefreshRate;
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
-                getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+                getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+                || prefConfig.enableExDisplay) {
             // TVs may take a few moments to switch refresh rates, and we can probably assume
             // it will be eventually activated.
+            // external displays cant be compared with displaymanager currents display refreshrate
             // TODO: Improve this
             return displayRefreshRate;
         }
-        else {
+       else {
             // Use the lower of the current refresh rate and the selected refresh rate.
             // The preferred refresh rate may not actually be applied (ex: Battery Saver mode).
             return Math.min(getWindowManager().getDefaultDisplay().getRefreshRate(), displayRefreshRate);
@@ -1336,8 +1368,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         instance = null;
 
-        if(presentation!=null){
-            presentation.dismiss();
+        if(secondaryDisplayPresentation !=null){
+            secondaryDisplayPresentation.dismiss();
+            secondaryDisplayPresentation = null;
         }
 
         if (controllerHandler != null) {
@@ -2324,7 +2357,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     // Returns true if the event was consumed
     // NB: View is only present if called from a view callback
     private boolean handleMotionEvent(View view, MotionEvent event) {
-
         // Pass through mouse/touch/joystick input if we're not grabbing
         if (!grabbedInput) {
             return false;
@@ -2361,6 +2393,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                                                     event.getToolType(0) == MotionEvent.TOOL_TYPE_ERASER)) ||
                                     eventSource == 12290) // 12290 = Samsung DeX mode desktop mouse
             ) {
+                /*
+                 * Allows for remote desktop control like mouse movement without the need to press
+                 * down
+                 */
+                if(prefConfig.enableExDisplay
+                        && isSecondaryDisplayActive()
+                        && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
+                    updateMousePosition(view, event);
+                    return true;
+                }
                 int buttonState = event.getButtonState();
                 int changedButtons = buttonState ^ lastButtonState;
 
@@ -2895,7 +2937,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private void updateMousePosition(View touchedView, MotionEvent event) {
         // X and Y are already relative to the provided view object
         float eventX, eventY;
-
         // For our StreamView itself, we can use the coordinates unmodified.
         if (touchedView == streamView) {
             eventX = event.getX(0);
@@ -3659,30 +3700,27 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
     }
 
-    public SecondaryDisplayPresentation presentation;
+    public SecondaryDisplayPresentation secondaryDisplayPresentation;
     public void showSecondScreen(){
-        DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
-        Display[] displays = displayManager.getDisplays();
-        int mainDisplayId = Display.DEFAULT_DISPLAY;
-        int secondaryDisplayId = -1;
-        for (Display display : displays) {
-//            LimeLog.info(display.toString());
-            if (display.getDisplayId() != mainDisplayId) {
-                secondaryDisplayId = display.getDisplayId();
-                break;
+            Display secondaryDisplay = getSecondaryDisplay();
+
+            if(secondaryDisplay != null) {
+                Toast.makeText(Game.this,
+                        getString(R.string.external_display_info) + " "
+                                + secondaryDisplay.getMode().getPhysicalWidth() + "x"
+                                + secondaryDisplay.getMode().getPhysicalHeight() + " "
+                                + secondaryDisplay.getMode().getRefreshRate() + "Hz",
+                        Toast.LENGTH_LONG).show();
+
+                secondaryDisplayPresentation = new SecondaryDisplayPresentation(this, secondaryDisplay);
+                secondaryDisplayPresentation.show();
+                if (rootView != null) {
+                    ((ViewGroup) rootView).removeView(streamView); // <- fix
+                    secondaryDisplayPresentation.addView(streamView);
+                }
+                // Force mouse mode as trackpad during presentation as user won't see anything on device screen
+                applyMouseMode(2);
             }
-        }
-        if (secondaryDisplayId != -1) {
-            Display secondaryDisplay = displayManager.getDisplay(secondaryDisplayId);
-            presentation = new SecondaryDisplayPresentation(this, secondaryDisplay);
-            presentation.show();
-            if(rootView!= null) {
-                ((ViewGroup)rootView).removeView(streamView); // <- fix
-                presentation.addView(streamView);
-            }
-            // Force mouse mode as trackpad during presentation as user won't see anything on device screen
-            applyMouseMode(2);
-        }
     }
 
     private void updateFloatingButtonVisibility(boolean show) {

@@ -586,6 +586,7 @@
     <string name="vdisplay_not_supported"><![CDATA[Virtual display isn\'t supported on this server. Please use <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> as the host streaming software.]]></string>
     <string name="clipboard_sync_unsupported">This server does not support clipboard sync. Please install or upgrade your server to the latest version of Apollo.</string>
     <string name="send_clipboard_failed">Failed to send clipboard: </string>
+    <string name="external_display_info">External Display connected with:  </string>
     <string name="get_clipboard_failed">Failed to get clipboard: </string>
     <string name="send_clipboard_success">Clipboard sent successfully</string>
     <string name="get_clipboard_success">Clipboard get successfully</string>
