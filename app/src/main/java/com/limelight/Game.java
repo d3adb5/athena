@@ -1105,13 +1105,13 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         private Boolean isSecondaryDisplayActive() {
-            return secondaryDisplayPresentation != null;
+            return prefConfig.enableExDisplay && secondaryDisplayPresentation != null;
         }
 
     private float prepareDisplayForRendering() {
        Display display = getWindowManager().getDefaultDisplay();;
 
-        if (prefConfig.enableExDisplay && isSecondaryDisplayActive()) {
+        if (isSecondaryDisplayActive()) {
             display = getSecondaryDisplay();
         }
         WindowManager.LayoutParams windowLayoutParams = getWindow().getAttributes();
@@ -1271,8 +1271,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             double screenAspectRatio = ((double)screenSize.y) / screenSize.x;
             double streamAspectRatio = ((double)displayHeight) / displayWidth;
             // Allows a different aspect ratio on external devices (3d 3840*1080)
-            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001
-                    || (prefConfig.enableExDisplay && isSecondaryDisplayActive())) {
+            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001 || isSecondaryDisplayActive()) {
                 LimeLog.info("Stream has compatible aspect ratio with output display");
                 aspectRatioMatch = true;
             }
@@ -1292,7 +1291,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
                 getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-                || prefConfig.enableExDisplay) {
+                || isSecondaryDisplayActive()) {
             // TVs may take a few moments to switch refresh rates, and we can probably assume
             // it will be eventually activated.
             // external displays cant be compared with displaymanager currents display refreshrate
@@ -2397,9 +2396,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                  * Allows for remote desktop control like mouse movement without the need to press
                  * down
                  */
-                if(prefConfig.enableExDisplay
-                        && isSecondaryDisplayActive()
-                        && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
+                if (isSecondaryDisplayActive() && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
                     updateMousePosition(view, event);
                     return true;
                 }
