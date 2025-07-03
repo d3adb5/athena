@@ -59,6 +59,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Outline;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
@@ -72,6 +73,7 @@ import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.util.Rational;
 import android.view.Display;
 import android.view.Gravity;
@@ -1109,7 +1111,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
     private float prepareDisplayForRendering() {
-       Display display = getWindowManager().getDefaultDisplay();;
+       Display display = getWindowManager().getDefaultDisplay();
 
         if (isSecondaryDisplayActive()) {
             display = getSecondaryDisplay();
@@ -2931,11 +2933,70 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     }
 
+    /**
+     * Maps MotionEvent coordinates from the internal display to the given streamView
+     * on the external display by scaling from the primary display's resolution to
+     * the streamView's size.
+     *
+     * @param event      The MotionEvent to map (typically from ACTION_HOVER)
+     * @param streamView The View shown on the external display
+     * @return           A PointF with the mapped (x, y) inside the streamView
+     */
+    public PointF mapMouseCoordinatesToStreamView(MotionEvent event, View streamView) {
+        if (event == null || streamView == null) {
+            Log.w("MouseMapper", "Event or StreamView is null");
+            return new PointF(0, 0);
+        }
+
+        float sourceWidth = 0f;
+        float sourceHeight = 0f;
+
+        int[] loc = new int[2];
+        if (rootView instanceof View) {
+            View mouseHoverArea = (View) rootView;
+            mouseHoverArea.getLocationOnScreen(loc);
+            sourceWidth = mouseHoverArea.getWidth();
+            sourceHeight = mouseHoverArea.getHeight();
+        }
+
+        float rawX = event.getX();
+        float rawY = event.getY();
+
+        float targetWidth = streamView.getWidth();
+        float targetHeight = streamView.getHeight();
+
+        // Calculate relative position in source display
+        float relativeX = rawX / sourceWidth;
+        float relativeY = rawY / sourceHeight;
+
+        // Scale to target streamView
+        float scaledX = relativeX * targetWidth;
+        float scaledY = relativeY * targetHeight;
+
+        // Clamp within bounds
+        scaledX = Math.max(0, Math.min(scaledX, targetWidth - 1));
+        scaledY = Math.max(0, Math.min(scaledY, targetHeight - 1));
+
+        // Debug log
+        Log.d("MouseMapper", String.format(
+                "RawX=%.1f RawY=%.1f → RelX=%.3f RelY=%.3f → ScaledX=%.1f ScaledY=%.1f (StreamView size %.0fx%.0f) (SourceView size %.0fx%.0f)",
+                rawX, rawY, relativeX, relativeY, scaledX, scaledY, targetWidth, targetHeight, sourceWidth, sourceHeight
+        ));
+
+        return new PointF(scaledX, scaledY);
+    }
+
+
     private void updateMousePosition(View touchedView, MotionEvent event) {
         // X and Y are already relative to the provided view object
         float eventX, eventY;
         // For our StreamView itself, we can use the coordinates unmodified.
-        if (touchedView == streamView) {
+
+        if(isSecondaryDisplayActive()) {
+            PointF mappedCoordinates = mapMouseCoordinatesToStreamView(event, streamView);
+            eventX = mappedCoordinates.x;
+            eventY = mappedCoordinates.y;
+        } else if (touchedView == streamView) {
             eventX = event.getX(0);
             eventY = event.getY(0);
         }
