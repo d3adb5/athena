@@ -1105,7 +1105,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         private Boolean isSecondaryDisplayActive() {
-            return prefConfig.enableExDisplay && secondaryDisplayPresentation != null;
+            return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null || getSecondaryDisplay() != null);
         }
 
     private float prepareDisplayForRendering() {
