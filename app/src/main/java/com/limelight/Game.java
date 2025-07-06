@@ -2424,17 +2424,15 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 }
                 /*
                  * Allows full desktop mouse control also on devices like samsung
-                 * which dont support RelativeMouseAxes due to virtual dex mouse override
                  * For secondary screens only
-                 * Not working with games mostly
-                 * As streamView is not in focus on primary display system ui interferes
+                 * Not working with games mostly due to As streamView is not in focus and
+                 * systemUi interference when reaching corners
                  * To make it work, use full secondary mode
                  */
                 else if(isSecondaryDisplayActive() && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
                     if (prefConfig.absoluteMouseMode) {
                          updateMousePosition(view, event);
                     } else {
-                        Toast.makeText(Game.this, event.getAxisValue(MotionEvent.AXIS_RELATIVE_X) + " ", Toast.LENGTH_SHORT).show();
                         mouseMove((int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), (int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y));
                     }
                 } else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
