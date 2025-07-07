@@ -8,7 +8,7 @@ import android.util.Log;
 public class StartTouchPadReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("StartTouchPadServiceReceiver", "onReceive called");
+        // Open TouchpadView
         Intent serviceIntent = new Intent(context, TouchPadOverlayService.class);
         context.startService(serviceIntent);
     }

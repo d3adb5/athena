@@ -71,7 +71,7 @@ public class SecondaryScreenNotification extends AppCompatActivity {
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Second Screen is active")
-                .setContentText("Touch to open touchpad")
+                .setContentText("Touch to open virtual touchpad or make physical keyboard mouse events work again on second screen")
                 .setSmallIcon(R.drawable.app_icon)
                 .setOngoing(true)
                 .setContentIntent(pendingIntent)
