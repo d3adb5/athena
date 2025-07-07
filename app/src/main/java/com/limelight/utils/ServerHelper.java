@@ -5,7 +5,9 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.display.DisplayManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.view.Display;
 import android.widget.Toast;
 
@@ -14,6 +16,7 @@ import com.limelight.Game;
 import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.ShortcutTrampoline;
+import com.limelight.TouchPadOverlayService;
 import com.limelight.binding.PlatformBinding;
 import com.limelight.computers.ComputerManagerService;
 import com.limelight.nvstream.http.ComputerDetails;
@@ -87,7 +90,7 @@ public class ServerHelper {
         Intent intent = null;
         PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
         // Try to add secondary DisplayContext if supported and connected
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay) && getSecondaryDisplay(parent) != null) {
             Context displayContext = parent.createDisplayContext(getSecondaryDisplay(parent)); // use secondary display
             intent = new Intent(displayContext, Game.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -150,6 +153,16 @@ public class ServerHelper {
 
         if (options != null) {
             parent.startActivity(intent, options.toBundle());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!Settings.canDrawOverlays(parent)) {
+                    Intent touchpadIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:" + parent.getPackageName()));
+                    parent.startActivityForResult(touchpadIntent, 1234);
+                } else {
+                    Intent touchpadIntent = new Intent(parent, TouchPadOverlayService.class);
+                    parent.startService(touchpadIntent);
+                }
+            }
         } else {
             // Fallback: launch normally on primary display
             parent.startActivity(intent);

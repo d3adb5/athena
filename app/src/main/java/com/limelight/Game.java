@@ -138,9 +138,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private static final int STYLUS_UP_DEAD_ZONE_DELAY = 150;
     private static final int STYLUS_UP_DEAD_ZONE_RADIUS = 50;
 
-    private static final int THREE_FINGER_TAP_THRESHOLD = 300;
-    private static final int FOUR_FINGER_TAP_THRESHOLD = 300;
-    private static final int FIVE_FINGER_TAP_THRESHOLD = 300;
+    public static final int THREE_FINGER_TAP_THRESHOLD = 300;
+    public static final int FOUR_FINGER_TAP_THRESHOLD = 300;
+    public static final int FIVE_FINGER_TAP_THRESHOLD = 300;
 
     private ControllerHandler controllerHandler;
     private KeyboardTranslator keyboardTranslator;
@@ -157,7 +157,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     private int displayHeight;
     private int currentOrientation;
 
-    private NvConnection conn;
+    public NvConnection conn;
     private SpinnerDialog spinner;
     private boolean displayedFailureDialog = false;
     private boolean connecting = false;
@@ -2859,7 +2859,6 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private boolean handleMultiTouchGesture(MotionEvent event, int eventAction, int pointerCount, View view) {
-
         if (eventAction == MotionEvent.ACTION_POINTER_DOWN) {
             if (pointerCount == 3) {
                 threeFingerDownTime = event.getEventTime();

@@ -3,12 +3,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA"/>
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA"/>
-
 
     <!-- We don't need a MulticastLock on API level 34+ because we use NsdManager for mDNS -->
     <uses-permission
@@ -62,7 +63,7 @@
             android:enabled="true"
             android:exported="true">
         </provider>
-
+        <receiver android:name=".StartTouchPadReceiver" />
         <!-- Samsung multi-window support -->
         <uses-library
             android:name="com.sec.android.app.multiwindow"
@@ -104,6 +105,8 @@
                 <category android:name="tv.ouya.intent.category.APP" />
             </intent-filter>
         </activity>
+        <activity android:name=".SecondaryScreenNotification"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <!-- Small hack to support launcher shortcuts without relaunching over and over again when the back button is pressed -->
         <activity
             android:name=".ShortcutTrampoline"
@@ -186,6 +189,9 @@
         <service
             android:name=".binding.input.driver.UsbDriverService"
             android:label="Usb Driver Service" />
+
+        <service android:name=".TouchPadOverlayService"
+            android:exported="false" />
 
         <activity
             android:name=".HelpActivity"
