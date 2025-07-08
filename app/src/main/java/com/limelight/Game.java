@@ -2,6 +2,7 @@ package com.limelight;
 
 
 import static com.limelight.SecondaryScreenNotification.SECONDARY_SCREEN_NOTIFICATION_ID;
+import static com.limelight.utils.ServerHelper.getActiveDisplay;
 import static com.limelight.utils.ServerHelper.getSecondaryDisplay;
 
 import com.limelight.binding.PlatformBinding;
@@ -484,7 +485,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         if (prefConfig.enableHdr) {
             // Start our HDR checklist
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                Display display = getWindowManager().getDefaultDisplay();
+                Display display = getActiveDisplay(Game.this, prefConfig);
                 Display.HdrCapabilities hdrCaps = display.getHdrCapabilities();
 
                 // We must now ensure our display is compatible with HDR10
@@ -830,7 +831,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private void setPreferredOrientationForCurrentDisplay() {
-        Display display = getWindowManager().getDefaultDisplay();
+        Display display = getActiveDisplay(Game.this, prefConfig);
 
         // For semi-square displays, we use more complex logic to determine which orientation to use (if any)
         if (PreferenceConfiguration.isSquarishScreen(display)) {
@@ -1097,7 +1098,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Display display = getWindowManager().getDefaultDisplay();
+            Display display = getActiveDisplay(Game.this, prefConfig);
             for (Display.Mode candidate : display.getSupportedModes()) {
                 // Ignore insets if this is an exact match for the display resolution
                 if ((width == candidate.getPhysicalWidth() && height == candidate.getPhysicalHeight()) ||
@@ -1121,7 +1122,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
 
     private float prepareDisplayForRendering() {
-       Display display = getWindowManager().getDefaultDisplay();
+       Display display = getActiveDisplay(Game.this, prefConfig);
 
         if (isSecondaryDisplayActive()) {
             display = getSecondaryDisplay(this);
