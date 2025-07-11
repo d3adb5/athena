@@ -82,4 +82,16 @@
         android:src="@drawable/ic_add"
         style="?android:attr/borderlessButtonStyle"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/profilesButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="24dp"
+        android:src="@drawable/ic_profiles"
+        android:contentDescription="@string/profile_manager_choose_profile"
+        android:layout_margin="16dp" />
+
 </RelativeLayout>

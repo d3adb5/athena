@@ -65,7 +65,7 @@ public class ProfilesNavigationTest {
                 .setComponentNameAndServiceForBindService(cn, binder);
 
         // Apply an AppCompat theme required by ProfilesActivity
-        ApplicationProvider.getApplicationContext().setTheme(R.style.SettingsTheme);
+        // ApplicationProvider.getApplicationContext().setTheme(R.style.SettingsTheme);
     }
 
     @Test

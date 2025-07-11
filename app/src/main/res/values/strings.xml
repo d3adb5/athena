@@ -672,4 +672,11 @@
     <string name="profile_manager_no_profiles_yet">No profiles yet</string>
     <string name="profile_manager_profiles_description">Profiles allow you to create and save different streaming configurations. Each profile stores its own settings which can be quickly switched between.</string>
     <string name="profile_manager_tap_create_profile">Tap + to create your first profile</string>
+    <string name="profile_manager_choose_profile">Choose Profile</string>
+    <string name="profile_manager_deactivated_profile">Deactivated profile</string>
+    <string name="profile_manager_activated_profile">Activated profile \'%s\'</string>
+    <string name="profile_manager_delete_profile">Delete Profile</string>
+    <string name="profile_manager_confirm_profile_deleteion">Are you sure you want to delete \'%s\'?</string>
+    <string name="profile_manager_delete">Delete</string>
+    <string name="profile_manager_profile_deleted">Deleted profile \'%s\'</string>
 </resources>

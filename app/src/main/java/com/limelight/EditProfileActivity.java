@@ -1,7 +1,6 @@
 package com.limelight;
 
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,9 +10,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 
-import com.limelight.profiles.OptionDiffUtil;
+import com.bytehamster.lib.preferencesearch.SearchConfiguration;
+import com.bytehamster.lib.preferencesearch.SearchPreference;
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResult;
+import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener;
 import com.limelight.profiles.ProfilesManager;
 import com.limelight.profiles.SettingsProfile;
 import com.limelight.utils.UiHelper;
@@ -23,10 +24,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class EditProfileActivity extends AppCompatActivity {
+public class EditProfileActivity extends AppCompatActivity implements SearchPreferenceResultListener {
     private String profileUuid;
     private SettingsProfile currentProfile;
     private InMemorySharedPreferences inMemoryPrefs;
+    private ProfilePreferenceFragment prefsFragment;
     private String pendingProfileName; // Holds new name for unsaved profiles
 
     @Override
@@ -68,10 +70,12 @@ public class EditProfileActivity extends AppCompatActivity {
             inMemoryPrefs = new InMemorySharedPreferences(new HashMap<>());
         }
 
+        prefsFragment = new ProfilePreferenceFragment();
+
         // Load preference fragment
         getSupportFragmentManager()
             .beginTransaction()
-            .replace(R.id.preferences_container, new ProfilePreferenceFragment())
+            .replace(R.id.preferences_container, prefsFragment)
             .commit();
     }
 
@@ -97,6 +101,12 @@ public class EditProfileActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSearchResultClicked(SearchPreferenceResult result) {
+        result.closeSearchPage(this);
+        result.highlight(prefsFragment);
     }
 
     private void saveProfile() {
@@ -165,7 +175,7 @@ public class EditProfileActivity extends AppCompatActivity {
                         setTitle(getString(R.string.profile_manager_new_profile_with, newName));
                     }
                 })
-                .setNegativeButton(R.string.cancel, null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show();
     }
 
@@ -218,24 +228,28 @@ public class EditProfileActivity extends AppCompatActivity {
 
             // Highlight changed preferences
             java.util.Map<String, ?> patch = memPrefs.getAll();
-            int accent = androidx.core.content.ContextCompat.getColor(requireContext(), R.color.profileAccent);
-            highlightPreferences(getPreferenceScreen(), patch.keySet(), accent);
+            highlightPreferences(getPreferenceScreen(), patch.keySet());
+
+            SearchPreference searchPreference = findPreference("searchPreference");
+            assert searchPreference != null;
+            SearchConfiguration config = searchPreference.getSearchConfiguration();
+            config.setActivity(act);
+            config.index(R.xml.preferences);
         }
 
-        private void highlightPreferences(androidx.preference.Preference pref, java.util.Set<String> changedKeys, int accent) {
+        private void highlightPreferences(androidx.preference.Preference pref, java.util.Set<String> changedKeys) {
             if (pref == null) return;
 
             if (pref instanceof androidx.preference.PreferenceGroup) {
                 androidx.preference.PreferenceGroup group = (androidx.preference.PreferenceGroup) pref;
                 for (int i = 0; i < group.getPreferenceCount(); i++) {
-                    highlightPreferences(group.getPreference(i), changedKeys, accent);
+                    highlightPreferences(group.getPreference(i), changedKeys);
                 }
             } else {
                 String key = pref.getKey();
                 if (key != null && changedKeys.contains(key)) {
-                    android.text.SpannableString span = new android.text.SpannableString(pref.getTitle());
-                    span.setSpan(new android.text.style.ForegroundColorSpan(accent), 0, span.length(), 0);
-                    pref.setTitle(span);
+                    CharSequence prefTitle = pref.getTitle();
+                    pref.setTitle(prefTitle + "*");
                 }
             }
         }

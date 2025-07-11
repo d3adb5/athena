@@ -54,10 +54,10 @@ public class ProfilesAdapter extends RecyclerView.Adapter<ProfilesAdapter.Profil
         holder.profileActive.setOnClickListener(v -> {
             if (isActive) {
                 profilesManager.setActive(null);
-                Toast.makeText(context, "Deactivated profile", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, R.string.profile_manager_deactivated_profile, Toast.LENGTH_SHORT).show();
             } else {
                 profilesManager.setActive(profile.getUuid());
-                Toast.makeText(context, "Activated profile '" + profile.getName() + "'", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(R.string.profile_manager_activated_profile, profile.getName()), Toast.LENGTH_SHORT).show();
             }
             profilesManager.save(context);
         });
@@ -70,14 +70,14 @@ public class ProfilesAdapter extends RecyclerView.Adapter<ProfilesAdapter.Profil
 
         holder.deleteProfile.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
-                .setTitle("Delete Profile")
-                .setMessage("Are you sure you want to delete '" + profile.getName() + "'?")
-                .setPositiveButton("Delete", (dialog, which) -> {
+                .setTitle(R.string.profile_manager_delete_profile)
+                .setMessage(context.getString(R.string.profile_manager_confirm_profile_deleteion, profile.getName()))
+                .setPositiveButton(R.string.profile_manager_delete, (dialog, which) -> {
                     profilesManager.delete(profile.getUuid());
                     profilesManager.save(context);
-                    Toast.makeText(context, "Deleted profile '" + profile.getName() + "'", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.profile_manager_profile_deleted, profile.getName()), Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(context.getString(R.string.cancel), null)
                 .show();
         });
 

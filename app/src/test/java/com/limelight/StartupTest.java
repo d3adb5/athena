@@ -50,8 +50,8 @@ public class StartupTest {
 
     @Test
     public void testApplicationStartup() {
-        // Test MoonlightApplication creation and initialization
-        MoonlightApplication app = new MoonlightApplication();
+        // Test ArtemisApplication creation and initialization
+        ArtemisApplication app = new ArtemisApplication();
         app.onCreate();
 
         // Verify ProfilesManager was initialized

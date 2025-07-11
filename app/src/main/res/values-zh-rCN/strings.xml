@@ -628,8 +628,15 @@
     <string name="profile_manager_edit_profile_name">编辑配置名称</string>
     <string name="profile_manager_name_cannot_be_blank">名称不能为空</string>
     <string name="profile_manager_edit_profile_with">编辑配置：%s</string>
-    <string name="profile_manager_new_profile_with">新建配置：%s</string>
-    <string name="profile_manager_no_profiles_yet">没有配置</string>
+    <string name="profile_manager_new_profile_with">新配置：%s</string>
+    <string name="profile_manager_no_profiles_yet">尚无配置</string>
     <string name="profile_manager_profiles_description">配置文件允许您创建并保存不同的串流配置。每个配置文件都存储各自的设置，可以快速切换。</string>
     <string name="profile_manager_tap_create_profile">点击 + 以创建您的第一个配置文件</string>
+    <string name="profile_manager_choose_profile">选择配置</string>
+    <string name="profile_manager_deactivated_profile">配置已停用</string>
+    <string name="profile_manager_activated_profile">已激活配置 \'%s\'</string>
+    <string name="profile_manager_delete_profile">删除配置</string>
+    <string name="profile_manager_confirm_profile_deleteion">确认要删除配置 \'%s\' 吗?</string>
+    <string name="profile_manager_delete">删除</string>
+    <string name="profile_manager_profile_deleted">配置 \'%s\' 已删除</string>
 </resources>

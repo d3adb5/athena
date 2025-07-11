@@ -44,7 +44,7 @@ public class ProfilesActivityUiTest {
     @Before
     public void setUp() {
         context = ApplicationProvider.getApplicationContext();
-        ApplicationProvider.getApplicationContext().setTheme(R.style.SettingsTheme);
+//        ApplicationProvider.getApplicationContext().setTheme(R.style.SettingsTheme);
         ProfilesManager.instance = null;
         pm = ProfilesManager.getInstance();
         pm.load(context);

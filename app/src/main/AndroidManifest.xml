@@ -43,7 +43,7 @@
         android:required="false"/>
 
     <application
-        android:name=".MoonlightApplication"
+        android:name=".ArtemisApplication"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/backup_rules_s"
@@ -228,8 +228,7 @@
 
 
         <activity android:name=".DebugInfoActivity"
-            android:launchMode="singleTask"
-            android:theme="@style/StreamTheme"/>
+            android:launchMode="singleTask"/>
 
         <!-- 无障碍 实体键盘 屏蔽某些快捷键 -->
         <service
