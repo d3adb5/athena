@@ -116,7 +116,7 @@
     <!-- General strings -->
     <string name="ip_hint">IP address of host PC</string>
     <string name="searching_pc">Searching for host PCs on your local network…\n\n
-        Ensure Sunshine is running on your host PC or GameStream is enabled in the GeForce Experience SHIELD settings.</string>
+        Ensure Apollo is running on your host PC.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="lost_connection">Lost connection to PC</string>
@@ -664,7 +664,7 @@
     <string name="profile_manager_profile_not_found">Profile not found</string>
     <string name="profile_manager_edit_profile">"Edit Profile: "</string>
     <string name="profile_manager_profile">"Profile "</string>
-    <string name="profile_manager_profile_saved">Profile %s saved.</string>
+    <string name="profile_manager_profile_saved">Profile \'%s\' saved.</string>
     <string name="profile_manager_edit_profile_name">Edit Profile Name</string>
     <string name="profile_manager_name_cannot_be_blank">Name cannot be blank</string>
     <string name="profile_manager_edit_profile_with">Edit Profile: %s</string>

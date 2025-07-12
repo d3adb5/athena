@@ -77,7 +77,7 @@
     <string name="ip_hint">串流电脑的IP地址</string>
     <string name="searching_pc">在你的本地网络中搜索串流主机PC...
 \n
-\n 确保Sunshine在主机上运行，或在GeForce Experience SHIELD设置中启用GameStream。</string>
+\n 请确保 Apollo 正在主机上运行。</string>
     <string name="yes"> 确定 </string>
     <string name="no"> 取消 </string>
     <string name="lost_connection"> 与电脑失去连接 </string>
@@ -634,11 +634,11 @@
     <string name="profile_manager_tap_create_profile">点击 + 以创建您的第一个配置文件</string>
     <string name="profile_manager_choose_profile">选择配置</string>
     <string name="profile_manager_deactivated_profile">配置已停用</string>
-    <string name="profile_manager_activated_profile">已激活配置 \'%s\'</string>
+    <string name="profile_manager_activated_profile">已激活配置 %s</string>
     <string name="profile_manager_delete_profile">删除配置</string>
-    <string name="profile_manager_confirm_profile_deleteion">确认要删除配置 \'%s\' 吗?</string>
+    <string name="profile_manager_confirm_profile_deleteion">确认要删除配置 %s 吗?</string>
     <string name="profile_manager_delete">删除</string>
-    <string name="profile_manager_profile_deleted">配置 \'%s\' 已删除</string>
+    <string name="profile_manager_profile_deleted">配置 %s 已删除</string>
     <string name="profile_manager_failed_to_save">配置保存失败，请检查 logcat 以获取详细信息。</string>
     <string name="profile_manager_failed_to_load">配置加载失败，请检查 logcat 以获取详细信息。</string>
     <string name="profile_manager_active_profile">当前配置：%s</string>
