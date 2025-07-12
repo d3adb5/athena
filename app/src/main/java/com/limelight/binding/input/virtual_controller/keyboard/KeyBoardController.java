@@ -6,6 +6,7 @@ package com.limelight.binding.input.virtual_controller.keyboard;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
@@ -182,6 +183,7 @@ public class KeyBoardController {
 
         // Clear All button
         buttonClearAll = new Button(context);
+        buttonClearAll.setBackgroundColor(Color.DKGRAY);
         buttonClearAll.setText(context.getString(R.string.keyboard_clear_all));
         buttonClearAll.setAlpha(0.7f);
         buttonClearAll.setVisibility(View.GONE);
@@ -205,6 +207,7 @@ public class KeyBoardController {
 
         // Add Keys button
         buttonAddKeys = new Button(context);
+        buttonAddKeys.setBackgroundColor(Color.DKGRAY);
         buttonAddKeys.setText(context.getString(R.string.keyboard_add_keys));
         buttonAddKeys.setAlpha(0.7f);
         buttonAddKeys.setVisibility(View.GONE);
@@ -416,13 +419,6 @@ public class KeyBoardController {
             JSONArray mouseList = data.getJSONArray("mouse");
             JSONArray rockerList = data.getJSONArray("rocker");
             JSONArray dpadList = data.getJSONArray("dpad");
-
-            // Add backspace key
-            JSONObject backspaceKey = new JSONObject();
-            backspaceKey.put("name", "⌫");
-            backspaceKey.put("type", 0);  // keyboard type
-            backspaceKey.put("code", KeyEvent.KEYCODE_DEL);
-            keystrokeList.put(backspaceKey);
 
             // Calculate total number of items
             int totalItems = keystrokeList.length() + mouseList.length() + rockerList.length() + dpadList.length();

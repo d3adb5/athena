@@ -6,8 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.view.Display;
 
-import androidx.preference.PreferenceManager;
-
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.profiles.ProfilesManager;
 
@@ -309,7 +307,7 @@ public class PreferenceConfiguration {
     public boolean enableMultiTouchGestures;
 
     //禁用内置的特殊指令
-    public boolean enableClearDefaultSpecial;
+    public boolean disableDefaultExtraKeys;
 
     //强制使用设备自身的震动马达
     public boolean enableDeviceRumble;
@@ -939,7 +937,7 @@ public class PreferenceConfiguration {
 
         config.enablePerfOverlayLiteDialog=prefs.getBoolean("checkbox_enable_perf_overlay_lite_dialog",false);
 
-        config.enableClearDefaultSpecial=prefs.getBoolean("checkbox_enable_clear_default_special_button", false);
+        config.disableDefaultExtraKeys =prefs.getBoolean("checkbox_enable_clear_default_special_button", false);
 
         config.enableDeviceRumble=prefs.getBoolean("checkbox_enable_device_rumble", false);
 
