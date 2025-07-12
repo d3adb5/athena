@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.limelight.LimeLog;
@@ -161,6 +163,12 @@ public class ProfilesManager {
 
     public SettingsProfile getActive() {
         return activeProfileId == null ? null : profiles.get(activeProfileId);
+    }
+
+    @NonNull
+    public String getActiveName() {
+        SettingsProfile active = getActive();
+        return active == null ? "" : active.getName();
     }
 
     public void addListener(ProfileChangeListener listener) {

@@ -5,13 +5,13 @@
     <item
         android:id="@+id/action_rename"
         android:icon="@drawable/ic_edit"
-        android:title="Rename"
+        android:title="@string/rename"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_check"
-        android:title="Save"
+        android:title="@string/save"
         app:showAsAction="always" />
 
 </menu>

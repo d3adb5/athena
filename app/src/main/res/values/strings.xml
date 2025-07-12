@@ -671,7 +671,7 @@
     <string name="profile_manager_new_profile_with">New Profile: %s</string>
     <string name="profile_manager_no_profiles_yet">No profiles yet</string>
     <string name="profile_manager_profiles_description">Profiles allow you to create and save different streaming configurations. Each profile stores its own settings which can be quickly switched between.</string>
-    <string name="profile_manager_tap_create_profile">Tap + to create your first profile</string>
+    <string name="profile_manager_tap_create_profile">Tap + to create your first profile</string>s
     <string name="profile_manager_choose_profile">Choose Profile</string>
     <string name="profile_manager_deactivated_profile">Deactivated profile</string>
     <string name="profile_manager_activated_profile">Activated profile \'%s\'</string>
@@ -681,4 +681,7 @@
     <string name="profile_manager_profile_deleted">Deleted profile \'%s\'</string>
     <string name="profile_manager_failed_to_save">Failed to save profile. Please check logcat for details.</string>
     <string name="profile_manager_failed_to_load">Failed to load profiles. Please check logcat for details.</string>
+    <string name="profile_manager_active_profile">Active profile: %s</string>
+    <string name="rename">Rename</string>
+    <string name="save">Save</string>
 </resources>

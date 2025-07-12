@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.limelight.computers.ComputerManagerListener;
 import com.limelight.computers.ComputerManagerService;
 import com.limelight.grid.AppGridAdapter;
@@ -13,6 +14,7 @@ import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
 import com.limelight.nvstream.http.PairingManager;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.utils.CacheHelper;
@@ -391,6 +393,15 @@ public class AppView extends Activity implements AdapterFragmentCallbacks {
 
         // Display a decoder crash notification if we've returned after a crash
         UiHelper.showDecoderCrashDialog(this);
+
+        ExtendedFloatingActionButton profilesButton = findViewById(R.id.profilesButton);
+        String activeProfileName = ProfilesManager.getInstance().getActiveName();
+        if (activeProfileName.isEmpty()) {
+            profilesButton.shrink();
+        } else {
+            profilesButton.setText(activeProfileName);
+            profilesButton.extend();
+        }
 
         inForeground = true;
         startComputerUpdates();

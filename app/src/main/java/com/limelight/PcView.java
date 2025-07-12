@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.limelight.binding.PlatformBinding;
 import com.limelight.binding.crypto.AndroidCryptoProvider;
@@ -21,6 +22,7 @@ import com.limelight.preferences.AddComputerManually;
 import com.limelight.preferences.GlPreferences;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.preferences.StreamSettings;
+import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.AdapterFragment;
 import com.limelight.ui.AdapterFragmentCallbacks;
 import com.limelight.utils.Dialog;
@@ -41,7 +43,9 @@ import android.content.res.Configuration;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -117,6 +121,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
             // Reinitialize views just in case orientation changed
             initializeViews();
         }
+
+        refreshProfileButton();
     }
 
     private final static int PAIR_ID = 2;
@@ -152,7 +158,7 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         ImageButton settingsButton = findViewById(R.id.settingsButton);
         ImageButton addComputerButton = findViewById(R.id.manuallyAddPc);
         ImageButton helpButton = findViewById(R.id.helpButton);
-        FloatingActionButton profilesButton = findViewById(R.id.profilesButton);
+        ExtendedFloatingActionButton profilesButton = findViewById(R.id.profilesButton);
 
         settingsButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -337,6 +343,17 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
         }
     }
 
+    private void refreshProfileButton() {
+        ExtendedFloatingActionButton profilesButton = findViewById(R.id.profilesButton);
+        String activeProfileName = ProfilesManager.getInstance().getActiveName();
+        if (activeProfileName.isEmpty()) {
+            profilesButton.shrink();
+        } else {
+            profilesButton.setText(activeProfileName);
+            profilesButton.extend();
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -352,6 +369,8 @@ public class PcView extends Activity implements AdapterFragmentCallbacks {
 
         // Display a decoder crash notification if we've returned after a crash
         UiHelper.showDecoderCrashDialog(this);
+
+        refreshProfileButton();
 
         inForeground = true;
         startComputerUpdates();

@@ -641,4 +641,7 @@
     <string name="profile_manager_profile_deleted">配置 \'%s\' 已删除</string>
     <string name="profile_manager_failed_to_save">配置保存失败，请检查 logcat 以获取详细信息。</string>
     <string name="profile_manager_failed_to_load">配置加载失败，请检查 logcat 以获取详细信息。</string>
+    <string name="profile_manager_active_profile">当前配置：%s</string>
+    <string name="rename">重命名</string>
+    <string name="save">保存</string>
 </resources>

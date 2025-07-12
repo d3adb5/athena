@@ -873,14 +873,14 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 });
             }
 
-            EditTextPreference bitrateEditPre = findPreference(PreferenceConfiguration.CUSTOM_BITRATE_PREF_STRING);
-            if (bitrateEditPre != null) {
-                bitrateEditPre.setOnBindEditTextListener((EditText editText) -> {
+            EditTextPreference bitrateEditPref = findPreference(PreferenceConfiguration.CUSTOM_BITRATE_PREF_STRING);
+            if (bitrateEditPref != null) {
+                bitrateEditPref.setOnBindEditTextListener((EditText editText) -> {
                     editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
                     editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
                 });
 
-                bitrateEditPre.setOnPreferenceChangeListener((preference, newValue) -> {
+                bitrateEditPref.setOnPreferenceChangeListener((preference, newValue) -> {
                     String value = (String) newValue;
                     if (TextUtils.isEmpty(value)) {
                         Toast.makeText(getActivity(), getString(R.string.pref_enter_value_0_9999), Toast.LENGTH_SHORT).show();
