@@ -2,7 +2,10 @@ package com.limelight;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +26,8 @@ import com.limelight.preferences.StreamSettings;
 import com.limelight.profiles.ProfilesManager;
 import com.limelight.profiles.SettingsProfile;
 import com.limelight.utils.UiHelper;
+
+import org.jcodec.containers.mp4.boxes.Edit;
 
 import java.util.HashMap;
 import java.util.List;
@@ -75,7 +80,7 @@ public class EditProfileActivity extends AppCompatActivity implements SearchPref
             inMemoryPrefs = new InMemorySharedPreferences(PreferenceManager.getDefaultSharedPreferences(this).getAll());
         }
 
-        prefsFragment = new ProfilePreferenceFragment(this);
+        prefsFragment = new ProfilePreferenceFragment(this, inMemoryPrefs);
 
         // Load preference fragment
         getSupportFragmentManager()
@@ -112,6 +117,13 @@ public class EditProfileActivity extends AppCompatActivity implements SearchPref
     public void onSearchResultClicked(SearchPreferenceResult result) {
         result.closeSearchPage(this);
         result.highlight(prefsFragment);
+    }
+
+    void reloadSettings() {
+        prefsFragment = new ProfilePreferenceFragment(this, prefsFragment.getPrefs());
+        getSupportFragmentManager().beginTransaction().replace(
+                R.id.preferences_container, prefsFragment
+        ).commitAllowingStateLoss();
     }
 
     private void saveProfile() {
@@ -221,17 +233,19 @@ public class EditProfileActivity extends AppCompatActivity implements SearchPref
                 }
                 return defValue;
             }
+
+            public SharedPreferences getPrefs() {
+                return prefs;
+            }
         }
 
-        private static Map<String, Object> diff(Context ctx, Map<String, ?> target) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        private static Map<String, Object> diff(Map<String, ?> target, Map<String, ?> newPrefs) {
             Map<String, Object> patch = new HashMap<>();
-            Map<String, ?> all = prefs.getAll();
-            for (Map.Entry<String, ?> entry : all.entrySet()) {
+            for (Map.Entry<String, ?> entry : target.entrySet()) {
                 String k = entry.getKey();
                 Object v = entry.getValue();
-                if (target.containsKey(k)) {
-                    Object def = target.get(k);
+                if (newPrefs.containsKey(k)) {
+                    Object def = newPrefs.get(k);
                     if (v == null || !v.equals(def)) {
                         patch.put(k, v);
                     }
@@ -243,8 +257,13 @@ public class EditProfileActivity extends AppCompatActivity implements SearchPref
             return patch;
         }
 
-        public ProfilePreferenceFragment(EditProfileActivity context) {
-            super(PreferenceConfiguration.readPreferences(context));
+        @Override
+        protected SharedPreferences getPrefs() {
+            return ((InMemoryPreferenceDataStore)getPreferenceManager().getPreferenceDataStore()).getPrefs();
+        }
+
+        public ProfilePreferenceFragment(EditProfileActivity context, SharedPreferences prefs) {
+            super(PreferenceConfiguration.readPreferences(context, prefs));
         }
 
         @NonNull
@@ -263,9 +282,16 @@ public class EditProfileActivity extends AppCompatActivity implements SearchPref
             super.onCreatePreferences(savedInstanceState, rootKey);
 
             // Highlight changed preferences
-            java.util.Map<String, ?> patch = diff(act, memPrefs.getAll());
-            PreferenceManager.getDefaultSharedPreferences(act);
+            java.util.Map<String, ?> patch = diff(
+                    PreferenceManager.getDefaultSharedPreferences(act).getAll(),
+                    memPrefs.getAll()
+            );
             highlightPreferences(getPreferenceScreen(), patch.keySet());
+        }
+
+        @Override
+        protected void reloadSettings() {
+            ((EditProfileActivity)requireActivity()).reloadSettings();
         }
 
         private void highlightPreferences(androidx.preference.Preference pref, java.util.Set<String> changedKeys) {

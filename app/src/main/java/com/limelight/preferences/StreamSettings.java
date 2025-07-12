@@ -54,6 +54,7 @@ import com.limelight.PcView;
 import com.limelight.R;
 import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardControllerConfigurationLoader;
 import com.limelight.binding.video.MediaCodecHelper;
+import com.limelight.profiles.ProfilesManager;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.FileUriUtils;
 import com.limelight.utils.PerformanceDataTracker;
@@ -81,7 +82,10 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             Display.Mode mode = getWindowManager().getDefaultDisplay().getMode();
             previousDisplayPixelCount = mode.getPhysicalWidth() * mode.getPhysicalHeight();
         }
-        prefsFragment = new SettingsFragment(PreferenceConfiguration.readPreferences(this));
+        prefsFragment = new SettingsFragment(PreferenceConfiguration.readPreferences(
+                this,
+                PreferenceManager.getDefaultSharedPreferences(this)
+        ));
         getSupportFragmentManager().beginTransaction().replace(
                 R.id.stream_settings, prefsFragment
         ).commitAllowingStateLoss();
@@ -174,6 +178,10 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
 
         public SettingsFragment(PreferenceConfiguration prefCfg) {
             prevPrefConfig = prefCfg;
+        }
+
+        protected SharedPreferences getPrefs() {
+            return getPreferenceManager().getSharedPreferences();
         }
 
         private void setValue(String preferenceKey, String value) {
@@ -456,7 +464,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                         addNativeFrameRateEntry(customRefreshRateValue, true);
                     }
                 } catch (NumberFormatException e) {
-                    PreferenceManager.getDefaultSharedPreferences(this.getActivity()).edit().remove(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING).apply();
+                    getPrefs().edit().remove(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING).apply();
                 }
             }
 
@@ -586,36 +594,15 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 if (maxSupportedResW != 0) {
                     if (maxSupportedResW < 3840) {
                         // 4K is unsupported
-                        removeValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_4K, new Runnable() {
-                            @Override
-                            public void run() {
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                                setValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_1440P);
-                                resetBitrateToDefault(prefs, null, null);
-                            }
-                        });
+                        removeEntryFromListAndSetValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_4K, PreferenceConfiguration.RES_1440P);
                     }
                     if (maxSupportedResW < 2560) {
                         // 1440p is unsupported
-                        removeValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_1440P, new Runnable() {
-                            @Override
-                            public void run() {
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                                setValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_1080P);
-                                resetBitrateToDefault(prefs, null, null);
-                            }
-                        });
+                        removeEntryFromListAndSetValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_1440P, PreferenceConfiguration.RES_1080P);
                     }
                     if (maxSupportedResW < 1920) {
                         // 1080p is unsupported
-                        removeValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_1080P, new Runnable() {
-                            @Override
-                            public void run() {
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                                setValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_720P);
-                                resetBitrateToDefault(prefs, null, null);
-                            }
-                        });
+                        removeEntryFromListAndSetValue(PreferenceConfiguration.RESOLUTION_PREF_STRING, PreferenceConfiguration.RES_1080P, PreferenceConfiguration.RES_720P);
                     }
                     // Never remove 720p
                 }
@@ -633,25 +620,11 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             if (!PreferenceConfiguration.readPreferences(this.getActivity()).unlockFps) {
                 // We give some extra room in case the FPS is rounded down
                 if (maxSupportedFps < 118) {
-                    removeValue(PreferenceConfiguration.FPS_PREF_STRING, "120", new Runnable() {
-                        @Override
-                        public void run() {
-                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                            setValue(PreferenceConfiguration.FPS_PREF_STRING, "90");
-                            resetBitrateToDefault(prefs, null, null);
-                        }
-                    });
+                    removeEntryFromListAndSetValue(PreferenceConfiguration.FPS_PREF_STRING, "120", "90");
                 }
                 if (maxSupportedFps < 88) {
                     // 1080p is unsupported
-                    removeValue(PreferenceConfiguration.FPS_PREF_STRING, "90", new Runnable() {
-                        @Override
-                        public void run() {
-                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                            setValue(PreferenceConfiguration.FPS_PREF_STRING, "60");
-                            resetBitrateToDefault(prefs, null, null);
-                        }
-                    });
+                    removeEntryFromListAndSetValue(PreferenceConfiguration.FPS_PREF_STRING, "90", "60");
                 }
                 // Never remove 30 FPS or 60 FPS
             }
@@ -664,17 +637,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     // HACK: We need to let the preference change succeed before reinitializing to ensure
                     // it's reflected in the new layout.
-                    final Handler h = new Handler();
-                    h.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Ensure the activity is still open when this timeout expires
-                            StreamSettings settingsActivity = (StreamSettings) SettingsFragment.this.getActivity();
-                            if (settingsActivity != null) {
-                                settingsActivity.reloadSettings();
-                            }
-                        }
-                    }, 500);
+                    reloadSettings();
 
                     // Allow the original preference change to take place
                     return true;
@@ -725,7 +688,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             findPreference(PreferenceConfiguration.RESOLUTION_PREF_STRING).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
+                    SharedPreferences prefs = getPrefs();
                     String valueStr = (String) newValue;
 
                     // Detect if this value is the native resolution option
@@ -757,7 +720,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             findPreference(PreferenceConfiguration.FPS_PREF_STRING).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
+                    SharedPreferences prefs = getPrefs();
                     String valueStr = (String) newValue;
 
                     // If this is native frame rate, show the warning dialog
@@ -914,7 +877,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             if (bitrateEditPre != null) {
                 bitrateEditPre.setOnBindEditTextListener((EditText editText) -> {
                     editText.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
-                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)/*这里限制输入的长度为5个字母*/});
+                    editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(5)});
                 });
 
                 bitrateEditPre.setOnPreferenceChangeListener((preference, newValue) -> {
@@ -924,10 +887,8 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                         return false;
                     }
                     float bitrateValue = Float.parseFloat(value) * 1000;
-                    LimeLog.info("axi-bitrateValue:" + bitrateValue);
                     int bitrate = (int) bitrateValue;
-                    LimeLog.info("axi-bitrate:" + bitrate);
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
+                    SharedPreferences prefs = getPrefs();
                     prefs.edit().putInt(PreferenceConfiguration.BITRATE_PREF_STRING, bitrate).apply();
                     Toast.makeText(getActivity(), getString(R.string.pref_set_success), Toast.LENGTH_SHORT).show();
                     return true;
@@ -965,23 +926,8 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                         }
 
                         // Save the value and reload settings
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                        prefs.edit().putString(PreferenceConfiguration.CUSTOM_RESOLUTION_PREF_STRING, value).apply();
-                        
-                        // HACK: We need to let the preference change succeed before reinitializing to ensure
-                        // it's reflected in the new layout.
-                        final Handler h = new Handler();
-                        h.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Ensure the activity is still open when this timeout expires
-                                StreamSettings settingsActivity = (StreamSettings) SettingsFragment.this.getActivity();
-                                if (settingsActivity != null) {
-                                    settingsActivity.reloadSettings();
-                                }
-                            }
-                        }, 500);
-                        
+                        editAndReload(PreferenceConfiguration.CUSTOM_RESOLUTION_PREF_STRING, value);
+
                         return true;
                     } catch (NumberFormatException e) {
                         Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
@@ -1016,23 +962,8 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                         // Remove trailing zeros
                         formattedValue = formattedValue.replaceAll("0+$", "").replaceAll("\\.$", "");
 
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(SettingsFragment.this.getActivity());
-                        prefs.edit().putString(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING, formattedValue).apply();
-                        
-                        // HACK: We need to let the preference change succeed before reinitializing to ensure
-                        // it's reflected in the new layout.
-                        final Handler h = new Handler();
-                        h.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Ensure the activity is still open when this timeout expires
-                                StreamSettings settingsActivity = (StreamSettings) SettingsFragment.this.getActivity();
-                                if (settingsActivity != null) {
-                                    settingsActivity.reloadSettings();
-                                }
-                            }
-                        }, 500);
-                        
+                        editAndReload(PreferenceConfiguration.CUSTOM_REFRESH_RATE_PREF_STRING, formattedValue);
+
                         return true;
                     } catch (NumberFormatException e) {
                         Toast.makeText(getActivity(), getString(R.string.pref_error_occurred), Toast.LENGTH_SHORT).show();
@@ -1040,6 +971,40 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                     }
                 });
             }
+        }
+
+        private void removeEntryFromListAndSetValue(String resolutionPrefString, String entryToRemove, String nextDefault) {
+            removeValue(resolutionPrefString, entryToRemove, new Runnable() {
+                @Override
+                public void run() {
+                    SharedPreferences prefs = getPrefs();
+                    setValue(resolutionPrefString, nextDefault);
+                    resetBitrateToDefault(prefs, null, null);
+                }
+            });
+        }
+
+        private void editAndReload(String prefKey, String newVal) {
+            SharedPreferences prefs = getPrefs();
+            prefs.edit().putString(prefKey, newVal).apply();
+
+            reloadSettings();
+        }
+
+        protected void reloadSettings() {
+            // HACK: We need to let the preference change succeed before reinitializing to ensure
+            // it's reflected in the new layout.
+            final Handler h = new Handler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    // Ensure the activity is still open when this timeout expires
+                    StreamSettings settingsActivity = (StreamSettings) SettingsFragment.this.getActivity();
+                    if (settingsActivity != null) {
+                        settingsActivity.reloadSettings();
+                    }
+                }
+            }, 500);
         }
 
         int READ_REQUEST_CODE = 1001;
@@ -1056,7 +1021,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                         Toast.makeText(getActivity(), getString(R.string.pref_empty_file), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    String name = PreferenceManager.getDefaultSharedPreferences(requireActivity()).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
+                    String name = getPrefs().getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
                     SharedPreferences.Editor prefEditor = requireActivity().getSharedPreferences(name, Activity.MODE_PRIVATE).edit();
                     JSONObject object = new JSONObject(json);
                     Iterator it = object.keys();
@@ -1108,7 +1073,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         }
 
         private File getJsonContent(Context context,File file){
-            String name = PreferenceManager.getDefaultSharedPreferences(context).getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
+            String name = getPrefs().getString(KeyBoardControllerConfigurationLoader.OSC_PREFERENCE, KeyBoardControllerConfigurationLoader.OSC_PREFERENCE_VALUE);
             SharedPreferences pref = context.getSharedPreferences(name, Activity.MODE_PRIVATE);
             Map<String,?> map = pref.getAll();
             File file1= new File(file,name+".json");
@@ -1120,8 +1085,8 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         }
 
         //获取所有设置项配置文件
-        private File getAllJsonData(Context context,File file){
-            SharedPreferences pref=PreferenceManager.getDefaultSharedPreferences(context);
+        private File getAllJsonData(File file){
+            SharedPreferences pref = getPrefs();
             Map<String,?> map = pref.getAll();
             //获取适配电脑的数据库信息
 //            List<ComputerDetails> map= new ComputerDatabaseManager(context).getAllComputers();

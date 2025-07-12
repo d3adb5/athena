@@ -675,7 +675,13 @@ public class PreferenceConfiguration {
     }
 
     public static PreferenceConfiguration readPreferences(Context context) {
-        SharedPreferences prefs = ProfilesManager.getInstance().getOverlayingSharedPreferences(context);
+        return readPreferences(context, null);
+    }
+
+    public static PreferenceConfiguration readPreferences(Context context, SharedPreferences prefs) {
+        if (prefs == null) {
+            prefs = ProfilesManager.getInstance().getOverlayingSharedPreferences(context);
+        }
         PreferenceConfiguration config = new PreferenceConfiguration();
 
         // Migrate legacy preferences to the new locations
