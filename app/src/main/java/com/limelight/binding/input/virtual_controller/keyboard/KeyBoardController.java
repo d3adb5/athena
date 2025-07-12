@@ -37,8 +37,10 @@ import org.json.JSONObject;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class KeyBoardController {
 
@@ -288,7 +290,6 @@ public class KeyBoardController {
         }
     }
 
-
     public void addElement(keyBoardVirtualControllerElement element, int x, int y, int width, int height) {
         elements.add(element);
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(width, height);
@@ -411,6 +412,7 @@ public class KeyBoardController {
             int length = is.available();
             byte[] buffer = new byte[length];
             is.read(buffer);
+            is.close();
             String jsonConfig = new String(buffer, "utf8");
             
             JSONObject json = new JSONObject(jsonConfig);
@@ -481,32 +483,75 @@ public class KeyBoardController {
                     w = KeyBoardControllerConfigurationLoader.screenScale(BUTTON_SIZE, height);
                 }
 
-                // Get current element positions to avoid overlap
+                // Create a set of existing element IDs for quick lookup
+                Set<String> existingElementIds = new HashSet<>();
+                for (keyBoardVirtualControllerElement el : elements) {
+                    if (el.getVisibility() != View.GONE) {
+                        existingElementIds.add(el.elementId);
+                    }
+                }
+
+                // Get current element positions to avoid overlap - include ALL elements
                 List<Rect> existingPositions = new ArrayList<>();
                 for (keyBoardVirtualControllerElement element : elements) {
-                    if (element.getVisibility() == View.VISIBLE) {
+                    try {
                         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) element.getLayoutParams();
+                        if (params != null) {
+                            existingPositions.add(new Rect(
+                                params.leftMargin,
+                                params.topMargin,
+                                params.leftMargin + params.width,
+                                params.topMargin + params.height
+                            ));
+                        }
+                    } catch (ClassCastException e) {
+                        // If element doesn't have FrameLayout.LayoutParams, try to get position another way
                         existingPositions.add(new Rect(
-                            params.leftMargin,
-                            params.topMargin,
-                            params.leftMargin + params.width,
-                            params.topMargin + params.height
+                            (int) element.getX(),
+                            (int) element.getY(),
+                            (int) element.getX() + element.getWidth(),
+                            (int) element.getY() + element.getHeight()
                         ));
                     }
                 }
 
+                int elementsAdded = 0;
+                int duplicatesFound = 0;
                 // Add selected keys
                 for (int i = 0; i < checkedItems.length; i++) {
                     if (checkedItems[i]) {
                         try {
                             JSONObject obj = allItems.getJSONObject(i);
                             int type = obj.optInt("type", 0);
+
+                            // Determine elementId to check for duplicates
+                            String elementId;
+                            if (type == 2 || type == 3) { // Rocker or D-Pad
+                                elementId = obj.getString("elementId");
+                            } else { // Keyboard or Mouse
+                                int code = obj.getInt("code");
+                                int switchButton = obj.optInt("switchButton", 0);
+                                elementId = type == 0 ? "key_" + code : "m_" + code;
+                                if (switchButton == 1) {
+                                    elementId = type == 0 ? "key_s_" + code : "m_s_" + code;
+                                }
+                            }
+
+                            // Check for duplicates
+                            if (existingElementIds.contains(elementId)) {
+                                duplicatesFound++;
+                                continue; // Skip this key
+                            }
+                            
+                            // Calculate element size based on type
+                            int elementSize = (type >= 2) ? (int)(w * 2.5) : w;
                             
                             // Find non-overlapping position
-                            Point position = findNonOverlappingPosition(existingPositions, type >= 2 ? (int)(w * 2.5) : w);
+                            Point position = findNonOverlappingPosition(existingPositions, elementSize);
+                            
+                            keyBoardVirtualControllerElement newElement = null;
                             
                             if (type == 2) { // Rocker (joystick)
-                                String elementId = obj.getString("elementId");
                                 int[] keys = new int[]{
                                     obj.getInt("upCode"),
                                     obj.getInt("downCode"),
@@ -515,62 +560,72 @@ public class KeyBoardController {
                                     obj.getInt("middleCode")
                                 };
                                 
-                                addElement(KeyBoardControllerConfigurationLoader.createKeyBoardAnalogStickButton(
-                                    this, elementId, context, keys),
-                                    position.x, position.y,
-                                    (int)(w * 2.5), (int)(w * 2.5)
-                                );
-                                
-                                existingPositions.add(new Rect(position.x, position.y, 
-                                    position.x + (int)(w * 2.5), position.y + (int)(w * 2.5)));
+                                newElement = KeyBoardControllerConfigurationLoader.createKeyBoardAnalogStickButton(
+                                    this, elementId, context, keys);
+                                addElement(newElement, position.x, position.y, elementSize, elementSize);
                                 
                             } else if (type == 3) { // D-pad
-                                String elementId = obj.getString("elementId");
-                                addElement(KeyBoardControllerConfigurationLoader.createDiaitalPadButton(
+                                newElement = KeyBoardControllerConfigurationLoader.createDiaitalPadButton(
                                     elementId,
                                     obj.getInt("leftCode"),
                                     obj.getInt("rightCode"),
                                     obj.getInt("upCode"),
                                     obj.getInt("downCode"),
-                                    this, context),
-                                    position.x, position.y,
-                                    (int)(w * 2.5), (int)(w * 2.5)
-                                );
-                                
-                                existingPositions.add(new Rect(position.x, position.y, 
-                                    position.x + (int)(w * 2.5), position.y + (int)(w * 2.5)));
+                                    this, context);
+                                addElement(newElement, position.x, position.y, elementSize, elementSize);
                                 
                             } else {
                                 String name = obj.getString("name");
                                 int code = obj.getInt("code");
-                                int switchButton = obj.optInt("switchButton");
-                                String elementId = type == 0 ? "key_" + code : "m_" + code;
-                                if (switchButton == 1) {
-                                    elementId = type == 0 ? "key_s_" + code : "m_s_" + code;
-                                }
 
                                 if (elementId.equals("m_9") || elementId.equals("m_10") || elementId.equals("m_11")) {
-                                    addElement(KeyBoardControllerConfigurationLoader.createDigitalTouchButton(
-                                        elementId, code, type, 1, name, -1, this, context),
-                                        position.x, position.y, w, w);
+                                    newElement = KeyBoardControllerConfigurationLoader.createDigitalTouchButton(
+                                        elementId, code, type, 1, name, -1, this, context);
                                 } else {
-                                    addElement(KeyBoardControllerConfigurationLoader.createDigitalButton(
+                                    newElement = KeyBoardControllerConfigurationLoader.createDigitalButton(
                                         elementId, code, type, 1, name, -1, 
                                         PreferenceConfiguration.readPreferences(context).stickyModifierKey && 
                                         KeyBoardControllerConfigurationLoader.isModifierKey(code), 
-                                        this, context),
-                                        position.x, position.y, w, w);
+                                        this, context);
                                 }
-
-                                existingPositions.add(new Rect(position.x, position.y, position.x + w, position.y + w));
+                                addElement(newElement, position.x, position.y, w, w);
                             }
                             
+                            // Add the new element's position to the existing positions list
+                            existingPositions.add(new Rect(position.x, position.y, 
+                                position.x + elementSize, position.y + elementSize));
+
+                            // Add the new elementId to the set to prevent adding it twice in the same operation
+                            existingElementIds.add(elementId);
+                            
+                            elementsAdded++;
                             vibrate(KeyEvent.ACTION_DOWN);
+                            
                         } catch (JSONException e) {
+                            LimeLog.warning("Error adding key: " + e.getMessage());
                             e.printStackTrace();
-                            Toast.makeText(context, "Error adding key: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            LimeLog.warning("Unexpected error adding key: " + e.getMessage());
+                            e.printStackTrace();
                         }
                     }
+                }
+                
+                // Build feedback message
+                StringBuilder feedback = new StringBuilder();
+                if (elementsAdded > 0) {
+                    KeyBoardControllerConfigurationLoader.saveProfile(KeyBoardController.this, context);
+                    feedback.append(context.getString(R.string.keyboard_keys_added, elementsAdded));
+                }
+                if (duplicatesFound > 0) {
+                    if (feedback.length() > 0) {
+                        feedback.append("\n");
+                    }
+                    feedback.append(context.getString(R.string.keyboard_duplicates_skipped, duplicatesFound));
+                }
+
+                if (feedback.length() > 0) {
+                    Toast.makeText(context, feedback.toString(), Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -578,48 +633,98 @@ public class KeyBoardController {
             builder.show();
 
         } catch (Exception e) {
+            LimeLog.warning("Error loading keyboard configuration: " + e.getMessage());
             e.printStackTrace();
-            Toast.makeText(context, "Error loading keyboard configuration: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.keyboard_load_error, e.getMessage()), Toast.LENGTH_SHORT).show();
         }
     }
 
     private Point findNonOverlappingPosition(List<Rect> existingPositions, int elementSize) {
+        // 1. Try to find space next to existing elements
+        Point position = findPositionNextToExisting(existingPositions, elementSize);
+        if (position != null) {
+            return position;
+        }
+
+        // 2. If not found, search from top-left
+        return findNonOverlappingPositionFromTopLeft(existingPositions, elementSize);
+    }
+
+    private Point findPositionNextToExisting(List<Rect> existingPositions, int elementSize) {
+        int spacing = 10;
+
+        for (Rect existingRect : existingPositions) {
+            // Potential positions around the existing rectangle
+            Point[] potentialPositions = {
+                    new Point(existingRect.right + spacing, existingRect.top), // Right
+                    new Point(existingRect.left - elementSize - spacing, existingRect.top), // Left
+                    new Point(existingRect.left, existingRect.bottom + spacing), // Bottom
+                    new Point(existingRect.left, existingRect.top - elementSize - spacing) // Top
+            };
+
+            for (Point p : potentialPositions) {
+                if (isPositionFree(p, elementSize, existingPositions)) {
+                    return p;
+                }
+            }
+        }
+
+        return null; // No free spot found
+    }
+
+    private boolean isPositionFree(Point pos, int elementSize, List<Rect> existingPositions) {
         DisplayMetrics screen = context.getResources().getDisplayMetrics();
         int screenWidth = screen.widthPixels;
         int screenHeight = screen.heightPixels;
+        int spacing = 10;
+
+        Rect newRect = new Rect(pos.x, pos.y, pos.x + elementSize, pos.y + elementSize);
+
+        // Check screen bounds, leaving a margin
+        if (newRect.left < spacing || newRect.right > screenWidth - spacing || newRect.top < 100 || newRect.bottom > screenHeight - 50) {
+            return false;
+        }
+
+        // Check for overlap with other elements
+        for (Rect existing : existingPositions) {
+            if (Rect.intersects(existing, newRect)) {
+                return false;
+            }
+        }
+
+        // Check against configure button area (top left corner)
+        Rect configButtonArea = new Rect(0, 0, 150, 100);
+        return !Rect.intersects(configButtonArea, newRect);
+    }
+
+
+    private Point findNonOverlappingPositionFromTopLeft(List<Rect> existingPositions, int elementSize) {
+        DisplayMetrics screen = context.getResources().getDisplayMetrics();
         int spacing = 10; // Minimum spacing between elements
 
-        // Start from top of screen with some margin
+        // Start from top of screen with some margin (avoid configure button area)
         int startY = 100;
         int x = spacing;
         int y = startY;
 
-        while (y + elementSize < screenHeight) {
-            boolean overlaps = false;
-            Rect newPosition = new Rect(x, y, x + elementSize, y + elementSize);
-
-            for (Rect existing : existingPositions) {
-                if (Rect.intersects(existing, newPosition)) {
-                    overlaps = true;
-                    break;
-                }
-            }
-
-            if (!overlaps) {
-                return new Point(x, y);
-            }
-
+        while (isPositionFree(new Point(x, y), elementSize, existingPositions)) {
             // Move right
             x += elementSize + spacing;
 
             // If reached screen width, move to next row
-            if (x + elementSize > screenWidth) {
+            if (!isPositionFree(new Point(x, y), elementSize, existingPositions)) {
                 x = spacing;
                 y += elementSize + spacing;
             }
+
+            // If a free spot is found, return it
+            if (isPositionFree(new Point(x, y), elementSize, existingPositions)) {
+                return new Point(x, y);
+            }
         }
 
-        // If no space found, start a new row at the top
+
+        // If no space found, place at a default location (might overlap)
         return new Point(spacing, startY);
     }
 
