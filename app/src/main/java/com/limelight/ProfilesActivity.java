@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.limelight.profiles.ProfilesAdapter;
 import com.limelight.profiles.ProfilesManager;
+import com.limelight.utils.UiHelper;
 
 public class ProfilesActivity extends AppCompatActivity implements ProfilesManager.ProfileChangeListener {
     private ProfilesAdapter adapter;
@@ -45,6 +46,8 @@ public class ProfilesActivity extends AppCompatActivity implements ProfilesManag
         ProfilesManager.getInstance().addListener(this);
 
         updateUI();
+
+        UiHelper.notifyNewRootView(this);
     }
 
     @Override

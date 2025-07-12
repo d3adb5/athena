@@ -87,6 +87,8 @@ public class EditProfileActivity extends AppCompatActivity implements SearchPref
             .beginTransaction()
             .replace(R.id.preferences_container, prefsFragment)
             .commit();
+
+        UiHelper.notifyNewRootView(this);
     }
 
     @Override
