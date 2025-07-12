@@ -50,6 +50,8 @@ When using AI tools to generate code:
 - Ensure it follows project conventions and best practices
 - Take responsibility for any issues that may arise from the generated code
 
+***IMPORTANT: Don't trust AI generated tests. Test each modifications manually.***
+
 ### Code Review Process
 
 - All contributions must go through code review
