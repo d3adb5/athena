@@ -1,6 +1,7 @@
 package com.limelight;
 
 import android.app.Activity;
+import android.content.Context;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -11,7 +12,7 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-
+import android.view.ContextThemeWrapper;
 import com.limelight.binding.input.GameInputDevice;
 import com.limelight.binding.input.KeyboardTranslator;
 import com.limelight.nvstream.NvConnection;
@@ -58,13 +59,16 @@ public class GameMenu implements Game.GameMenuCallbacks {
     }
 
     private final Game game;
+
+    private final Activity context;
     private final NvConnection conn;
 
     private AlertDialog currentDialog;
 
-    public GameMenu(Game game, NvConnection conn) {
+    public GameMenu(Game game, NvConnection conn, Activity context) {
         this.game = game;
         this.conn = conn;
+        this.context = context;
     }
 
     private String getString(int id) {
@@ -136,11 +140,20 @@ public class GameMenu implements Game.GameMenuCallbacks {
     }
 
     private void showMenuDialog(String title, MenuOption[] options) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(game);
+        // 1. Get the theme resource ID from the main Game instance's ApplicationInfo.
+        int themeResId = game.getApplicationInfo().theme;
+
+        // 2. Create a ContextThemeWrapper. It wraps the context of the activity
+        //    that is showing the dialog (your controller) with the desired theme.
+        Context themedContext = new ContextThemeWrapper(context, themeResId);
+
+        // 3. Use the new themedContext to build the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
+
         builder.setTitle(title);
 
         final ArrayAdapter<String> actions =
-                new ArrayAdapter<String>(game, android.R.layout.simple_list_item_1);
+                new ArrayAdapter<>(themedContext, android.R.layout.simple_list_item_1);
 
         builder.setAdapter(actions, (dialog, which) -> {
             String label = actions.getItem(which);
@@ -290,7 +303,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
 
     private void showAdvancedMenu(GameInputDevice device) {
         List<MenuOption> options = new ArrayList<>();
-
+        hideMenu();
         if (game.secondaryDisplayPresentation == null) {
             options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
                     game::selectMouseMode));
@@ -359,7 +372,12 @@ public class GameMenu implements Game.GameMenuCallbacks {
                     ArrayList<String> serverCmds = game.getServerCmds();
 
                     if (serverCmds.isEmpty()) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(game);
+                        int themeResId = game.getApplicationInfo().theme;
+
+                        // 2. Create a ContextThemeWrapper. It wraps the context of the activity
+                        //    that is showing the dialog (your controller) with the desired theme.
+                        Context themedContext = new ContextThemeWrapper(context, themeResId);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
                         builder.setTitle(R.string.game_dialog_title_server_cmd_empty);
                         builder.setMessage(R.string.game_dialog_message_server_cmd_empty);
 

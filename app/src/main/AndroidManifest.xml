@@ -63,7 +63,7 @@
             android:enabled="true"
             android:exported="true">
         </provider>
-        <receiver android:name=".StartTouchPadReceiver" />
+        <receiver android:name=".StartExternalDisplayControlReceiver" />
         <!-- Samsung multi-window support -->
         <uses-library
             android:name="com.sec.android.app.multiwindow"
@@ -105,8 +105,12 @@
                 <category android:name="tv.ouya.intent.category.APP" />
             </intent-filter>
         </activity>
-        <activity android:name=".SecondaryScreenNotification"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity android:name=".utils.ExternalDisplayControlActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <!-- Small hack to support launcher shortcuts without relaunching over and over again when the back button is pressed -->
         <activity
             android:name=".ShortcutTrampoline"
@@ -189,9 +193,6 @@
         <service
             android:name=".binding.input.driver.UsbDriverService"
             android:label="Usb Driver Service" />
-
-        <service android:name=".TouchPadOverlayService"
-            android:exported="false" />
 
         <activity
             android:name=".HelpActivity"
