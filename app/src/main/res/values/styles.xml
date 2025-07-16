@@ -19,8 +19,8 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">#1A1A1A</item>
+        <item name="android:navigationBarColor">#1A1A1A</item>
         <item name="android:colorBackground">#1A1A1A</item>
         <item name="android:windowBackground">#1A1A1A</item>
     </style>
@@ -49,9 +49,9 @@
         <item name="colorButtonNormal">@android:color/white</item>
     </style>
 
-    <style name="SettingsTheme" parent="AppTheme">
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+    <style name="SettingsTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <declare-styleable name="ApertureViewGroup">
