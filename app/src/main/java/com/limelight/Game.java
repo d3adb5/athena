@@ -105,6 +105,7 @@ import androidx.preference.PreferenceManager;
 
 import android.os.Looper;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.ArrayDeque;
 
@@ -275,6 +276,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     public GameMenuCallbacks gameMenuCallbacks;
+    public boolean isInputOnly = true;
+    public boolean allowChangeMouseMode = true;
 
     private ImageButton floatingMenuButton;
     private ImageButton overlayToggleButton;
@@ -739,13 +742,21 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             return;
         }
 
+        if (Objects.equals(appUUID, NvApp.REMOTE_INPUT_UUID)) {
+            // Force trackpad mode since we won't see anything on the screen
+            isInputOnly = true;
+            allowChangeMouseMode = false;
+            applyMouseMode(2);
+//            streamView.setVisibility(View.INVISIBLE);
+        } else {
+            if (prefConfig.enableExDisplay) {
+                // We don't need to show on external display when using remote input
+                showSecondScreen();
+            }
+        }
+
         // The connection will be started when the surface gets created
         streamView.getHolder().addCallback(this);
-
-        //外接显示器模式
-        if(prefConfig.enableExDisplay){
-            showSecondScreen();
-        }
 
         gameMenuCallbacks = new GameMenu(this, conn);
 
@@ -3858,7 +3869,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
     }
 
-    public SecondaryDisplayPresentation presentation;
+    private SecondaryDisplayPresentation presentation;
     public void showSecondScreen(){
         DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
         Display[] displays = displayManager.getDisplays();
@@ -3880,6 +3891,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 presentation.addView(streamView);
             }
             // Force mouse mode as trackpad during presentation as user won't see anything on device screen
+            allowChangeMouseMode = false;
             applyMouseMode(2);
         }
     }

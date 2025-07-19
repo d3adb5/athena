@@ -290,7 +290,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
     private void showAdvancedMenu(GameInputDevice device) {
         List<MenuOption> options = new ArrayList<>();
 
-        if (game.presentation == null) {
+        if (game.allowChangeMouseMode) {
             options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
                     game::selectMouseMode));
         }
