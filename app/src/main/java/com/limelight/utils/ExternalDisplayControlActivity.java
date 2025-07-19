@@ -123,9 +123,9 @@ public class ExternalDisplayControlActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (gameMenu != null && gameMenu.isMenuOpen()) {
-            gameMenu.hideMenu();
-        } else {
+        if(gameMenu != null && !gameMenu.isMenuOpen() && Game.instance != null)
+            Game.instance.onBackPressed();
+        else {
             super.onBackPressed();
         }
     }

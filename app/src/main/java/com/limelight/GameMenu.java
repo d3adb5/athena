@@ -123,7 +123,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
             return;
         }
         // Check if the game window has focus again, if not try again after delay
-        if (!game.hasWindowFocus()) {
+        if (!game.hasWindowFocus() && dialogScreenContext instanceof Game) {
             new Handler().postDelayed(() -> runWithGameFocus(runnable), TEST_GAME_FOCUS_DELAY);
             return;
         }
@@ -300,7 +300,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
 
     private void showAdvancedMenu(GameInputDevice device) {
         List<MenuOption> options = new ArrayList<>();
-        if (game.secondaryDisplayPresentation == null) {
+        if (game.isSecondaryDisplayMode() == null) {
             options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true, game::selectMouseMode));
         }
         options.add(new MenuOption(getString(R.string.game_menu_toggle_hud), true, game::toggleHUD));

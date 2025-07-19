@@ -52,7 +52,6 @@ import com.limelight.utils.UiHelper;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
 import android.app.Service;
@@ -108,7 +107,6 @@ import android.widget.Toast;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
@@ -1275,18 +1273,22 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 (prefConfig.framePacing == PreferenceConfiguration.FRAME_PACING_BALANCED && prefConfig.reduceRefreshRate);
     }
 
-    private Boolean isSecondaryDisplayActive() {
-        return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null || getSecondaryDisplay(this) != null);
+    private Boolean isSecondaryDisplayPresentationActive() {
+        return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null && getSecondaryDisplay(this) != null);
     }
 
     private Boolean isSecondaryDisplayFullModeActive() {
         return prefConfig.enableFullExDisplay && getSecondaryDisplay(this) != null;
     }
 
+    public Boolean isSecondaryDisplayMode() {
+        return isSecondaryDisplayPresentationActive() || isSecondaryDisplayFullModeActive();
+    }
+
     private float prepareDisplayForRendering() {
         Display display = getActiveDisplay(Game.this, prefConfig);
 
-        if (isSecondaryDisplayActive()) {
+        if (isSecondaryDisplayMode()) {
             display = getSecondaryDisplay(this);
         }
         WindowManager.LayoutParams windowLayoutParams = getWindow().getAttributes();
@@ -1445,7 +1447,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
             double screenAspectRatio = ((double)screenSize.y) / screenSize.x;
             double streamAspectRatio = ((double)displayHeight) / displayWidth;
-            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001|| isSecondaryDisplayActive()) {
+            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001|| isSecondaryDisplayMode()) {
                 LimeLog.info("Stream has compatible aspect ratio with output display");
                 aspectRatioMatch = true;
             }
@@ -1465,7 +1467,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
                 getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-            || isSecondaryDisplayActive()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
+            || isSecondaryDisplayMode()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
             // it will be eventually activated.
             // external displays cant be compared with displaymanager currents display refreshrate
             // TODO: Improve this
@@ -2660,7 +2662,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                  * systemUi interference when reaching corners
                  * To make it work, use full secondary mode
                  */
-                else if (isSecondaryDisplayActive() && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
+                else if (isSecondaryDisplayPresentationActive() && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
                     if (prefConfig.absoluteMouseMode) {
                         updateMousePosition(view, event);
                     } else {
@@ -3206,7 +3208,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         float eventX, eventY;
         // For our StreamView itself, we can use the coordinates unmodified.
 
-        if (isSecondaryDisplayActive()) {
+        if (isSecondaryDisplayPresentationActive()) {
             PointF mappedCoordinates = mapMouseCoordinatesToStreamView(event, streamView);
             eventX = mappedCoordinates.x;
             eventY = mappedCoordinates.y;
