@@ -17,10 +17,8 @@ import com.limelight.binding.input.KeyboardTranslator;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.utils.KeyConfigHelper;
 import com.limelight.utils.KeyMapper;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -183,7 +181,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
     private void showSpecialKeysMenu() {
         List<MenuOption> options = new ArrayList<>();
 
-        if(!PreferenceConfiguration.readPreferences(game).enableClearDefaultSpecial){
+        if(!PreferenceConfiguration.readPreferences(game).disableDefaultExtraKeys){
             options.add(new MenuOption(getString(R.string.game_menu_send_keys_esc),
                     () -> sendKeys(new short[]{KeyboardTranslator.VK_ESCAPE})));
 
@@ -244,37 +242,38 @@ public class GameMenu implements Game.GameMenuCallbacks {
                 sendKeys(new short[]{KeyboardTranslator.VK_LWIN, KeyboardTranslator.VK_X});
                 new Handler().postDelayed((() -> sendKeys(new short[]{KeyboardTranslator.VK_U, KeyboardTranslator.VK_I})), 200);
             }));
-
         }
 
-        //自定义导入的指令
+        // Import custom shortcuts
         SharedPreferences preferences = game.getSharedPreferences(PREF_NAME, Activity.MODE_PRIVATE);
         String value = preferences.getString(KEY_NAME,"");
 
         if(!TextUtils.isEmpty(value)){
             try {
-                JSONObject object = new JSONObject(value);
-                JSONArray array = object.optJSONArray("data");
-                if(array != null&&array.length()>0){
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject object1 = array.getJSONObject(i);
-                        String name = object1.optString("name");
-                        JSONArray array1 = object1.getJSONArray("keys");
-                        short[] datas = new short[array1.length()];
-                        for (int j = 0; j < array1.length(); j++) {
-                            String code = array1.getString(j);
+                KeyConfigHelper.ShortcutFile shortcutFile = KeyConfigHelper.parseShortcutFile(value);
+                if (shortcutFile != null && shortcutFile.data != null && !shortcutFile.data.isEmpty()) {
+                    List<KeyConfigHelper.Shortcut> data = shortcutFile.data;
+                    for (KeyConfigHelper.Shortcut sc : data) {
+                        List<String> keys = sc.keys;
+                        short[] keyCodes = new short[keys.size()];
+
+                        for (int i = 0; i < keys.size(); i++) {
+                            String code = keys.get(i);
                             int keycode;
-                            if (code.startsWith("0x")) {
+
+                            if (code.startsWith("0x")) {               // literal hex value
                                 keycode = Integer.parseInt(code.substring(2), 16);
-                            } else if (code.startsWith("VK_")) {
-                                Field vkCodeField = KeyMapper.class.getDeclaredField(code);
-                                keycode = vkCodeField.getInt(null);
-                            } else {
-                                throw new Exception("Unknown key code: " + code);
+                            } else if (code.startsWith("VK_")) {       // symbolic constant in KeyMapper
+                                Field field = KeyMapper.class.getDeclaredField(code);
+                                keycode = field.getInt(null);
+                            } else {                                   // unsupported
+                                throw new IllegalArgumentException("Unknown key code: " + code);
                             }
-                            datas[j] = (short) keycode;
+                            keyCodes[i] = (short) keycode;
                         }
-                        MenuOption option = new MenuOption(name, () -> sendKeys(datas));
+
+                        // Whatever MenuOption looks like in your project
+                        MenuOption option = new MenuOption(sc.name, () -> sendKeys(keyCodes));
                         options.add(option);
                     }
                 }

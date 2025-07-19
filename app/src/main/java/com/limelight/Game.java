@@ -32,14 +32,17 @@ import com.limelight.nvstream.input.MouseButtonPacket;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.preferences.GlPreferences;
 import com.limelight.preferences.PreferenceConfiguration;
+import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.GameGestures;
 import com.limelight.ui.StreamView;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.PanZoomHandler;
+import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -96,24 +99,33 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.preference.PreferenceManager;
+
+import android.os.Looper;
+import java.nio.charset.StandardCharsets;
+import java.util.Queue;
+import java.util.ArrayDeque;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 
-public class Game extends Activity implements SurfaceHolder.Callback,
+public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         OnGenericMotionListener, OnTouchListener, NvConnectionListener, EvdevListener,
         OnSystemUiVisibilityChangeListener, GameGestures, StreamView.InputCallbacks,
-        PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener{
+        PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener {
     public static Game instance;
 
     private int lastButtonState = 0;
@@ -191,6 +203,8 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     private boolean quitOnStop = false;
     private boolean isHidingOverlays;
+    private boolean floatingButtonShown;
+    private boolean overlayToggleZoomButtonShown;
     private TextView notificationOverlayView;
     private int requestedNotificationOverlayVisibility = View.GONE;
     private View performanceOverlayView;
@@ -263,10 +277,37 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     public GameMenuCallbacks gameMenuCallbacks;
 
     private ImageButton floatingMenuButton;
+    private ImageButton overlayToggleButton;
     private float floatingButtonDX, floatingButtonDY;
     private boolean isButtonMoving = false;
     private static final float CLICK_ACTION_THRESHOLD = 5;
     private float floatingButtonStartX, floatingButtonStartY;
+
+    // Zoom button drag state
+    private float zoomButtonDX, zoomButtonDY;
+    private boolean isZoomButtonMoving = false;
+    private float zoomButtonStartX, zoomButtonStartY;
+
+    // Queue for batching commitText payloads
+    private static final int UTF8_CHUNK_SIZE = 512;
+    private final Queue<String> commitTextQueue = new ArrayDeque<>();
+    private final Handler commitTextHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable flushCommitTextQueue = new Runnable() {
+        @Override
+        public void run() {
+            if (commitTextQueue.isEmpty()) {
+                return;
+            }
+            String chunk = commitTextQueue.poll();
+            if (conn != null) {
+                conn.sendUtf8Text(chunk);
+            }
+            if (!commitTextQueue.isEmpty()) {
+                commitTextHandler.postDelayed(this, 15);
+            }
+        }
+    };
 
     @SuppressLint({"MissingInflatedId", "ClickableViewAccessibility"})
     @Override
@@ -346,6 +387,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         streamView.setOnGenericMotionListener(this);
         streamView.setOnKeyListener(this);
         streamView.setInputCallbacks(this);
+        streamView.setCommitTextEnabled(prefConfig.enableCommitText);
 
         //光标是否显示
         cursorVisible = prefConfig.enableMouseLocalCursor;
@@ -370,6 +412,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 streamView,
                 prefConfig
         );
+
+        // Restore previous zoom & pan if enabled and saved
+        if (prefConfig.rememberZoomPan) {
+            streamView.post(() -> panZoomHandler.setInitialZoomAndPan(
+                    prefConfig.zoomScale,
+                    prefConfig.panOffsetX,
+                    prefConfig.panOffsetY));
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Request unbuffered input event dispatching for all input classes we handle here.
@@ -513,6 +563,12 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }else{
                 performanceOverlayBig.setVisibility(View.VISIBLE);
             }
+            if (prefConfig.enablePerfOverlayBottom) {
+                //performanceOverlayView.getLayoutParams().layout_gravity = Gravity.BOTTOM;
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) performanceOverlayView.getLayoutParams();
+                params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+                performanceOverlayView.setLayoutParams(params);
+            }
         }
 
         decoderRenderer = new MediaCodecDecoderRenderer(
@@ -645,8 +701,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
 
-        // Initialize touch contexts
-        String mouseMode = PreferenceManager.getDefaultSharedPreferences(this).getString("mouse_mode_list", "0");
+        // Initialize touch contexts based on preferences
+        // The mouse mode preference is also read in PreferenceConfiguration to set the boolean flags
+        String mouseMode = ProfilesManager.getInstance().getOverlayingSharedPreferences(this).getString("mouse_mode_list", "0");
         applyMouseMode(Integer.parseInt(mouseMode));
 
         // Initialize trackpad contexts
@@ -691,10 +748,87 @@ public class Game extends Activity implements SurfaceHolder.Callback,
         }
 
         gameMenuCallbacks = new GameMenu(this, conn);
-        
+
         floatingMenuButton = findViewById(R.id.floatingMenuButton);
         updateFloatingButtonVisibility(prefConfig.enableBackMenu && prefConfig.enableFloatingButton);
         initFloatingButton();
+
+        overlayToggleButton = findViewById(R.id.overlayToggleZoomButton);
+        setupOverlayToggleButton();
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupOverlayToggleButton() {
+        if (overlayToggleButton != null) {
+            if (prefConfig.showOverlayZoomToggleButton) {
+                overlayToggleButton.setVisibility(View.VISIBLE);
+
+                // Set initial appearance based on current state
+                updateZoomButtonAppearance();
+
+                // Touch listener for drag and click
+                overlayToggleButton.setOnTouchListener((view, event) -> {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            zoomButtonStartX = event.getRawX();
+                            zoomButtonStartY = event.getRawY();
+                            zoomButtonDX = view.getX() - event.getRawX();
+                            zoomButtonDY = view.getY() - event.getRawY();
+                            isZoomButtonMoving = false;
+                            return true;
+                        case MotionEvent.ACTION_MOVE:
+                            float newX = event.getRawX() + zoomButtonDX;
+                            float newY = event.getRawY() + zoomButtonDY;
+
+                            // Check if it's a move or just a tap
+                            if (Math.abs(event.getRawX() - zoomButtonStartX) > CLICK_ACTION_THRESHOLD ||
+                                    Math.abs(event.getRawY() - zoomButtonStartY) > CLICK_ACTION_THRESHOLD) {
+                                isZoomButtonMoving = true;
+                            }
+
+                            // Ensure the button stays within screen bounds
+                            if (newX < 0) newX = 0;
+                            if (newY < 0) newY = 0;
+
+                            int maxOffsetX = getWindow().getDecorView().getWidth() - view.getWidth();
+                            if (newX > maxOffsetX) {
+                                newX = maxOffsetX;
+                            }
+
+                            int maxOffsetY = getWindow().getDecorView().getHeight() - view.getHeight();
+                            if (newY > maxOffsetY) {
+                                newY = maxOffsetY;
+                            }
+
+                            view.setX(newX);
+                            view.setY(newY);
+                            return true;
+                        case MotionEvent.ACTION_UP:
+                            if (!isZoomButtonMoving) {
+                                // It's a click event, toggle zoom mode
+                                toggleZoomMode();
+                                updateZoomButtonAppearance();
+                            }
+                            isZoomButtonMoving = false;
+                            return true;
+                        default:
+                            return false;
+                    }
+                });
+            } else {
+                overlayToggleButton.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void updateZoomButtonAppearance() {
+        if (overlayToggleButton != null) {
+            // Change background based on pan/zoom mode state
+            overlayToggleButton.setBackgroundResource(isPanZoomMode ?
+                R.drawable.floating_menu_button_active : R.drawable.floating_menu_button);
+            // No need for alpha changes since the color indicates the state
+            overlayToggleButton.setAlpha(1.0f);
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -865,6 +999,18 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             if (isInPictureInPictureMode()) {
                 isHidingOverlays = true;
 
+                floatingButtonShown = floatingMenuButton.isShown();
+
+                if (floatingButtonShown) {
+                    floatingMenuButton.setVisibility(View.GONE);
+                }
+
+                overlayToggleZoomButtonShown = overlayToggleButton != null && overlayToggleButton.isShown();
+
+                if (overlayToggleZoomButtonShown) {
+                    overlayToggleButton.setVisibility(View.GONE);
+                }
+
                 if (virtualController != null) {
                     virtualController.hide();
                 }
@@ -873,7 +1019,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                     keyBoardController.hide(true);
                 }
 
-                if (keyBoardLayoutController!=null && keyBoardLayoutController.shown) {
+                if (keyBoardLayoutController != null && keyBoardLayoutController.shown) {
                     keyBoardLayoutController.hide(true);
                 }
 
@@ -890,6 +1036,14 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
             else {
                 isHidingOverlays = false;
+
+                if (floatingButtonShown) {
+                    floatingMenuButton.setVisibility(View.VISIBLE);
+                }
+
+                if (overlayToggleZoomButtonShown) {
+                    overlayToggleButton.setVisibility(View.VISIBLE);
+                }
 
                 // Restore overlays to previous state when leaving PiP
 
@@ -1355,6 +1509,16 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             highPerfWifiLock.release();
         }
 
+        // Save zoom/pan before other cleanup
+        if (prefConfig != null && prefConfig.rememberZoomPan && panZoomHandler != null) {
+            SharedPreferences basePrefs = PreferenceManager.getDefaultSharedPreferences(this);
+            basePrefs.edit()
+                    .putFloat("number_zoom_scale", panZoomHandler.getScaleFactor())
+                    .putFloat("number_pan_offset_x", panZoomHandler.getChildX())
+                    .putFloat("number_pan_offset_y", panZoomHandler.getChildY())
+                    .apply();
+        }
+
         if (connectedToUsbDriverService) {
             // Unbind from the discovery service
             unbindService(usbDriverServiceConnection);
@@ -1402,46 +1566,47 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
             displayedFailureDialog = true;
             stopConnection();
+            String message = null;
+            String selectedVideoFormat = "";
 
-            if (prefConfig.enableLatencyToast) {
-                int averageEndToEndLat = decoderRenderer.getAverageEndToEndLatency();
-                int averageDecoderLat = decoderRenderer.getAverageDecoderLatency();
-                String message = null;
-                if (averageEndToEndLat > 0) {
-                    message = getResources().getString(R.string.conn_client_latency)+" "+averageEndToEndLat+" ms";
-                    if (averageDecoderLat > 0) {
-                        message += " ("+getResources().getString(R.string.conn_client_latency_hw)+" "+averageDecoderLat+" ms)";
-                    }
+            int averageEndToEndLat = decoderRenderer.getAverageEndToEndLatency();
+            int averageDecoderLat = decoderRenderer.getAverageDecoderLatency();
+
+            if (averageEndToEndLat > 0) {
+                message = getResources().getString(R.string.conn_client_latency) + " " + averageEndToEndLat + " ms";
+                if (averageDecoderLat > 0) {
+                    message += " (" + getResources().getString(R.string.conn_client_latency_hw) + " " + averageDecoderLat + " ms)";
                 }
-                else if (averageDecoderLat > 0) {
-                    message = getResources().getString(R.string.conn_hardware_latency)+" "+averageDecoderLat+" ms";
-                }
+            } else if (averageDecoderLat > 0) {
+                message = getResources().getString(R.string.conn_hardware_latency) + " " + averageDecoderLat + " ms";
+            }
 
-                // Add the video codec to the post-stream toast
-                if (message != null) {
-                    message += " [";
+            // Add the video codec to the post-stream toast
+            selectedVideoFormat += " [";
 
-                    if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_H264) != 0) {
-                        message += "H.264";
-                    }
-                    else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_H265) != 0) {
-                        message += "HEVC";
-                    }
-                    else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_AV1) != 0) {
-                        message += "AV1";
-                    }
-                    else {
-                        message += "UNKNOWN";
-                    }
+            if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_H264) != 0) {
+                selectedVideoFormat += "H.264";
+            } else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_H265) != 0) {
+                selectedVideoFormat += "HEVC";
+            } else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_AV1) != 0) {
+                selectedVideoFormat += "AV1";
+            }
+            else {
+                selectedVideoFormat += "UNKNOWN";
+            }
 
-                    if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_10BIT) != 0) {
-                        message += " HDR";
-                    }
+            if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_10BIT) != 0) {
+                selectedVideoFormat += " HDR";
+            }
 
-                    message += "]";
-                }
+            selectedVideoFormat += "]";
 
-                if (message != null) {
+            if (message != null) {
+                message += selectedVideoFormat;
+            }
+
+            if (message != null) {
+                if (prefConfig.enableLatencyToast) {
                     Toast.makeText(this, message, Toast.LENGTH_LONG).show();
                 }
             }
@@ -1453,9 +1618,33 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                         .putInt("LastNotifiedCrashCount", 0)
                         .apply();
             }
+            if(prefConfig.enablePerfLogging && decoderRenderer.performanceWasTracked()) {
+                new PerformanceDataTracker().savePerformanceStatistics(
+                        getBaseContext(),
+                        Build.MODEL,
+                        Build.VERSION.SDK_INT + "",
+                        BuildConfig.VERSION_NAME,
+                        selectedVideoFormat,
+                        decoderRenderer.getMinDecoderLatency(),
+                        decoderRenderer.getMinDecoderLatencyFullLog(),
+                        String.valueOf((prefConfig.bitrate / 1000)),
+                    displayWidth + "x" + displayHeight,
+                    prefConfig.fps + " hz",
+                    decoderRenderer.getAverageDecoderLatency() + " ms",
+                        PreferenceConfiguration.getSelectedFramePacingName(getBaseContext()),
+                        formatCurrentTime(System.currentTimeMillis())
+                );
+            }
+
         }
 
         finish();
+    }
+
+    public static String formatCurrentTime(long currentTimeMillis) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date date = new Date(currentTimeMillis);
+        return dateFormat.format(date);
     }
 
     private void setInputGrabState(boolean grab) {
@@ -3221,6 +3410,9 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 // Sync local clipboard to host
                 handleFocusChange(true);
 
+                // Ensure overlay toggle button visibility is properly set
+                setupOverlayToggleButton();
+
                 hideSystemUi(1000);
             }
         });
@@ -3522,6 +3714,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     }
     public void toggleZoomMode() {
         this.isPanZoomMode = !this.isPanZoomMode;
+        updateZoomButtonAppearance();
     }
 
     public void rotateScreen() {
@@ -3545,6 +3738,11 @@ public class Game extends Activity implements SurfaceHolder.Callback,
                 return;
             }
             applyMouseMode(which);
+            // Save the mouse mode preference
+            ProfilesManager.getInstance().getOverlayingSharedPreferences(this)
+                .edit()
+                .putString("mouse_mode_list", String.valueOf(which))
+                .apply();
         }).setTitle(getString(R.string.game_menu_select_mouse_mode)).create().show();
     }
 
@@ -3601,6 +3799,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
         // Always exit zoom mode if mouse mode has changed
         isPanZoomMode = false;
+        updateZoomButtonAppearance();
     }
 
     public void toggleHUD(){
@@ -3711,5 +3910,52 @@ public class Game extends Activity implements SurfaceHolder.Callback,
             }
         });
         streamView.setClipToOutline(true);
+    }
+
+    @Override
+    public boolean handleCommitText(CharSequence text) {
+        if (!prefConfig.enableCommitText || conn == null) {
+            return false;
+        }
+        enqueueCommitText(text.toString());
+        return true;
+    }
+
+    @Override
+    public boolean handleDeleteSurroundingText(int beforeLength, int afterLength) {
+        if (!prefConfig.enableCommitText || conn == null) {
+            return false;
+        }
+        // Send backspace events for deleted preceding characters
+        if (beforeLength > 0) {
+            short backspaceCode = keyboardTranslator.translate(KeyEvent.KEYCODE_DEL, 0, -1);
+            for (int i = 0; i < beforeLength; i++) {
+                conn.sendKeyboardInput(backspaceCode, com.limelight.nvstream.input.KeyboardPacket.KEY_DOWN, (byte)0, (byte)0);
+                conn.sendKeyboardInput(backspaceCode, com.limelight.nvstream.input.KeyboardPacket.KEY_UP, (byte)0, (byte)0);
+            }
+        }
+        return true;
+    }
+
+    private void enqueueCommitText(String text) {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+        byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
+        int offset = 0;
+        while (offset < utf8.length) {
+            int end = Math.min(offset + UTF8_CHUNK_SIZE, utf8.length);
+            // Ensure we don't cut inside a multi-byte sequence
+            while (end < utf8.length && (utf8[end] & 0xC0) == 0x80) {
+                end--; // step back until we are at start of code point
+            }
+            String chunk = new String(utf8, offset, end - offset, StandardCharsets.UTF_8);
+            commitTextQueue.add(chunk);
+            offset = end;
+        }
+        // Kick off flushing if not already scheduled
+        if (commitTextQueue.size() == 1) {
+            commitTextHandler.post(flushCommitTextQueue);
+        }
     }
 }
