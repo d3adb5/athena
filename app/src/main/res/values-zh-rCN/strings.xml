@@ -626,6 +626,8 @@
     <string name="summary_show_overlay_zoom_toggle_button">在屏幕上显示一个悬浮按钮以切换拖拽/缩放模式</string>
     <string name="title_checkbox_remember_zoom_pan">记住缩放及位置</string>
     <string name="summary_checkbox_remember_zoom_pan">在不同会话间记住缩放及位置</string>
+    <string name="title_checkbox_enable_perf_overlay_bottom">移动性能信息至底部</string>
+    <string name="summary_checkbox_enable_perf_overlay_bottom">当串流分辨率非本地原生且启用了画面顶部居中显示时有用。</string>
     <string name="profile_manager_new_profile">新配置</string>
     <string name="profile_manager_profile_not_found">配置未找到</string>
     <string name="profile_manager_edit_profile">编辑配置：</string>
