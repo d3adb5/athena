@@ -139,13 +139,14 @@ public class ServerHelper {
             Toast.makeText(parent, parent.getString(R.string.pair_pc_offline), Toast.LENGTH_SHORT).show();
             return;
         }
-
         PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
-        Display secondaryDisplay = null;
         ActivityOptions options = null;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)) {
-            secondaryDisplay = getSecondaryDisplay(parent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)
+                && !isDesktopModeActive(parent)
+        ) {
+            Display secondaryDisplay = getSecondaryDisplay(parent);
             if (secondaryDisplay != null) {
                 options = ActivityOptions.makeBasic();
                 options.setLaunchDisplayId(secondaryDisplay.getDisplayId());
@@ -172,6 +173,13 @@ public class ServerHelper {
         }
     }
 
+    // If the PC View is already on a secondary screen, we can assume we are in DesktopMode and should
+    // launch the gamestream as ususal.
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    public static boolean isDesktopModeActive(Context context) {
+        Display display = context.getDisplay();
+        return display != null && display.getDisplayId() != Display.DEFAULT_DISPLAY;
+    }
 
     public static void doNetworkTest(final Activity parent) {
         new Thread(new Runnable() {
