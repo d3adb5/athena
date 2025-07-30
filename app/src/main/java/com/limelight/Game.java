@@ -1,6 +1,13 @@
 package com.limelight;
 
 
+import static com.limelight.utils.ExternalDisplayControlActivity.SECONDARY_SCREEN_NOTIFICATION_ID;
+import static com.limelight.utils.ExternalDisplayControlActivity.closeExternalDisplayControl;
+import static com.limelight.utils.ExternalDisplayControlActivity.toggleGameMenu;
+import static com.limelight.utils.ExternalDisplayControlActivity.toggleKeyboardForExternal;
+import static com.limelight.utils.ServerHelper.getActiveDisplay;
+import static com.limelight.utils.ServerHelper.getSecondaryDisplay;
+
 import com.limelight.binding.PlatformBinding;
 import com.limelight.binding.audio.AndroidAudioRenderer;
 import com.limelight.binding.input.ControllerHandler;
@@ -36,6 +43,8 @@ import com.limelight.profiles.ProfilesManager;
 import com.limelight.ui.GameGestures;
 import com.limelight.ui.StreamView;
 import com.limelight.utils.Dialog;
+import com.limelight.utils.ExternalDisplayControlActivity;
+import com.limelight.utils.MouseModeOption;
 import com.limelight.utils.PanZoomHandler;
 import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.ServerHelper;
@@ -45,7 +54,6 @@ import com.limelight.utils.UiHelper;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
 import android.app.Service;
@@ -62,6 +70,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Outline;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.hardware.input.InputManager;
@@ -100,11 +109,13 @@ import android.widget.Toast;
 import android.widget.ImageButton;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
 import android.os.Looper;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.ArrayDeque;
@@ -121,6 +132,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 
 public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
@@ -167,7 +179,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private int displayHeight;
     private int currentOrientation;
 
-    private NvConnection conn;
+    public NvConnection conn;
     private SpinnerDialog spinner;
     private boolean displayedFailureDialog = false;
     private boolean connecting = false;
@@ -706,8 +718,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         // Initialize touch contexts based on preferences
         // The mouse mode preference is also read in PreferenceConfiguration to set the boolean flags
-        String mouseMode = ProfilesManager.getInstance().getOverlayingSharedPreferences(this).getString("mouse_mode_list", "0");
-        applyMouseMode(Integer.parseInt(mouseMode));
+         initMouseMode();
 
         // Initialize trackpad contexts
         for (int i = 0; i < trackpadContextMap.length; i++) {
@@ -749,9 +760,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             applyMouseMode(2);
 //            streamView.setVisibility(View.INVISIBLE);
         } else {
-            if (prefConfig.enableExDisplay) {
-                // We don't need to show on external display when using remote input
+            if (prefConfig.enableExDisplay && !prefConfig.enableFullExDisplay) {
                 showSecondScreen();
+            } else if (prefConfig.enableFullExDisplay) {
+                listenForExternalDisplayRemoval();
             }
         }
 
@@ -842,6 +854,32 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
     }
 
+    private void listenForExternalDisplayRemoval() {
+        DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(new DisplayManager.DisplayListener() {
+            @Override
+            public void onDisplayAdded(int displayId) {
+            }
+
+            @Override
+            public void onDisplayRemoved(int displayId) {
+                if (getSecondaryDisplay(getBaseContext()) == null) {
+                    handleDisplayRemoved();
+                    finish();
+                }
+            }
+
+            @Override
+            public void onDisplayChanged(int displayId) {
+            }
+        }, null);
+    }
+
+    private void handleDisplayRemoved() {
+        NotificationManagerCompat.from(getBaseContext()).cancel(SECONDARY_SCREEN_NOTIFICATION_ID);
+        closeExternalDisplayControl();
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private void initFloatingButton() {
         // Touch listener for drag and click
@@ -902,6 +940,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         keyBoardController.show();
     }
 
+    public Boolean isKeyboardLayoutVisible() {
+        return keyBoardLayoutController != null && keyBoardLayoutController.shown;
+    }
 
     private void initVirtualController(){
         virtualController = new VirtualController(controllerHandler, (FrameLayout)rootView, this);
@@ -910,7 +951,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     private void initkeyBoardLayoutController(){
-        keyBoardLayoutController = new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
+        if(isSecondaryDisplayFullModeActive()) {
+            keyBoardLayoutController = ExternalDisplayControlActivity.getPhoneScreenKeyboard(prefConfig);
+        } else {
+            keyBoardLayoutController = new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
+        }
         keyBoardLayoutController.refreshLayout();
         keyBoardLayoutController.show();
     }
@@ -943,7 +988,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     private void setPreferredOrientationForCurrentDisplay() {
-        Display display = getWindowManager().getDefaultDisplay();
+        Display display = getActiveDisplay(Game.this, prefConfig);
 
         // For semi-square displays, we use more complex logic to determine which orientation to use (if any)
         if (PreferenceConfiguration.isSquarishScreen(display)) {
@@ -1030,7 +1075,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                     keyBoardController.hide(true);
                 }
 
-                if (keyBoardLayoutController != null && keyBoardLayoutController.shown) {
+                if (keyBoardLayoutController!=null && keyBoardLayoutController.shown) {
                     keyBoardLayoutController.hide(true);
                 }
 
@@ -1230,7 +1275,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Display display = getWindowManager().getDefaultDisplay();
+            Display display = getActiveDisplay(Game.this, prefConfig);
             for (Display.Mode candidate : display.getSupportedModes()) {
                 // Ignore insets if this is an exact match for the display resolution
                 if ((width == candidate.getPhysicalWidth() && height == candidate.getPhysicalHeight()) ||
@@ -1249,8 +1294,24 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 (prefConfig.framePacing == PreferenceConfiguration.FRAME_PACING_BALANCED && prefConfig.reduceRefreshRate);
     }
 
+    private Boolean isSecondaryDisplayPresentationActive() {
+        return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null && getSecondaryDisplay(this) != null);
+    }
+
+    private Boolean isSecondaryDisplayFullModeActive() {
+        return prefConfig.enableFullExDisplay && getSecondaryDisplay(this) != null;
+    }
+
+    public Boolean isSecondaryDisplayMode() {
+        return isSecondaryDisplayPresentationActive() || isSecondaryDisplayFullModeActive();
+    }
+
     private float prepareDisplayForRendering() {
-        Display display = getWindowManager().getDefaultDisplay();
+        Display display = getActiveDisplay(Game.this, prefConfig);
+
+        if (isSecondaryDisplayMode()) {
+            display = getSecondaryDisplay(this);
+        }
         WindowManager.LayoutParams windowLayoutParams = getWindow().getAttributes();
         float displayRefreshRate;
 
@@ -1407,7 +1468,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
             double screenAspectRatio = ((double)screenSize.y) / screenSize.x;
             double streamAspectRatio = ((double)displayHeight) / displayWidth;
-            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001) {
+            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001|| isSecondaryDisplayMode()) {
                 LimeLog.info("Stream has compatible aspect ratio with output display");
                 aspectRatioMatch = true;
             }
@@ -1426,9 +1487,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         desiredRefreshRate = displayRefreshRate;
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
-                getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
-            // TVs may take a few moments to switch refresh rates, and we can probably assume
+                getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+            || isSecondaryDisplayMode()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
             // it will be eventually activated.
+            // external displays cant be compared with displaymanager currents display refreshrate
             // TODO: Improve this
             return displayRefreshRate;
         }
@@ -1501,9 +1563,12 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         instance = null;
 
-        if(presentation!=null){
-            presentation.dismiss();
+        if (secondaryDisplayPresentation != null) {
+            secondaryDisplayPresentation.dismiss();
+            secondaryDisplayPresentation = null;
         }
+
+        if (prefConfig.enableFullExDisplay) handleDisplayRemoved();
 
         if (controllerHandler != null) {
             controllerHandler.destroy();
@@ -1639,9 +1704,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         decoderRenderer.getMinDecoderLatency(),
                         decoderRenderer.getMinDecoderLatencyFullLog(),
                         String.valueOf((prefConfig.bitrate / 1000)),
-                    displayWidth + "x" + displayHeight,
-                    prefConfig.fps + " hz",
-                    decoderRenderer.getAverageDecoderLatency() + " ms",
+                        displayWidth + "x" + displayHeight,
+                        prefConfig.fps + " hz",
+                        decoderRenderer.getAverageDecoderLatency() + " ms",
                         PreferenceConfiguration.getSelectedFramePacingName(getBaseContext()),
                         formatCurrentTime(System.currentTimeMillis())
                 );
@@ -2174,9 +2239,13 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     @Override
     public void toggleKeyboard() {
-        LimeLog.info("Toggling keyboard overlay");
-        InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.toggleSoftInput(0, 0);
+        if (isSecondaryDisplayFullModeActive()) {
+            toggleKeyboardForExternal();
+        } else {
+            LimeLog.info("Toggling keyboard overlay");
+            InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.toggleSoftInput(0, 0);
+        }
     }
 
     private byte getLiTouchTypeFromEvent(MotionEvent event) {
@@ -2523,8 +2592,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     // Returns true if the event was consumed
     // NB: View is only present if called from a view callback
-    private boolean handleMotionEvent(View view, MotionEvent event) {
-
+    public boolean handleMotionEvent(View view, MotionEvent event) {
         // Pass through mouse/touch/joystick input if we're not grabbing
         if (!grabbedInput) {
             return false;
@@ -2608,7 +2676,20 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         }
                     }
                 }
-                else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
+                /*
+                 * Allows full desktop mouse control also on devices like samsung
+                 * For secondary screens only
+                 * Not working with games mostly due to As streamView is not in focus and
+                 * systemUi interference when reaching corners
+                 * To make it work, use full secondary mode
+                 */
+                else if (isSecondaryDisplayPresentationActive() && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
+                    if (prefConfig.absoluteMouseMode) {
+                        updateMousePosition(view, event);
+                    } else {
+                        mouseMove((int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), (int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y));
+                    }
+                } else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
                     // If this input device is not associated with the view itself (like a trackpad),
                     // we'll convert the device-specific coordinates to use to send the cursor position.
                     // This really isn't ideal but it's probably better than nothing.
@@ -2731,7 +2812,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                                 break;
                         }
                     } else {
-                        updateMousePosition(view, event);
+                        if (prefConfig.absoluteMouseMode) {
+                            updateMousePosition(view, event);
+                        } else {
+                            mouseMove((int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), (int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y));
+                        }
                     }
                 }
 
@@ -3092,12 +3177,63 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     }
 
+    /**
+     * Maps MotionEvent coordinates from the internal display to the given streamView
+     * on the external display by scaling from the primary display's resolution to
+     * the streamView's size.
+     *
+     * @param event      The MotionEvent to map (typically from ACTION_HOVER)
+     * @param streamView The View shown on the external display
+     * @return A PointF with the mapped (x, y) inside the streamView
+     */
+    public PointF mapMouseCoordinatesToStreamView(MotionEvent event, View streamView) {
+        if (event == null || streamView == null) {
+            return new PointF(0, 0);
+        }
+
+        float sourceWidth = 0f;
+        float sourceHeight = 0f;
+
+        int[] loc = new int[2];
+        if (rootView instanceof View) {
+            View mouseHoverArea = (View) rootView;
+            mouseHoverArea.getLocationOnScreen(loc);
+            sourceWidth = mouseHoverArea.getWidth();
+            sourceHeight = mouseHoverArea.getHeight();
+        }
+
+        float rawX = event.getX();
+        float rawY = event.getY();
+
+        float targetWidth = streamView.getWidth();
+        float targetHeight = streamView.getHeight();
+
+        // Calculate relative position in source display
+        float relativeX = rawX / sourceWidth;
+        float relativeY = rawY / sourceHeight;
+
+        // Scale to target streamView
+        float scaledX = relativeX * targetWidth;
+        float scaledY = relativeY * targetHeight;
+
+        // Clamp within bounds
+        scaledX = Math.max(0, Math.min(scaledX, targetWidth - 1));
+        scaledY = Math.max(0, Math.min(scaledY, targetHeight - 1));
+
+        return new PointF(scaledX, scaledY);
+    }
+
+
     private void updateMousePosition(View touchedView, MotionEvent event) {
         // X and Y are already relative to the provided view object
         float eventX, eventY;
-
         // For our StreamView itself, we can use the coordinates unmodified.
-        if (touchedView == streamView) {
+
+        if (isSecondaryDisplayPresentationActive()) {
+            PointF mappedCoordinates = mapMouseCoordinatesToStreamView(event, streamView);
+            eventX = mappedCoordinates.x;
+            eventY = mappedCoordinates.y;
+        } else if (touchedView == streamView) {
             eventX = event.getX(0);
             eventY = event.getY(0);
         }
@@ -3265,11 +3401,25 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                     }
 
                     Dialog.displayDialog(Game.this, getResources().getString(R.string.conn_error_title), dialogText, true);
+                    finishSecondScreen();
                 }
             }
         });
 
         return false;
+    }
+
+    private void finishSecondScreen() {
+        // Otherwise screen stays connected but not working with no way of quitting it
+        if (prefConfig.enableFullExDisplay) {
+            Handler h = new Handler();
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                }
+            }, 2000);
+        }
     }
 
     @Override
@@ -3738,23 +3888,127 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
     }
 
-    public void selectMouseMode(){
-        String[] strings = getResources().getStringArray(R.array.mouse_mode_names);
-        String[] items = Arrays.copyOf(strings,strings.length + 1);
-        items[items.length - 1] = getString(R.string.toggle_local_mouse_cursor);
-        new AlertDialog.Builder(this).setItems(items, (dialog, which) -> {
-            dialog.dismiss();
-            if(which == strings.length){
-                toggleMouseLocalCursor();
-                return;
+    /**
+     * Initializes and applies the appropriate mouse mode based on user preferences
+     * and whether the app is running in secondary display mode (such as Samsung DeX).
+     *
+     * Behavior:
+     * - If the app is in secondary display mode:
+     *   - Applies the user's saved mouse mode if it's one of the supported modes:
+     *     "Trackpad Natural", "Trackpad Gaming", or "Disabled".
+     *   - Otherwise, defaults to applying the "Trackpad Natural" mode.
+     *
+     * - If the app is not in secondary display mode:
+     *   - Applies the user's saved mouse mode as is.
+     *
+     * This ensures the correct input mode is applied depending on the environment,
+     * improving compatibility with desktop-like multi-display modes.
+     */
+    private void initMouseMode() {
+        String[] mouseModes = getResources().getStringArray(R.array.mouse_mode_names);
+
+        String savedMouseModeIndexStr = ProfilesManager.getInstance()
+                .getOverlayingSharedPreferences(this)
+                .getString("mouse_mode_list", "0");
+
+        int savedMouseModeIndex;
+        try {
+            savedMouseModeIndex = Integer.parseInt(savedMouseModeIndexStr);
+        } catch (NumberFormatException e) {
+            savedMouseModeIndex = 0;
+        }
+
+        String savedMouseModeString = (savedMouseModeIndex >= 0 && savedMouseModeIndex < mouseModes.length)
+                ? mouseModes[savedMouseModeIndex]
+                : null;
+
+        String natural = getString(R.string.mouse_mode_track_pad_natural);
+        String gaming = getString(R.string.mouse_mode_track_pad_gaming);
+        String disabled = getString(R.string.mouse_mode_disabled);
+
+        int naturalIndex = 2; //fallback natural mode for secondary screen
+        for (int i = 0; i < mouseModes.length; i++) {
+            if (mouseModes[i].equals(natural)) {
+                naturalIndex = i;
+                break;
             }
-            applyMouseMode(which);
-            // Save the mouse mode preference
-            ProfilesManager.getInstance().getOverlayingSharedPreferences(this)
-                .edit()
-                .putString("mouse_mode_list", String.valueOf(which))
-                .apply();
-        }).setTitle(getString(R.string.game_menu_select_mouse_mode)).create().show();
+        }
+        // We only want to temporary override the mouse mode to work with external, but not store it
+        if (isSecondaryDisplayMode()) {
+            if (savedMouseModeString != null &&
+                    (savedMouseModeString.equals(natural) ||
+                            savedMouseModeString.equals(gaming) ||
+                            savedMouseModeString.equals(disabled))) {
+                applyMouseMode(savedMouseModeIndex);
+            } else {
+                applyMouseMode(naturalIndex);
+            }
+        } else {
+            applyMouseMode(savedMouseModeIndex);
+        }
+    }
+
+    /**
+     * Displays a dialog allowing the user to select a mouse input mode.
+     *
+     * Behavior:
+     * - On regular displays, all available mouse modes are shown.
+     * - On secondary displays (e.g. Samsung DeX), only a limited set of modes are allowed:
+     *   "Trackpad Natural", "Trackpad Gaming", and "Disabled".
+     * - An additional option to toggle the local mouse cursor is always included.
+     *
+     * When the user selects a mode:
+     * - If it's the toggle option, the local mouse cursor mode is toggled.
+     * - Otherwise, the selected mode is applied and saved to shared preferences.
+     *
+     * @param context The context to use to decide where to show the dialog.
+     */
+    public void selectMouseMode(Context context){
+        String[] allModes = getResources().getStringArray(R.array.mouse_mode_names);
+
+        Set<String> allowedLabels = new HashSet<>(Arrays.asList(
+                getString(R.string.mouse_mode_track_pad_natural),
+                getString(R.string.mouse_mode_track_pad_gaming),
+                getString(R.string.mouse_mode_disabled)
+        ));
+
+        List<MouseModeOption> options = new ArrayList<>();
+
+        for (int i = 0; i < allModes.length; i++) {
+            String label = allModes[i];
+            boolean isAllowed = !isSecondaryDisplayMode() || allowedLabels.contains(label);
+            if (isAllowed) {
+                options.add(new MouseModeOption(i, label));
+            }
+        }
+
+        options.add(new MouseModeOption(-1, getString(R.string.toggle_local_mouse_cursor)));
+
+        String[] labels = new String[options.size()];
+        for (int i = 0; i < options.size(); i++) {
+            labels[i] = options.get(i).label;
+        }
+        final MouseModeOption[] optionArray = options.toArray(new MouseModeOption[0]);
+
+        new AlertDialog.Builder(context)
+                .setTitle(getString(R.string.game_menu_select_mouse_mode))
+                .setItems(labels, (dialog, which) -> {
+                    dialog.dismiss();
+                    MouseModeOption selected = optionArray[which];
+                    if (selected.index == -1) {
+                        toggleMouseLocalCursor();
+                    } else {
+                        applyMouseMode(selected.index);
+                        ProfilesManager.getInstance().getOverlayingSharedPreferences(this)
+                                .edit()
+                                .putString("mouse_mode_list", String.valueOf(selected.index))
+                                .apply();
+                    }
+                })
+                .create()
+                .show();
+
+
     }
 
     //本地鼠标光标切换
@@ -3840,7 +4094,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     public void quit() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        Context context = this;
+        if (isSecondaryDisplayFullModeActive()) {
+            context = ExternalDisplayControlActivity.instance;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.game_dialog_title_quit_confirm);
         builder.setMessage(R.string.game_dialog_message_quit_confirm);
 
@@ -3858,8 +4116,12 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     @Override
     public void showGameMenu(GameInputDevice device) {
-        if (gameMenuCallbacks != null) {
-            gameMenuCallbacks.showMenu(device);
+        if(isSecondaryDisplayFullModeActive()) {
+            toggleGameMenu();
+        } else {
+            if (gameMenuCallbacks != null) {
+                gameMenuCallbacks.showMenu(device);
+            }
         }
     }
 
@@ -3869,26 +4131,26 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
     }
 
-    private SecondaryDisplayPresentation presentation;
-    public void showSecondScreen(){
-        DisplayManager displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
-        Display[] displays = displayManager.getDisplays();
-        int mainDisplayId = Display.DEFAULT_DISPLAY;
-        int secondaryDisplayId = -1;
-        for (Display display : displays) {
-//            LimeLog.info(display.toString());
-            if (display.getDisplayId() != mainDisplayId) {
-                secondaryDisplayId = display.getDisplayId();
-                break;
+    public SecondaryDisplayPresentation secondaryDisplayPresentation;
+
+    public void showSecondScreen() {
+        Display secondaryDisplay = getSecondaryDisplay(this);
+
+        if (secondaryDisplay != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Toast.makeText(Game.this,
+                        getString(R.string.external_display_info) + " "
+                                + secondaryDisplay.getMode().getPhysicalWidth() + "x"
+                                + secondaryDisplay.getMode().getPhysicalHeight() + " "
+                                + secondaryDisplay.getMode().getRefreshRate() + "Hz",
+                        Toast.LENGTH_LONG).show();
             }
-        }
-        if (secondaryDisplayId != -1) {
-            Display secondaryDisplay = displayManager.getDisplay(secondaryDisplayId);
-            presentation = new SecondaryDisplayPresentation(this, secondaryDisplay);
-            presentation.show();
-            if(rootView!= null) {
-                ((ViewGroup)rootView).removeView(streamView); // <- fix
-                presentation.addView(streamView);
+
+            secondaryDisplayPresentation = new SecondaryDisplayPresentation(this, secondaryDisplay);
+            secondaryDisplayPresentation.show();
+            if (rootView != null) {
+                ((ViewGroup) rootView).removeView(streamView); // <- fix
+                secondaryDisplayPresentation.addView(streamView);
             }
             // Force mouse mode as trackpad during presentation as user won't see anything on device screen
             allowChangeMouseMode = false;

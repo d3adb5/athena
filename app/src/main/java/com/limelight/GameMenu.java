@@ -2,10 +2,12 @@ package com.limelight;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.Window;
@@ -56,13 +58,21 @@ public class GameMenu implements Game.GameMenuCallbacks {
     }
 
     private final Game game;
+    private final Context dialogScreenContext;
     private final NvConnection conn;
 
     private AlertDialog currentDialog;
 
+    public GameMenu(Game game, NvConnection conn, Context dialogScreenContext) {
+        this.game = game;
+        this.conn = conn;
+        this.dialogScreenContext = dialogScreenContext;
+    }
+
     public GameMenu(Game game, NvConnection conn) {
         this.game = game;
         this.conn = conn;
+        this.dialogScreenContext = game;
     }
 
     private String getString(int id) {
@@ -113,7 +123,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
             return;
         }
         // Check if the game window has focus again, if not try again after delay
-        if (!game.hasWindowFocus()) {
+        if (!game.hasWindowFocus() && dialogScreenContext instanceof Game) {
             new Handler().postDelayed(() -> runWithGameFocus(runnable), TEST_GAME_FOCUS_DELAY);
             return;
         }
@@ -134,23 +144,24 @@ public class GameMenu implements Game.GameMenuCallbacks {
     }
 
     private void showMenuDialog(String title, MenuOption[] options) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(game);
+        int themeResId = game.getApplicationInfo().theme;
+        Context themedContext = new ContextThemeWrapper(dialogScreenContext, themeResId);
+        AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
         builder.setTitle(title);
 
-        final ArrayAdapter<String> actions =
-                new ArrayAdapter<String>(game, android.R.layout.simple_list_item_1);
+        final ArrayAdapter<String> actions = new ArrayAdapter<>(themedContext, android.R.layout.simple_list_item_1);
 
         builder.setAdapter(actions, (dialog, which) -> {
             String label = actions.getItem(which);
             for (MenuOption option : options) {
-                if (!label.equals(option.label)) {
-                    continue;
+                if (label != null && label.equals(option.label)) {
+                    run(option);
+                    break;
                 }
-
-                run(option);
-                break;
             }
         });
+
+        builder.setOnCancelListener(dialog -> hideMenu());
 
         if (currentDialog != null) {
             currentDialog.dismiss();
@@ -291,38 +302,29 @@ public class GameMenu implements Game.GameMenuCallbacks {
         List<MenuOption> options = new ArrayList<>();
 
         if (game.allowChangeMouseMode) {
-            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true,
-                    game::selectMouseMode));
+            options.add(new MenuOption(getString(R.string.game_menu_select_mouse_mode), true, () -> game.selectMouseMode(dialogScreenContext)));
         }
+        
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_hud), true, game::toggleHUD));
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_floating_button), true, game::toggleFloatingButtonVisibility));
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true, game::showHideKeyboardController));
+        if (!game.isSecondaryDisplayMode()) {
+            options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_model), true, game::showHideVirtualController));
+        }
+        options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_keyboard_model), true, game::showHidekeyBoardLayoutController));
+        options.add(new MenuOption(getString(R.string.game_menu_task_manager), true, () -> sendKeys(new short[]{KeyboardTranslator.VK_LCONTROL, KeyboardTranslator.VK_LSHIFT, KeyboardTranslator.VK_ESCAPE})));
 
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_hud), true,
-                game::toggleHUD));
+        // **FIXED:** This is a UI navigation action, so it should not use withGameFocus.
+        options.add(new MenuOption(getString(R.string.game_menu_send_keys), () -> {
+            hideMenu();
+            showSpecialKeysMenu();
+        }));
 
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_floating_button), true,
-                game::toggleFloatingButtonVisibility));
-
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true,
-                game::showHideKeyboardController));
-
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_model), true,
-                game::showHideVirtualController));
-        options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_keyboard_model), true,
-                game::showHidekeyBoardLayoutController));
-
-        options.add(new MenuOption(getString(R.string.game_menu_task_manager), true,
-                () -> sendKeys(new short[]{KeyboardTranslator.VK_LCONTROL, KeyboardTranslator.VK_LSHIFT, KeyboardTranslator.VK_ESCAPE})));
-
-        options.add(new MenuOption(getString(R.string.game_menu_send_keys), true, this::showSpecialKeysMenu));
-
-        options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true,
-                game::switchTouchSensitivity));
-
+        options.add(new MenuOption(getString(R.string.game_menu_switch_touch_sensitivity_model), true, game::switchTouchSensitivity));
         if (device != null) {
             options.addAll(device.getGameMenuOptions());
         }
-
         options.add(new MenuOption(getString(R.string.game_menu_cancel), null));
-
         showMenuDialog(getString(R.string.game_menu_advanced), options.toArray(new MenuOption[options.size()]));
     }
 
@@ -356,15 +358,15 @@ public class GameMenu implements Game.GameMenuCallbacks {
         options.add(new MenuOption(getString(R.string.game_menu_server_cmd), true,
                 () -> {
                     ArrayList<String> serverCmds = game.getServerCmds();
-
                     if (serverCmds.isEmpty()) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(game);
-                        builder.setTitle(R.string.game_dialog_title_server_cmd_empty);
-                        builder.setMessage(R.string.game_dialog_message_server_cmd_empty);
-
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                        int themeResId = game.getApplicationInfo().theme;
+                        Context themedContext = new ContextThemeWrapper(dialogScreenContext, themeResId);
+                        new AlertDialog.Builder(themedContext)
+                                .setTitle(R.string.game_dialog_title_server_cmd_empty)
+                                .setMessage(R.string.game_dialog_message_server_cmd_empty)
+                                .show();
                     } else {
+                        hideMenu();
                         this.showServerCmd(serverCmds);
                     }
                 }));
@@ -386,17 +388,16 @@ public class GameMenu implements Game.GameMenuCallbacks {
         showMenuDialog(getString(R.string.quick_menu_title), options.toArray(new MenuOption[options.size()]));
     }
 
+    @Override
     public void hideMenu() {
-        if (currentDialog != null) {
+        if (currentDialog != null && currentDialog.isShowing()) {
             currentDialog.dismiss();
-            currentDialog = null;
         }
+        currentDialog = null;
     }
 
+    @Override
     public boolean isMenuOpen() {
-        if (currentDialog == null) {
-            return false;
-        }
-        return currentDialog.isShowing();
+        return currentDialog != null && currentDialog.isShowing();
     }
 }

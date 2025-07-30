@@ -1,11 +1,20 @@
 package com.limelight.utils;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.display.DisplayManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.Display;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 import com.limelight.AppView;
 import com.limelight.Game;
+import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.ShortcutTrampoline;
 import com.limelight.binding.PlatformBinding;
@@ -15,6 +24,7 @@ import com.limelight.nvstream.http.HostHttpResponseException;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
 import com.limelight.nvstream.jni.MoonBridge;
+import com.limelight.preferences.PreferenceConfiguration;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -22,7 +32,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
 public class ServerHelper {
@@ -54,12 +63,47 @@ public class ServerHelper {
         i.setAction(Intent.ACTION_DEFAULT);
         return i;
     }
+    public static Display getActiveDisplay(Context context, PreferenceConfiguration prefs) {
+        Display secondary = getSecondaryDisplay(context);
+        if(secondary != null && (prefs.enableFullExDisplay || prefs.enableExDisplay)) {
+            return secondary;
+        } else {
+            return ((DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE)).getDisplay(Display.DEFAULT_DISPLAY);
+        }
+    }
+
+    public static Display getSecondaryDisplay(Context context) {
+        DisplayManager displayManager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+        Display display = null;
+        Display[] displays = displayManager.getDisplays();
+        int mainDisplayId = Display.DEFAULT_DISPLAY;
+        int secondaryDisplayId = -1;
+        for (Display displayVariant : displays) {
+            LimeLog.info(displayVariant.toString());
+            if (displayVariant.getDisplayId() != mainDisplayId) {
+                secondaryDisplayId = displayVariant.getDisplayId();
+                break;
+            }
+        }
+
+        if (secondaryDisplayId != -1) {
+            display = displayManager.getDisplay(secondaryDisplayId);
+        }
+        return display;
+    }
 
     public static Intent createStartIntent(Activity parent, NvApp app, ComputerDetails computer,
                                            ComputerManagerService.ComputerManagerBinder managerBinder,
                                            boolean withVDisplay) {
-
-        Intent intent = new Intent(parent, Game.class);
+        Intent intent = null;
+        PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
+        // Try to add secondary DisplayContext if supported and connected
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay) && getSecondaryDisplay(parent) != null) {
+            Context displayContext = parent.createDisplayContext(getSecondaryDisplay(parent)); // use secondary display
+            intent = new Intent(displayContext, Game.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        if(intent == null) intent = new Intent(parent, Game.class);
         intent.putExtra(Game.EXTRA_HOST, computer.activeAddress.address);
         intent.putExtra(Game.EXTRA_PORT, computer.activeAddress.port);
         intent.putExtra(Game.EXTRA_HTTPS_PORT, computer.httpsPort);
@@ -72,6 +116,7 @@ public class ServerHelper {
         intent.putExtra(Game.EXTRA_PC_NAME, computer.name);
         intent.putExtra(Game.EXTRA_VDISPLAY, withVDisplay);
         intent.putExtra(Game.EXTRA_SERVER_COMMANDS, (ArrayList<String>) computer.serverCommands);
+
         try {
             if (computer.serverCert != null) {
                 intent.putExtra(Game.EXTRA_SERVER_CERT, computer.serverCert.getEncoded());
@@ -82,13 +127,58 @@ public class ServerHelper {
         return intent;
     }
 
-    public static void doStart(Activity parent, NvApp app, ComputerDetails computer,
-                               ComputerManagerService.ComputerManagerBinder managerBinder, boolean withVDisplay) {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static void doStart(
+            Activity parent,
+            NvApp app,
+            ComputerDetails computer,
+            ComputerManagerService.ComputerManagerBinder managerBinder,
+            boolean withVDisplay
+    ) {
         if (computer.state == ComputerDetails.State.OFFLINE || computer.activeAddress == null) {
-            Toast.makeText(parent, parent.getResources().getString(R.string.pair_pc_offline), Toast.LENGTH_SHORT).show();
+            Toast.makeText(parent, parent.getString(R.string.pair_pc_offline), Toast.LENGTH_SHORT).show();
             return;
         }
-        parent.startActivity(createStartIntent(parent, app, computer, managerBinder, withVDisplay));
+        PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
+        ActivityOptions options = null;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)
+                && !isDesktopModeActive(parent)
+        ) {
+            Display secondaryDisplay = getSecondaryDisplay(parent);
+            if (secondaryDisplay != null) {
+                options = ActivityOptions.makeBasic();
+                options.setLaunchDisplayId(secondaryDisplay.getDisplayId());
+                Toast.makeText(parent,
+                        parent.getString(R.string.external_display_info) + " "
+                                + secondaryDisplay.getMode().getPhysicalWidth() + "x"
+                                + secondaryDisplay.getMode().getPhysicalHeight() + " "
+                                + secondaryDisplay.getMode().getRefreshRate() + "Hz",
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+
+        Intent intent = createStartIntent(parent, app, computer, managerBinder, withVDisplay);
+
+        if (options != null) {
+            parent.startActivity(intent, options.toBundle());
+            Intent intentTouchpad = new Intent(parent, ExternalDisplayControlActivity.class);
+            Bundle optionsDefault = ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle();
+
+            parent.startActivity(intentTouchpad, optionsDefault);
+        } else {
+            // Fallback: launch normally on primary display
+            parent.startActivity(intent);
+        }
+    }
+
+    // If the PC View is already on a secondary screen, we can assume we are in DesktopMode and should
+    // launch the gamestream as ususal.
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    public static boolean isDesktopModeActive(Context context) {
+        Display display = context.getDisplay();
+        return display != null && display.getDisplayId() != Display.DEFAULT_DISPLAY;
     }
 
     public static void doNetworkTest(final Activity parent) {
