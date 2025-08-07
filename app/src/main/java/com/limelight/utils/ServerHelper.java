@@ -1,15 +1,10 @@
 package com.limelight.utils;
 
-import static com.limelight.StartExternalDisplayControlReceiver.requestFocusToExternalDisplayControl;
-import static com.limelight.StartExternalDisplayControlReceiver.requestFocusToGameActivity;
-
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.view.Display;
 import android.widget.Toast;
 
@@ -68,7 +63,7 @@ public class ServerHelper {
     }
     public static Display getActiveDisplay(Context context, PreferenceConfiguration prefs) {
         Display secondary = getSecondaryDisplay(context);
-        if(secondary != null && (prefs.enableFullExDisplay || prefs.enableExDisplay)) {
+        if (secondary != null && (prefs.enableFullExDisplay || prefs.enableExDisplay)) {
             return secondary;
         } else {
             return ((DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE)).getDisplay(Display.DEFAULT_DISPLAY);
@@ -98,36 +93,51 @@ public class ServerHelper {
     public static Intent createStartIntent(Activity parent, NvApp app, ComputerDetails computer,
                                            ComputerManagerService.ComputerManagerBinder managerBinder,
                                            boolean withVDisplay) {
-        Intent intent = null;
+        Intent gameIntent = null;
         PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
         // Try to add secondary DisplayContext if supported and connected
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay) && getSecondaryDisplay(parent) != null) {
             Context displayContext = parent.createDisplayContext(getSecondaryDisplay(parent)); // use secondary display
-            intent = new Intent(displayContext, Game.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            gameIntent = new Intent(displayContext, Game.class);
+            gameIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        if(intent == null) intent = new Intent(parent, Game.class);
-        intent.putExtra(Game.EXTRA_HOST, computer.activeAddress.address);
-        intent.putExtra(Game.EXTRA_PORT, computer.activeAddress.port);
-        intent.putExtra(Game.EXTRA_HTTPS_PORT, computer.httpsPort);
-        intent.putExtra(Game.EXTRA_APP_NAME, app.getAppName());
-        intent.putExtra(Game.EXTRA_APP_UUID, app.getAppUUID());
-        intent.putExtra(Game.EXTRA_APP_ID, app.getAppId());
-        intent.putExtra(Game.EXTRA_APP_HDR, app.isHdrSupported());
-        intent.putExtra(Game.EXTRA_UNIQUEID, managerBinder.getUniqueId());
-        intent.putExtra(Game.EXTRA_PC_UUID, computer.uuid);
-        intent.putExtra(Game.EXTRA_PC_NAME, computer.name);
-        intent.putExtra(Game.EXTRA_VDISPLAY, withVDisplay);
-        intent.putExtra(Game.EXTRA_SERVER_COMMANDS, (ArrayList<String>) computer.serverCommands);
+        if(gameIntent == null) gameIntent = new Intent(parent, Game.class);
+        gameIntent.putExtra(Game.EXTRA_HOST, computer.activeAddress.address);
+        gameIntent.putExtra(Game.EXTRA_PORT, computer.activeAddress.port);
+        gameIntent.putExtra(Game.EXTRA_HTTPS_PORT, computer.httpsPort);
+        gameIntent.putExtra(Game.EXTRA_APP_NAME, app.getAppName());
+        gameIntent.putExtra(Game.EXTRA_APP_UUID, app.getAppUUID());
+        gameIntent.putExtra(Game.EXTRA_APP_ID, app.getAppId());
+        gameIntent.putExtra(Game.EXTRA_APP_HDR, app.isHdrSupported());
+        gameIntent.putExtra(Game.EXTRA_UNIQUEID, managerBinder.getUniqueId());
+        gameIntent.putExtra(Game.EXTRA_PC_UUID, computer.uuid);
+        gameIntent.putExtra(Game.EXTRA_PC_NAME, computer.name);
+        gameIntent.putExtra(Game.EXTRA_VDISPLAY, withVDisplay);
+        gameIntent.putExtra(Game.EXTRA_SERVER_COMMANDS, (ArrayList<String>) computer.serverCommands);
 
         try {
             if (computer.serverCert != null) {
-                intent.putExtra(Game.EXTRA_SERVER_CERT, computer.serverCert.getEncoded());
+                gameIntent.putExtra(Game.EXTRA_SERVER_CERT, computer.serverCert.getEncoded());
             }
         } catch (CertificateEncodingException e) {
             e.printStackTrace();
         }
-        return intent;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)
+                && !isDesktopModeActive(parent)
+        ) {
+            Display secondaryDisplay = getSecondaryDisplay(parent);
+            if (secondaryDisplay != null) {
+                int secondaryDisplayId = secondaryDisplay.getDisplayId();
+                gameIntent.putExtra(Game.EXTRA_DISPLAY_ID, secondaryDisplayId);
+                Intent touchpadIntent = new Intent(parent, ExternalDisplayControlActivity.class);
+                touchpadIntent.putExtra(ExternalDisplayControlActivity.EXTRA_LAUNCH_INTENT, gameIntent);
+                return touchpadIntent;
+            }
+        }
+
+        return gameIntent;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -142,31 +152,9 @@ public class ServerHelper {
             Toast.makeText(parent, parent.getString(R.string.pair_pc_offline), Toast.LENGTH_SHORT).show();
             return;
         }
-        PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
-        boolean hasSecondaryDisplay = false;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-                && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)
-                && !isDesktopModeActive(parent)
-        ) {
-            Display secondaryDisplay = getSecondaryDisplay(parent);
-            if (secondaryDisplay != null) {
-                hasSecondaryDisplay = true;
-            }
-        }
 
         Intent intent = createStartIntent(parent, app, computer, managerBinder, withVDisplay);
-
-        if (hasSecondaryDisplay) {
-            Intent touchpadIntent = new Intent(parent, ExternalDisplayControlActivity.class);
-            touchpadIntent.putExtra(ExternalDisplayControlActivity.EXTRA_LAUNCH_INTENT, intent);
-            Bundle optionsDefault = ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle();
-
-            parent.startActivity(touchpadIntent, optionsDefault);
-        } else {
-            // Fallback: launch normally on primary display
-            parent.startActivity(intent);
-        }
+        parent.startActivity(intent);
     }
 
     // If the PC View is already on a secondary screen, we can assume we are in DesktopMode and should

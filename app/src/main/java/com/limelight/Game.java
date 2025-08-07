@@ -264,6 +264,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     public static final String EXTRA_SERVER_CERT = "ServerCert";
     public static final String EXTRA_VDISPLAY = "VirtualDisplay";
     public static final String EXTRA_SERVER_COMMANDS = "ServerCommands";
+    public static final String EXTRA_DISPLAY_ID = "DisplayID";
 
     public static final String CLIPBOARD_IDENTIFIER = "ArtemisStreaming";
 
@@ -369,20 +370,55 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         prefConfig = PreferenceConfiguration.readPreferences(this);
         tombstonePrefs = Game.this.getSharedPreferences("DecoderTombstone", 0);
 
-        if (prefConfig.autoOrientation) {
-            currentOrientation = getResources().getConfiguration().orientation;
-        } else {
-            currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
+        // Listen for non-touch events on the game surface
+        streamView = findViewById(R.id.surfaceView);
+        streamView.setOnGenericMotionListener(this);
+        streamView.setOnKeyListener(this);
+        streamView.setInputCallbacks(this);
+        streamView.setCommitTextEnabled(prefConfig.enableCommitText);
+
+        rootView = streamView.getParent();
+
+        Display defaultDisplay = getWindowManager().getDefaultDisplay();
+        Display currentDisplay = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int displayId = getIntent().getIntExtra(EXTRA_DISPLAY_ID, Display.DEFAULT_DISPLAY);
+            currentDisplay = getSystemService(DisplayManager.class).getDisplay(displayId);
         }
 
-        boolean portraitMode = currentOrientation == Configuration.ORIENTATION_PORTRAIT;
-        boolean shouldInvertDecoderResolution = portraitMode && prefConfig.autoInvertVideoResolution;
+        if (currentDisplay == null) {
+            currentDisplay = defaultDisplay;
+        }
 
-        displayWidth = shouldInvertDecoderResolution ? prefConfig.height : prefConfig.width;
-        displayHeight = shouldInvertDecoderResolution ? prefConfig.width : prefConfig.height;
+        boolean shouldInvertDecoderResolution = false;
 
-        // Enter landscape unless we're on a square screen
-        setPreferredOrientationForCurrentDisplay();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && currentDisplay != defaultDisplay) {
+            Display.Mode currentMode = currentDisplay.getMode();
+            displayWidth = currentMode.getPhysicalWidth();
+            displayHeight = currentMode.getPhysicalHeight();
+            prefConfig.width = displayWidth;
+            prefConfig.height = displayHeight;
+            prefConfig.fps = currentMode.getRefreshRate();
+            prefConfig.videoScaleMode = PreferenceConfiguration.ScaleMode.STRETCH;
+            currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
+        } else {
+            if (prefConfig.autoOrientation) {
+                currentOrientation = getResources().getConfiguration().orientation;
+            } else {
+                currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
+            }
+
+            boolean portraitMode = currentOrientation == Configuration.ORIENTATION_PORTRAIT;
+            shouldInvertDecoderResolution = portraitMode && prefConfig.autoInvertVideoResolution;
+
+            displayWidth = shouldInvertDecoderResolution ? prefConfig.height : prefConfig.width;
+            displayHeight = shouldInvertDecoderResolution ? prefConfig.width : prefConfig.height;
+
+            // Enter landscape unless we're on a square screen
+            setPreferredOrientationForCurrentDisplay();
+        }
+
 
         if (
                 prefConfig.videoScaleMode == PreferenceConfiguration.ScaleMode.STRETCH ||
@@ -399,12 +435,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             }
         }
-        // Listen for non-touch events on the game surface
-        streamView = findViewById(R.id.surfaceView);
-        streamView.setOnGenericMotionListener(this);
-        streamView.setOnKeyListener(this);
-        streamView.setInputCallbacks(this);
-        streamView.setCommitTextEnabled(prefConfig.enableCommitText);
 
         //光标是否显示
         cursorVisible = prefConfig.enableMouseLocalCursor;
@@ -420,8 +450,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // allows proper touch splitting, which the OSC relies upon.
         View backgroundTouchView = findViewById(R.id.backgroundTouchView);
         backgroundTouchView.setOnTouchListener(this);
-
-        rootView = streamView.getParent();
 
         panZoomHandler = new PanZoomHandler(
                 getApplicationContext(),
@@ -543,29 +571,33 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // Check if the user has enabled HDR
         boolean willStreamHdr = false;
         if (prefConfig.enableHdr) {
-            // Start our HDR checklist
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                Display display = getWindowManager().getDefaultDisplay();
-                Display.HdrCapabilities hdrCaps = display.getHdrCapabilities();
+            if (currentDisplay != defaultDisplay) {
+                // Enforce HDR on unsupported hardware can still enable 10bit streaming for better quality
+                willStreamHdr = true;
+            } else {
+                // Start our HDR checklist
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Display.HdrCapabilities hdrCaps = currentDisplay.getHdrCapabilities();
 
-                // We must now ensure our display is compatible with HDR10
-                if (hdrCaps != null) {
-                    // getHdrCapabilities() returns null on Lenovo Lenovo Mirage Solo (vega), Android 8.0
-                    for (int hdrType : hdrCaps.getSupportedHdrTypes()) {
-                        if (hdrType == Display.HdrCapabilities.HDR_TYPE_HDR10) {
-                            willStreamHdr = true;
-                            break;
+                    // We must now ensure our display is compatible with HDR10
+                    if (hdrCaps != null) {
+                        // getHdrCapabilities() returns null on Lenovo Lenovo Mirage Solo (vega), Android 8.0
+                        for (int hdrType : hdrCaps.getSupportedHdrTypes()) {
+                            if (hdrType == Display.HdrCapabilities.HDR_TYPE_HDR10) {
+                                willStreamHdr = true;
+                                break;
+                            }
                         }
                     }
-                }
 
-                if (!willStreamHdr) {
-                    // Nope, no HDR for us :(
-                    Toast.makeText(this, "Display does not support HDR10", Toast.LENGTH_LONG).show();
+                    if (!willStreamHdr) {
+                        // Nope, no HDR for us :(
+                        Toast.makeText(this, "Display does not support HDR10", Toast.LENGTH_LONG).show();
+                    }
                 }
-            }
-            else {
-                Toast.makeText(this, "HDR requires Android 7.0 or later", Toast.LENGTH_LONG).show();
+                else {
+                    Toast.makeText(this, "HDR requires Android 7.0 or later", Toast.LENGTH_LONG).show();
+                }
             }
         }
 
@@ -653,7 +685,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         // Set to the optimal mode for streaming
-        float displayRefreshRate = prepareDisplayForRendering();
+        float displayRefreshRate = prepareDisplayForRendering(currentDisplay);
         LimeLog.info("Display refresh rate: "+displayRefreshRate);
 
         // If the user requested frame pacing using a capped FPS, we will need to change our
@@ -718,13 +750,26 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         InputManager inputManager = (InputManager) getSystemService(Context.INPUT_SERVICE);
         inputManager.registerInputDeviceListener(keyboardTranslator, null);
 
-        // Initialize touch contexts based on preferences
-        // The mouse mode preference is also read in PreferenceConfiguration to set the boolean flags
-         initMouseMode();
-
         // Initialize trackpad contexts
         for (int i = 0; i < trackpadContextMap.length; i++) {
             trackpadContextMap[i] = new TrackpadContext(conn, i, prefConfig.trackpadSwapAxis, prefConfig.trackpadSensitivityX, prefConfig.trackpadSensitivityY);
+        }
+
+        if (Objects.equals(appUUID, NvApp.REMOTE_INPUT_UUID)) {
+            // Force trackpad mode since we won't see anything on the screen
+            isInputOnly = true;
+            allowChangeMouseMode = false;
+            applyMouseMode(2);
+        } else {
+            if (prefConfig.enableExDisplay && !prefConfig.enableFullExDisplay) {
+                showSecondScreen();
+            } else if (prefConfig.enableFullExDisplay) {
+                listenForExternalDisplayRemoval();
+            }
+
+            // Initialize touch contexts based on preferences
+            // The mouse mode preference is also read in PreferenceConfiguration to set the boolean flags
+            initMouseMode();
         }
 
         if (prefConfig.onscreenController) {
@@ -753,19 +798,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             Dialog.displayDialog(this, getResources().getString(R.string.conn_error_title),
                     "This device or ROM doesn't support hardware accelerated H.264 playback.", true);
             return;
-        }
-
-        if (Objects.equals(appUUID, NvApp.REMOTE_INPUT_UUID)) {
-            // Force trackpad mode since we won't see anything on the screen
-            isInputOnly = true;
-            allowChangeMouseMode = false;
-            applyMouseMode(2);
-        } else {
-            if (prefConfig.enableExDisplay && !prefConfig.enableFullExDisplay) {
-                showSecondScreen();
-            } else if (prefConfig.enableFullExDisplay) {
-                listenForExternalDisplayRemoval();
-            }
         }
 
         // The connection will be started when the surface gets created
@@ -1307,7 +1339,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         return isSecondaryDisplayPresentationActive() || isSecondaryDisplayFullModeActive();
     }
 
-    private float prepareDisplayForRendering() {
+    private float prepareDisplayForRendering(Display currentDisplay) {
         Display display;
 
         if (isSecondaryDisplayMode()) {
@@ -1500,7 +1532,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         else {
             // Use the lower of the current refresh rate and the selected refresh rate.
             // The preferred refresh rate may not actually be applied (ex: Battery Saver mode).
-            return Math.min(getWindowManager().getDefaultDisplay().getRefreshRate(), displayRefreshRate);
+            return Math.min(currentDisplay.getRefreshRate(), displayRefreshRate);
         }
     }
 
