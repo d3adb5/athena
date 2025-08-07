@@ -1296,7 +1296,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     private Boolean isSecondaryDisplayPresentationActive() {
-        return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null && getSecondaryDisplay(this) != null);
+        return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null);
     }
 
     private Boolean isSecondaryDisplayFullModeActive() {
@@ -1308,10 +1308,12 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     private float prepareDisplayForRendering() {
-        Display display = getActiveDisplay(Game.this, prefConfig);
+        Display display;
 
         if (isSecondaryDisplayMode()) {
             display = getSecondaryDisplay(this);
+        } else {
+            display = getActiveDisplay(Game.this, prefConfig);
         }
         WindowManager.LayoutParams windowLayoutParams = getWindow().getAttributes();
         float displayRefreshRate;
@@ -3260,8 +3262,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         } else if (touchedView == streamView) {
             eventX = event.getX(0);
             eventY = event.getY(0);
-        }
-        else {
+        } else {
             // For the containing background view, we must subtract the origin
             // of the StreamView to get video-relative coordinates.
             eventX = event.getX(0) - streamView.getX();
