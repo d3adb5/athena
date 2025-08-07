@@ -1,10 +1,12 @@
 package com.limelight.utils;
 
 import static com.limelight.StartExternalDisplayControlReceiver.requestFocusToSecondScreen;
+import static com.limelight.utils.ServerHelper.getSecondaryDisplay;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -28,6 +30,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -60,6 +63,8 @@ import com.limelight.preferences.PreferenceConfiguration;
  * It creates its own UI programmatically and hosts the GameMenu for in-game options.
  */
 public class ExternalDisplayControlActivity extends Activity {
+
+    public static String EXTRA_LAUNCH_INTENT = "launchIntent";
 
     @SuppressLint("StaticFieldLeak")
     public static ExternalDisplayControlActivity instance;
@@ -111,9 +116,47 @@ public class ExternalDisplayControlActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!isGameInstanceAvailable()) return;
         instance = this;
 
+        rootLayout = new FrameLayout(this);
+        rootLayout.setBackground(createTouchpadBackground(this));
+        rootLayout.setLayoutParams(new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        setContentView(rootLayout);
+
+        if (!isGameInstanceAvailable()) {
+            Intent gameIntent = getIntent().getParcelableExtra(EXTRA_LAUNCH_INTENT);
+            if (gameIntent == null) {
+                finish();
+            } else {
+                Display secondaryDisplay = getSecondaryDisplay(this);
+                if (secondaryDisplay != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    ActivityOptions options = ActivityOptions.makeBasic();
+                    options.setLaunchDisplayId(secondaryDisplay.getDisplayId());
+                    Toast.makeText(this,
+                            getString(R.string.external_display_info) + " "
+                                    + secondaryDisplay.getMode().getPhysicalWidth() + "x"
+                                    + secondaryDisplay.getMode().getPhysicalHeight() + " "
+                                    + secondaryDisplay.getMode().getRefreshRate() + "Hz",
+                            Toast.LENGTH_LONG).show();
+
+                    startActivity(gameIntent, options.toBundle());
+
+                    // Wait for the intent to get started
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    handler.postDelayed(this::initViews, 500);
+                } else {
+                    startActivity(gameIntent);
+                    finish();
+                }
+            }
+        } else {
+            initViews();
+        }
+    }
+
+    private void initViews() {
         initializeComponents();
         createProgrammaticUI();
         checkNotificationPermission();
@@ -156,18 +199,20 @@ public class ExternalDisplayControlActivity extends Activity {
         return new BitmapDrawable(context.getResources(), bitmap);
     }
 
-
-
     @Override
     protected void onResume() {
         super.onResume();
-        isGameInstanceAvailable();
+        if (!isGameInstanceAvailable() && gameMenu != null) {
+            finish();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        isGameInstanceAvailable();
+        if (!isGameInstanceAvailable()) {
+            finish();
+        }
     }
 
     @Override
@@ -214,7 +259,9 @@ public class ExternalDisplayControlActivity extends Activity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        isGameInstanceAvailable();
+        if (!isGameInstanceAvailable()) {
+            finish();
+        }
     }
 
     @Override
@@ -234,19 +281,14 @@ public class ExternalDisplayControlActivity extends Activity {
      * Checks if the static Game.instance is alive. If not, finishes this Activity.
      */
     private boolean isGameInstanceAvailable() {
-        if (Game.instance == null) {
-            finish();
-            return false;
-        }
-        return true;
+        return Game.instance != null;
     }
 
     /**
      * Initializes core components needed for this controller Activity.
      */
     private void initializeComponents() {
-        this.conn = Game.instance.conn;
-        this.gameMenu = new GameMenu(Game.instance, conn, instance);
+        this.gameMenu = new GameMenu(Game.instance, instance);
     }
 
     @Override
@@ -259,12 +301,6 @@ public class ExternalDisplayControlActivity extends Activity {
 
     @SuppressLint("ClickableViewAccessibility")
     private void createProgrammaticUI() {
-        rootLayout = new FrameLayout(this);
-        rootLayout.setBackground(createTouchpadBackground(this));
-        rootLayout.setLayoutParams(new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(rootLayout);
 
         setupKeyboardInputHandling(rootLayout);
 

@@ -140,30 +140,23 @@ public class ServerHelper {
             return;
         }
         PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
-        ActivityOptions options = null;
+        boolean hasSecondaryDisplay = false;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
                 && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)
                 && !isDesktopModeActive(parent)
         ) {
             Display secondaryDisplay = getSecondaryDisplay(parent);
             if (secondaryDisplay != null) {
-                options = ActivityOptions.makeBasic();
-                options.setLaunchDisplayId(secondaryDisplay.getDisplayId());
-                Toast.makeText(parent,
-                        parent.getString(R.string.external_display_info) + " "
-                                + secondaryDisplay.getMode().getPhysicalWidth() + "x"
-                                + secondaryDisplay.getMode().getPhysicalHeight() + " "
-                                + secondaryDisplay.getMode().getRefreshRate() + "Hz",
-                        Toast.LENGTH_LONG).show();
+                hasSecondaryDisplay = true;
             }
         }
 
         Intent intent = createStartIntent(parent, app, computer, managerBinder, withVDisplay);
 
-        if (options != null) {
-            parent.startActivity(intent, options.toBundle());
+        if (hasSecondaryDisplay) {
             Intent intentTouchpad = new Intent(parent, ExternalDisplayControlActivity.class);
+            intentTouchpad.putExtra(ExternalDisplayControlActivity.EXTRA_LAUNCH_INTENT, intent);
             Bundle optionsDefault = ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle();
 
             parent.startActivity(intentTouchpad, optionsDefault);
