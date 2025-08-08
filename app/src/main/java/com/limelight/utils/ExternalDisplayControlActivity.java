@@ -302,16 +302,9 @@ public class ExternalDisplayControlActivity extends AppCompatActivity {
         }
         setContentView(rootLayout);
 
-        // Top-right buttons
-        LinearLayout topRightButtons = createButtonContainer(Gravity.TOP | Gravity.END);
-        rootLayout.addView(topRightButtons);
-        topRightButtons.addView(createImageButton(R.drawable.ic_menu_external, v -> showGameMenu()));
-        topRightButtons.addView(createImageButton(R.drawable.ic_close_external, v -> finish()));
-        topRightButtons.setFocusable(false);
-
         // Top-left buttons
         LinearLayout topLeftButtons = createButtonContainer(Gravity.TOP | Gravity.START);
-        rootLayout.addView(topLeftButtons);
+        topLeftButtons.setFocusable(false);
 //        topLeftButtons.addView(createImageButton(R.drawable.ic_focus_secondary, v -> requestFocusToGameActivity(false)));
         ImageButton zoomButton = createImageButton(R.drawable.ic_zoom_toggle, v -> {
             if (Game.instance != null) {
@@ -329,24 +322,36 @@ public class ExternalDisplayControlActivity extends AppCompatActivity {
             zoomButton.setAlpha(0.5f);
         }
         topLeftButtons.addView(zoomButton);
-        topLeftButtons.setFocusable(false);
+        rootLayout.addView(topLeftButtons);
 
-        // Bottom-center buttons
-        LinearLayout bottomCenterButtons = createButtonContainer(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-        rootLayout.addView(bottomCenterButtons);
-        bottomCenterButtons.setFocusable(false);
+        // Top-center buttons
+//        LinearLayout topCenterButtons = createButtonContainer(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+//        topCenterButtons.setFocusable(false);
+//        rootLayout.addView(topCenterButtons);
+
+        // Top-right buttons
+        LinearLayout topRightButtons = createButtonContainer(Gravity.TOP | Gravity.END);
+        topRightButtons.setFocusable(false);
+        topRightButtons.addView(createImageButton(R.drawable.ic_menu_external, v -> showGameMenu()));
+        topRightButtons.addView(createImageButton(R.drawable.ic_close_external, v -> finish()));
+        rootLayout.addView(topRightButtons);
 
         // Bottom-left button: Android keyboard toggle
         LinearLayout bottomLeftButton = createButtonContainer(Gravity.BOTTOM | Gravity.START);
-        rootLayout.addView(bottomLeftButton);
-        bottomLeftButton.addView(createImageButton(R.drawable.ic_android_keyboard, v -> toggleKeyboard()));
         bottomLeftButton.setFocusable(false);
+        bottomLeftButton.addView(createImageButton(R.drawable.ic_android_keyboard, v -> toggleKeyboard()));
+        rootLayout.addView(bottomLeftButton);
+
+        // Bottom-center buttons
+//        LinearLayout bottomCenterButtons = createButtonContainer(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+//        bottomCenterButtons.setFocusable(false);
+//        rootLayout.addView(bottomCenterButtons);
 
         // Bottom-right button: Custom keyboard toggle
         LinearLayout bottomRightButton = createButtonContainer(Gravity.BOTTOM | Gravity.END);
-        rootLayout.addView(bottomRightButton);
-        bottomRightButton.addView(createImageButton(R.drawable.ic_fullscreen_keyboard, v -> togglePcKeyboard()));
         bottomRightButton.setFocusable(false);
+        bottomRightButton.addView(createImageButton(R.drawable.ic_fullscreen_keyboard, v -> togglePcKeyboard()));
+        rootLayout.addView(bottomRightButton);
     }
 
 

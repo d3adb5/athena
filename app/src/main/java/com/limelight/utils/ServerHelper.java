@@ -123,10 +123,7 @@ public class ServerHelper {
             e.printStackTrace();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-                && prefConfig.enableFullExDisplay
-                && !isDesktopModeActive(parent)
-        ) {
+        if (prefConfig.enableFullExDisplay) {
             Display secondaryDisplay = getSecondaryDisplay(parent);
             if (secondaryDisplay != null) {
                 int secondaryDisplayId = secondaryDisplay.getDisplayId();
@@ -155,14 +152,6 @@ public class ServerHelper {
 
         Intent intent = createStartIntent(parent, app, computer, managerBinder, withVDisplay);
         parent.startActivity(intent);
-    }
-
-    // If the PC View is already on a secondary screen, we can assume we are in DesktopMode and should
-    // launch the gamestream as ususal.
-    @RequiresApi(api = Build.VERSION_CODES.R)
-    public static boolean isDesktopModeActive(Context context) {
-        Display display = context.getDisplay();
-        return display != null && display.getDisplayId() != Display.DEFAULT_DISPLAY;
     }
 
     public static void doNetworkTest(final Activity parent) {
