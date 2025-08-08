@@ -435,6 +435,15 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         //光标是否显示
         cursorVisible = prefConfig.enableMouseLocalCursor;
 
+        // Listen for non-touch events on the game surface
+        streamView = findViewById(R.id.surfaceView);
+        streamView.setOnGenericMotionListener(this);
+        streamView.setOnKeyListener(this);
+        streamView.setInputCallbacks(this);
+        streamView.setCommitTextEnabled(prefConfig.enableCommitText);
+
+        rootView = streamView.getParent();
+
         //串流画面 顶部居中显示
         if(prefConfig.alignDisplayTopCenter){
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) streamView.getLayoutParams();
@@ -446,15 +455,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // allows proper touch splitting, which the OSC relies upon.
         View backgroundTouchView = findViewById(R.id.backgroundTouchView);
         backgroundTouchView.setOnTouchListener(this);
-
-        // Listen for non-touch events on the game surface
-        streamView = findViewById(R.id.surfaceView);
-        streamView.setOnGenericMotionListener(this);
-        streamView.setOnKeyListener(this);
-        streamView.setInputCallbacks(this);
-        streamView.setCommitTextEnabled(prefConfig.enableCommitText);
-
-        rootView = streamView.getParent();
 
         panZoomHandler = new PanZoomHandler(
                 getApplicationContext(),
