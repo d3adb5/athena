@@ -1,7 +1,5 @@
 package com.limelight;
 
-import static com.limelight.binding.input.KeyboardTranslator.getModifier;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,8 +16,6 @@ import android.widget.Toast;
 
 import com.limelight.binding.input.GameInputDevice;
 import com.limelight.binding.input.KeyboardTranslator;
-import com.limelight.nvstream.NvConnection;
-import com.limelight.nvstream.input.KeyboardPacket;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.utils.KeyConfigHelper;
 import com.limelight.utils.KeyMapper;
@@ -255,7 +251,7 @@ public class GameMenu implements Game.GameMenuCallbacks {
         options.add(new MenuOption(getString(R.string.game_menu_toggle_hud), true, game::toggleHUD));
         options.add(new MenuOption(getString(R.string.game_menu_toggle_floating_button), true, game::toggleFloatingButtonVisibility));
         options.add(new MenuOption(getString(R.string.game_menu_toggle_keyboard_model), true, game::showHideKeyboardController));
-        if (!game.isSecondaryDisplayMode()) {
+        if (!game.isSecondaryDisplayFullModeActive()) {
             options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_model), true, game::showHideVirtualController));
         }
         options.add(new MenuOption(getString(R.string.game_menu_toggle_virtual_keyboard_model), true, game::showHidekeyBoardLayoutController));

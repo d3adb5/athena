@@ -63,7 +63,7 @@ public class ServerHelper {
     }
     public static Display getActiveDisplay(Context context, PreferenceConfiguration prefs) {
         Display secondary = getSecondaryDisplay(context);
-        if (secondary != null && (prefs.enableFullExDisplay || prefs.enableExDisplay)) {
+        if (secondary != null && (prefs.enableFullExDisplay)) {
             return secondary;
         } else {
             return ((DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE)).getDisplay(Display.DEFAULT_DISPLAY);
@@ -96,7 +96,7 @@ public class ServerHelper {
         Intent gameIntent = null;
         PreferenceConfiguration prefConfig = PreferenceConfiguration.readPreferences(parent);
         // Try to add secondary DisplayContext if supported and connected
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay) && getSecondaryDisplay(parent) != null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && (prefConfig.enableFullExDisplay) && getSecondaryDisplay(parent) != null) {
             Context displayContext = parent.createDisplayContext(getSecondaryDisplay(parent)); // use secondary display
             gameIntent = new Intent(displayContext, Game.class);
             gameIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -124,7 +124,7 @@ public class ServerHelper {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-                && (prefConfig.enableFullExDisplay && !prefConfig.enableExDisplay)
+                && (prefConfig.enableFullExDisplay)
                 && !isDesktopModeActive(parent)
         ) {
             Display secondaryDisplay = getSecondaryDisplay(parent);

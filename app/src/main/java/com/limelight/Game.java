@@ -55,7 +55,6 @@ import com.limelight.utils.UiHelper;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
 import android.app.Service;
@@ -99,7 +98,6 @@ import android.view.View;
 import android.view.View.OnGenericMotionListener;
 import android.view.View.OnSystemUiVisibilityChangeListener;
 import android.view.View.OnTouchListener;
-import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
 import android.view.Window;
@@ -763,9 +761,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             allowChangeMouseMode = false;
             applyMouseMode(2);
         } else {
-            if (prefConfig.enableExDisplay && !prefConfig.enableFullExDisplay) {
-                showSecondScreen();
-            } else if (prefConfig.enableFullExDisplay) {
+            if (prefConfig.enableFullExDisplay) {
                 listenForExternalDisplayRemoval();
             }
 
@@ -1329,22 +1325,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 (prefConfig.framePacing == PreferenceConfiguration.FRAME_PACING_BALANCED && prefConfig.reduceRefreshRate);
     }
 
-    private Boolean isSecondaryDisplayPresentationActive() {
-        return prefConfig.enableExDisplay && (secondaryDisplayPresentation != null);
-    }
-
-    private Boolean isSecondaryDisplayFullModeActive() {
+    public Boolean isSecondaryDisplayFullModeActive() {
         return prefConfig.enableFullExDisplay && getSecondaryDisplay(this) != null;
-    }
-
-    public Boolean isSecondaryDisplayMode() {
-        return isSecondaryDisplayPresentationActive() || isSecondaryDisplayFullModeActive();
     }
 
     private float prepareDisplayForRendering(Display currentDisplay) {
         Display display;
 
-        if (isSecondaryDisplayMode()) {
+        if (isSecondaryDisplayFullModeActive()) {
             display = getSecondaryDisplay(this);
         } else {
             display = getActiveDisplay(Game.this, prefConfig);
@@ -1505,7 +1493,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
             double screenAspectRatio = ((double)screenSize.y) / screenSize.x;
             double streamAspectRatio = ((double)displayHeight) / displayWidth;
-            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001|| isSecondaryDisplayMode()) {
+            if (Math.abs(screenAspectRatio - streamAspectRatio) < 0.001|| isSecondaryDisplayFullModeActive()) {
                 LimeLog.info("Stream has compatible aspect ratio with output display");
                 aspectRatioMatch = true;
             }
@@ -1525,7 +1513,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
                 getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-            || isSecondaryDisplayMode()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
+            || isSecondaryDisplayFullModeActive()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
             // it will be eventually activated.
             // external displays cant be compared with displaymanager currents display refreshrate
             // TODO: Improve this
@@ -1599,11 +1587,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         super.onDestroy();
 
         instance = null;
-
-        if (secondaryDisplayPresentation != null) {
-            secondaryDisplayPresentation.dismiss();
-            secondaryDisplayPresentation = null;
-        }
 
         if (prefConfig.enableFullExDisplay) handleDisplayRemoved();
 
@@ -2736,20 +2719,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         }
                     }
                 }
-                /*
-                 * Allows full desktop mouse control also on devices like samsung
-                 * For secondary screens only
-                 * Not working with games mostly due to As streamView is not in focus and
-                 * systemUi interference when reaching corners
-                 * To make it work, use full secondary mode
-                 */
-                else if (isSecondaryDisplayPresentationActive() && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
-                    if (prefConfig.absoluteMouseMode) {
-                        updateMousePosition(view, event);
-                    } else {
-                        mouseMove((int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), (int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y));
-                    }
-                } else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
+
+                if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
                     // If this input device is not associated with the view itself (like a trackpad),
                     // we'll convert the device-specific coordinates to use to send the cursor position.
                     // This really isn't ideal but it's probably better than nothing.
@@ -3288,11 +3259,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         float eventX, eventY;
         // For our StreamView itself, we can use the coordinates unmodified.
 
-        if (isSecondaryDisplayPresentationActive()) {
-            PointF mappedCoordinates = mapMouseCoordinatesToStreamView(event, streamView);
-            eventX = mappedCoordinates.x;
-            eventY = mappedCoordinates.y;
-        } else if (touchedView == streamView) {
+        if (touchedView == streamView) {
             eventX = event.getX(0);
             eventY = event.getY(0);
         } else {
@@ -3997,7 +3964,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             }
         }
         // We only want to temporary override the mouse mode to work with external, but not store it
-        if (isSecondaryDisplayMode()) {
+        if (isSecondaryDisplayFullModeActive()) {
             if (savedMouseModeString != null &&
                     (savedMouseModeString.equals(natural) ||
                             savedMouseModeString.equals(gaming) ||
@@ -4039,7 +4006,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         for (int i = 0; i < allModes.length; i++) {
             String label = allModes[i];
-            boolean isAllowed = !isSecondaryDisplayMode() || allowedLabels.contains(label);
+            boolean isAllowed = !isSecondaryDisplayFullModeActive() || allowedLabels.contains(label);
             if (isAllowed) {
                 options.add(new MouseModeOption(i, label));
             }
@@ -4191,33 +4158,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     public void hideGameMenu() {
         if (gameMenuCallbacks != null) {
             gameMenuCallbacks.hideMenu();
-        }
-    }
-
-    public SecondaryDisplayPresentation secondaryDisplayPresentation;
-
-    public void showSecondScreen() {
-        Display secondaryDisplay = getSecondaryDisplay(this);
-
-        if (secondaryDisplay != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Toast.makeText(Game.this,
-                        getString(R.string.external_display_info) + " "
-                                + secondaryDisplay.getMode().getPhysicalWidth() + "x"
-                                + secondaryDisplay.getMode().getPhysicalHeight() + " "
-                                + secondaryDisplay.getMode().getRefreshRate() + "Hz",
-                        Toast.LENGTH_LONG).show();
-            }
-
-            secondaryDisplayPresentation = new SecondaryDisplayPresentation(this, secondaryDisplay);
-            secondaryDisplayPresentation.show();
-            if (rootView != null) {
-                ((ViewGroup) rootView).removeView(streamView); // <- fix
-                secondaryDisplayPresentation.addView(streamView);
-            }
-            // Force mouse mode as trackpad during presentation as user won't see anything on device screen
-            allowChangeMouseMode = false;
-            applyMouseMode(2);
         }
     }
 
