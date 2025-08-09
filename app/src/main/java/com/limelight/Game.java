@@ -42,6 +42,7 @@ import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.preferences.GlPreferences;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.profiles.ProfilesManager;
+import com.limelight.ui.ExternalControllerView;
 import com.limelight.ui.GameGestures;
 import com.limelight.ui.StreamView;
 import com.limelight.utils.Dialog;
@@ -138,7 +139,7 @@ import java.util.Set;
 
 public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         OnGenericMotionListener, OnTouchListener, NvConnectionListener, EvdevListener,
-        OnSystemUiVisibilityChangeListener, GameGestures, StreamView.InputCallbacks,
+        OnSystemUiVisibilityChangeListener, GameGestures, StreamView.InputCallbacks, ExternalControllerView.InputCallbacks,
         PerfOverlayListener, UsbDriverService.UsbDriverStateListener, View.OnKeyListener {
     public static Game instance;
 
@@ -394,7 +395,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             prefConfig.videoScaleMode = PreferenceConfiguration.ScaleMode.STRETCH;
             prefConfig.enableFloatingButton = false;
             prefConfig.showOverlayZoomToggleButton = false;
-            prefConfig.enableCommitText = false;
             prefConfig.enablePip = false;
             currentOrientation = Configuration.ORIENTATION_LANDSCAPE;
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE);
@@ -987,26 +987,25 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     private void initkeyBoardLayoutController(){
-        if(isOnExternalDisplay()) {
-            keyBoardLayoutController = ExternalDisplayControlActivity.getPhoneScreenKeyboard(prefConfig);
-        } else {
-            keyBoardLayoutController = new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
-        }
+        keyBoardLayoutController = new KeyBoardLayoutController((FrameLayout)rootView, this, prefConfig);
         keyBoardLayoutController.refreshLayout();
         keyBoardLayoutController.show();
     }
 
     //显示隐藏虚拟特殊按键
-    public void showHideKeyboardController(){
-        if(keyBoardController==null){
+    public void toggleKeyboardController(){
+        if (keyBoardController==null) {
             initKeyboardController();
             return;
         }
         keyBoardController.toggleVisibility();
     }
 
-    public void showHidekeyBoardLayoutController(){
-        if(keyBoardLayoutController==null){
+    public void toggleFullKeyboard() {
+        if (isOnExternalDisplay()) {
+            ExternalDisplayControlActivity.instance.toggleFullKeyboard();
+        }
+        if (keyBoardLayoutController == null) {
             initkeyBoardLayoutController();
             return;
         }
@@ -1014,8 +1013,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     //显示隐藏虚拟手柄控制器
-    public void showHideVirtualController(){
-        if(virtualController==null){
+    public void toggleVirtualController(){
+        if (virtualController==null) {
             initVirtualController();
             prefConfig.onscreenController=true;
             return;
@@ -2070,7 +2069,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         return handleKeyMultiple(event) || super.onKeyMultiple(keyCode, repeatCount, event);
     }
 
-    private boolean handleKeyMultiple(KeyEvent event) {
+    public boolean handleKeyMultiple(KeyEvent event) {
         // We can receive keys from a software keyboard that don't correspond to any existing
         // KEYCODE value. Android will give those to us as an ACTION_MULTIPLE KeyEvent.
         //
@@ -3049,7 +3048,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                             toggleKeyboard();
                             return true;
                         } else if (currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
-                            showHidekeyBoardLayoutController();
+                            toggleFullKeyboard();
                             return true;
                         } else if (currentEventTime - fiveFingerDownTime < FIVE_FINGER_TAP_THRESHOLD) {
                             if(prefConfig.enableBackMenu) {
@@ -3167,7 +3166,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                     fiveFingerDownTime = 0;
                     break;
                 } else if (pointerCount == 4 && fourFingerDownTime > 0 && currentEventTime - fourFingerDownTime < FOUR_FINGER_TAP_THRESHOLD) {
-                    showHidekeyBoardLayoutController();
+                    toggleFullKeyboard();
                     fourFingerDownTime = 0;
                     break;
                 } else if (pointerCount == 3 && threeFingerDownTime > 0 && currentEventTime - threeFingerDownTime < THREE_FINGER_TAP_THRESHOLD) {
