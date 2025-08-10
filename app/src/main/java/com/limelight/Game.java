@@ -5,8 +5,6 @@ import static com.limelight.StartExternalDisplayControlReceiver.requestFocusToEx
 import static com.limelight.binding.input.KeyboardTranslator.getModifier;
 import static com.limelight.utils.ExternalDisplayControlActivity.SECONDARY_SCREEN_NOTIFICATION_ID;
 import static com.limelight.utils.ExternalDisplayControlActivity.closeExternalDisplayControl;
-import static com.limelight.utils.ExternalDisplayControlActivity.toggleGameMenu;
-import static com.limelight.utils.ExternalDisplayControlActivity.toggleKeyboardForExternal;
 import static com.limelight.utils.ServerHelper.getActiveDisplay;
 import static com.limelight.utils.ServerHelper.getSecondaryDisplay;
 
@@ -1003,7 +1001,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     public void toggleFullKeyboard() {
         if (isOnExternalDisplay()) {
-            ExternalDisplayControlActivity.instance.toggleFullKeyboard();
+            ExternalDisplayControlActivity.toggleFullKeyboard();
             return;
         }
         if (keyBoardLayoutController == null) {
@@ -2281,7 +2279,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     @Override
     public void toggleKeyboard() {
         if (isOnExternalDisplay()) {
-            toggleKeyboardForExternal();
+            ExternalDisplayControlActivity.toggleKeyboard();
         } else {
             LimeLog.info("Toggling keyboard overlay");
             InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -4035,8 +4033,6 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 })
                 .create()
                 .show();
-
-
     }
 
     //本地鼠标光标切换
@@ -4122,9 +4118,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     public void quit() {
-        Context context = this;
-        if (isOnExternalDisplay()) {
+        Context context;
+        if (isOnExternalDisplay() && ExternalDisplayControlActivity.instance != null) {
             context = ExternalDisplayControlActivity.instance;
+        } else {
+            context = this;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.game_dialog_title_quit_confirm);
@@ -4145,7 +4143,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     @Override
     public void showGameMenu(GameInputDevice device) {
         if(isOnExternalDisplay()) {
-            toggleGameMenu();
+            ExternalDisplayControlActivity.toggleGameMenu();
         } else {
             if (gameMenuCallbacks != null) {
                 gameMenuCallbacks.showMenu(device);

@@ -88,9 +88,15 @@ public class ExternalDisplayControlActivity extends AppCompatActivity implements
         }
     }
 
-    public static void toggleKeyboardForExternal() {
+    public static void toggleKeyboard() {
         if (instance != null) {
-            instance.toggleKeyboard();
+            instance._toggleKeyboard();
+        }
+    }
+
+    public static void toggleFullKeyboard() {
+        if (instance != null) {
+            instance._toggleFullKeyboard();
         }
     }
 
@@ -394,7 +400,7 @@ public class ExternalDisplayControlActivity extends AppCompatActivity implements
         // Bottom-left button: Android keyboard toggle
         LinearLayout bottomLeftButton = createButtonContainer(Gravity.BOTTOM | Gravity.START);
         bottomLeftButton.setFocusable(false);
-        bottomLeftButton.addView(createImageButton(R.drawable.ic_android_keyboard, v -> toggleKeyboard()));
+        bottomLeftButton.addView(createImageButton(R.drawable.ic_android_keyboard, v -> _toggleKeyboard()));
         rootLayout.addView(bottomLeftButton);
 
         // Bottom-center buttons
@@ -405,14 +411,14 @@ public class ExternalDisplayControlActivity extends AppCompatActivity implements
         // Bottom-right button: Custom keyboard toggle
         LinearLayout bottomRightButton = createButtonContainer(Gravity.BOTTOM | Gravity.END);
         bottomRightButton.setFocusable(false);
-        bottomRightButton.addView(createImageButton(R.drawable.ic_fullscreen_keyboard, v -> toggleFullKeyboard()));
+        bottomRightButton.addView(createImageButton(R.drawable.ic_fullscreen_keyboard, v -> _toggleFullKeyboard()));
         rootLayout.addView(bottomRightButton);
     }
 
     /**
      * Toggles the visibility of the on-screen software keyboard.
      */
-    private void toggleKeyboard() {
+    private void _toggleKeyboard() {
         LimeLog.info("Toggling keyboard overlay on ExternalDisplayControlActivity");
         InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.toggleSoftInput(0, 0);
@@ -427,7 +433,7 @@ public class ExternalDisplayControlActivity extends AppCompatActivity implements
     /**
      * Toggles the visibility of the full screen keyboard
      */
-    public void toggleFullKeyboard() {
+    private void _toggleFullKeyboard() {
         if (keyBoardLayoutController == null) {
             initFullKeyboard(prefConfig);
             return;
