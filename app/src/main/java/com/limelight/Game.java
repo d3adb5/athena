@@ -2715,8 +2715,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         }
                     }
                 }
-
-                if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
+                else if ((eventSource & InputDevice.SOURCE_CLASS_POSITION) != 0) {
                     // If this input device is not associated with the view itself (like a trackpad),
                     // we'll convert the device-specific coordinates to use to send the cursor position.
                     // This really isn't ideal but it's probably better than nothing.
@@ -2839,15 +2838,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                                 break;
                         }
                     } else {
-                        if (prefConfig.absoluteMouseMode) {
-                            if (cursorVisible) {
-                                updateMousePosition(view, event);
-                            } else {
-                                conn.sendMouseMoveAsMousePosition((short)event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), (short)event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y), (short)streamView.getWidth(), (short)streamView.getHeight());
-                            }
-                        } else {
-                            mouseMove((int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_X), (int) event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y));
-                        }
+                        updateMousePosition(view, event);
                     }
                 }
 
