@@ -625,7 +625,8 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
                 deviceName.contains("keypad") || // These are gamepad buttons on the XPERIA Play
                 deviceName.equalsIgnoreCase("NVIDIA Corporation NVIDIA Controller v01.01") || // Gamepad on Shield Portable
                 deviceName.equalsIgnoreCase("NVIDIA Corporation NVIDIA Controller v01.02") || // Gamepad on Shield Portable (?)
-                deviceName.equalsIgnoreCase("GR0006") // Gamepad on Logitech G Cloud
+                deviceName.equalsIgnoreCase("GR0006") || // Gamepad on Logitech G Cloud
+                deviceName.equals("Retroid Pocket Controller") // Gamepad on Retroid Pocket handhelds (USB, but built in)
         )
         {
             LimeLog.info(dev.getName()+" is internal by hardcoded mapping");
