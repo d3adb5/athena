@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+// Release signing from local.properties (untracked): signing.storeFile, signing.storePassword, signing.keyAlias,
+// signing.keyPassword (defaults to the store password). Without them release APKs stay unsigned.
+def localProps = new Properties()
+if (rootProject.file('local.properties').exists()) {
+    rootProject.file('local.properties').withInputStream { localProps.load(it) }
+}
+
 android {
     ndkVersion "27.0.12077973"
 
@@ -93,6 +100,17 @@ android {
         }
     }
 
+    signingConfigs {
+        if (localProps['signing.storeFile']) {
+            local {
+                storeFile file(localProps['signing.storeFile'])
+                storePassword localProps['signing.storePassword']
+                keyAlias localProps['signing.keyAlias']
+                keyPassword localProps['signing.keyPassword'] ?: localProps['signing.storePassword']
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
@@ -108,6 +126,9 @@ android {
             resValue "string", "app_label", "Artemis RP"
             resValue "string", "app_label_root", "Artemis RP (Root)"
             resValue "string", "app_label_game", "Artemis RP (Game)"
+            if (signingConfigs.findByName('local')) {
+                signingConfig signingConfigs.local
+            }
 
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
