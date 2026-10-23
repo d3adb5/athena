@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.widget.Toast;
+import android.util.AtomicFile;
 
 import androidx.annotation.NonNull;
 
@@ -13,11 +14,13 @@ import com.limelight.LimeLog;
 import com.limelight.preferences.PreferenceConfiguration;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -70,11 +73,14 @@ public class ProfilesManager {
                 return false;
             }
             File file = new File(dir, PROFILES_FILE);
-            if (!file.exists()) {
-                // We don't want to warn user about profile not exist
+            if (!file.exists() && !new File(file.getPath() + ".bak").exists()) {
+                // No profile has been stored yet.
                 return true;
             }
-            try (Reader reader = new FileReader(file)) {
+            // AtomicFile also recovers a previously committed .bak file after
+            // an interrupted write. It remains compatible with legacy JSON files.
+            try (Reader reader = new InputStreamReader(
+                    new AtomicFile(file).openRead(), StandardCharsets.UTF_8)) {
                 Gson gson = new Gson();
                 Type type = new TypeToken<ProfilesData>(){}.getType();
                 ProfilesData data = gson.fromJson(reader, type);
@@ -110,13 +116,23 @@ public class ProfilesManager {
                 return false;
             }
             File file = new File(dir, PROFILES_FILE);
-            try (Writer writer = new FileWriter(file)) {
+            AtomicFile atomicFile = new AtomicFile(file);
+            FileOutputStream stream = null;
+            try {
+                stream = atomicFile.startWrite();
+                Writer writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
                 Gson gson = new Gson();
                 ProfilesData data = new ProfilesData();
                 data.profiles = new ArrayList<>(profiles.values());
                 data.activeProfileId = activeProfileId;
                 gson.toJson(data, writer);
-            } catch (IOException e) {
+                writer.flush();
+                // Keep the old complete JSON if serialization or disk I/O fails.
+                atomicFile.finishWrite(stream);
+            } catch (Exception e) {
+                if (stream != null) {
+                    atomicFile.failWrite(stream);
+                }
                 LimeLog.warning("ArtemisProfile: Failed to save profiles to file:" + e);
                 e.printStackTrace();
                 return false;
