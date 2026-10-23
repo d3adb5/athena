@@ -104,21 +104,16 @@ public class StartupTest {
     }
 
     @Test
-    public void testMissingPermissions() {
-        // Test behavior when required permissions are missing
-        // Note: In Robolectric, permissions are typically granted by default
-        // This test verifies the app doesn't crash when checking permissions
-
-        try {
-            PcView activity = Robolectric.buildActivity(PcView.class).create().get();
-            assertNotNull("Activity should handle permission checks", activity);
-
-            // Test permission checking doesn't crash
-            int permissionResult = context.checkSelfPermission("android.permission.INTERNET");
-            assertTrue("Permission check should work", permissionResult >= -1);
-        } catch (Exception e) {
-            fail("App should handle permission checks gracefully: " + e.getMessage());
-        }
+    public void testInternetPermissionDeclaredInManifest() throws Exception {
+        // A runtime permission comparison against >= -1 always passes on
+        // Android. Verify the manifest actually declares what streaming needs.
+        android.content.pm.PackageInfo info = context.getPackageManager()
+                .getPackageInfo(context.getPackageName(),
+                        android.content.pm.PackageManager.GET_PERMISSIONS);
+        assertNotNull("The app must declare permissions", info.requestedPermissions);
+        assertTrue("Internet permission must be in the merged manifest",
+                java.util.Arrays.asList(info.requestedPermissions)
+                        .contains(android.Manifest.permission.INTERNET));
     }
 
     @Test
@@ -186,18 +181,14 @@ public class StartupTest {
     }
 
     @Test
-    public void testServiceBindingFailure() {
-        // Test startup when service binding fails
-        try {
-            PcView activity = Robolectric.buildActivity(PcView.class).create().get();
-
-            // Force service disconnection
-            activity.onDestroy();
-
-            assertNotNull("Activity should handle service binding failure", activity);
-        } catch (Exception e) {
-            fail("Activity should handle service binding failure gracefully: " + e.getMessage());
-        }
+    public void testActivityCanBeDestroyedBeforeServiceConnectionCompletes() {
+        // This checks the lifecycle when no service binder has arrived;
+        // it does not claim to simulate Android's binder failure callback.
+        org.robolectric.android.controller.ActivityController<PcView> controller =
+                Robolectric.buildActivity(PcView.class).create();
+        PcView activity = controller.get();
+        controller.destroy();
+        assertTrue("Activity must finish its destroy lifecycle", activity.isDestroyed());
     }
 
     private void deleteRecursively(File f) {
