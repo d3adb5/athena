@@ -46,9 +46,9 @@ public class HestiaCapabilitiesTest {
 
     @Test public void rejectsWrongHandshakeIdentity() {
         assertFalse(HestiaCapabilities.parse(VALID.replace(
-                "\\"server_name\\":\\"Hermes\\"", "\\"server_name\\":\\"Other\\"")).isSupported());
+                "\"server_name\":\"Hermes\"", "\"server_name\":\"Other\"")).isSupported());
         assertFalse(HestiaCapabilities.parse(VALID.replace(
-                "\\"base\\":\\"Apollo\\"", "\\"base\\":\\"Other\\"")).isSupported());
+                "\"base\":\"Apollo\"", "\"base\":\"Other\"")).isSupported());
     }
 
     @Test public void unavailableFeaturesDefaultToFalse() {
