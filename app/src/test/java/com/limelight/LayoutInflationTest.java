@@ -4,8 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 
 import androidx.test.core.app.ApplicationProvider;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -17,10 +15,6 @@ import java.lang.reflect.Modifier;
 @Config(sdk = {33})
 @RunWith(RobolectricTestRunner.class)
 public class LayoutInflationTest {
-    @BeforeClass
-    public static void suppressInvalidIdLogs() {
-        TestLogSuppressor.install();
-    }
 
     @Test
     public void allLayoutsInflateSuccessfully() throws IllegalAccessException {
