@@ -44,6 +44,13 @@ public class HestiaCapabilitiesTest {
                 "\"max_client_protocol\":1", "\"max_client_protocol\":1.5")).isSupported());
     }
 
+    @Test public void rejectsWrongHandshakeIdentity() {
+        assertFalse(HestiaCapabilities.parse(VALID.replace(
+                "\\"server_name\\":\\"Hermes\\"", "\\"server_name\\":\\"Other\\"")).isSupported());
+        assertFalse(HestiaCapabilities.parse(VALID.replace(
+                "\\"base\\":\\"Apollo\\"", "\\"base\\":\\"Other\\"")).isSupported());
+    }
+
     @Test public void unavailableFeaturesDefaultToFalse() {
         HestiaCapabilities result = HestiaCapabilities.parse(
                 VALID.replace("\"virtual_display\":true,", ""));
