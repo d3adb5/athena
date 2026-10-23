@@ -112,18 +112,17 @@ public class StartupCrashTest {
     @Test
     public void testSharedPreferencesCorruption() {
         // Test startup with corrupted shared preferences
-        SharedPreferences prefs = context.getSharedPreferences("test", Context.MODE_PRIVATE);
+        SharedPreferences prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
 
-        // Add some potentially problematic values
-        editor.putString("resolution", "invalid_resolution");
-        editor.putInt("bitrate", -1);
-        editor.putBoolean("enable_hdr", true);
+        // Use the real settings key so invalid bitrate is actually parsed.
+        editor.putInt("seekbar_bitrate_kbps", -1);
         editor.apply();
 
         try {
             PreferenceConfiguration config = PreferenceConfiguration.readPreferences(context);
             assertNotNull("Should handle corrupted preferences", config);
+            assertTrue("Invalid bitrate must fall back to a positive default", config.bitrate > 0);
         } catch (Exception e) {
             fail("Should handle corrupted shared preferences gracefully: " + e.getMessage());
         }
@@ -137,9 +136,7 @@ public class StartupCrashTest {
 
         try {
             AppView activity = Robolectric.buildActivity(AppView.class, intent).create().get();
-            // Should either handle gracefully or finish cleanly
-            assertTrue("Activity should either work or finish cleanly",
-                      activity != null && (!activity.isFinishing() || activity.isFinishing()));
+            assertTrue("An AppView without a host identity must finish", activity.isFinishing());
         } catch (Exception e) {
             fail("Missing intent extras should be handled gracefully: " + e.getMessage());
         }
@@ -166,15 +163,13 @@ public class StartupCrashTest {
         // Make profiles directory read-only
         File profilesDir = new File(context.getFilesDir(), "profiles");
         profilesDir.mkdirs();
-        profilesDir.setReadOnly();
+        assertTrue("Fixture directory must become read-only", profilesDir.setReadOnly());
 
         try {
             ProfilesManager manager = ProfilesManager.getInstance();
-            manager.load(context);
-            manager.save(context);
-
-            // Should not crash even if file operations fail
-            assertNotNull("ProfilesManager should handle file permission issues", manager.getProfiles());
+            assertTrue("Empty profiles should load without a file", manager.load(context));
+            assertFalse("Permission-denied writes must report failure", manager.save(context));
+            assertTrue("A failed write must not invent profiles", manager.getProfiles().isEmpty());
         } catch (Exception e) {
             fail("File permission issues should be handled gracefully: " + e.getMessage());
         } finally {
@@ -184,8 +179,8 @@ public class StartupCrashTest {
     }
 
     @Test
-    public void testConcurrentStartup() {
-        // Test concurrent initialization that might cause race conditions
+    public void testMultipleActivityInstancesStartIndependently() {
+        // Activity construction here is sequential; do not claim it tests concurrency.
         try {
             // Create multiple activities simultaneously
             PcView activity1 = Robolectric.buildActivity(PcView.class).create().get();
@@ -193,27 +188,23 @@ public class StartupCrashTest {
 
             assertNotNull("First activity should be created", activity1);
             assertNotNull("Second activity should be created", activity2);
+            assertNotSame("Two launches must construct separate Activity instances", activity1, activity2);
         } catch (Exception e) {
             fail("Concurrent startup should not cause crashes: " + e.getMessage());
         }
     }
 
     @Test
-    public void testMemoryLeakDuringStartup() {
-        // Test for potential memory leaks during startup
-        try {
-            for (int i = 0; i < 10; i++) {
-                PcView activity = Robolectric.buildActivity(PcView.class).create().get();
-                activity.onDestroy();
-
-                // Force garbage collection
-                System.gc();
-            }
-
-            // If we get here without OutOfMemoryError, we're good
-            assertTrue("Startup should not cause memory leaks", true);
-        } catch (OutOfMemoryError e) {
-            fail("Startup should not cause memory leaks: " + e.getMessage());
+    public void testRepeatedCreateDestroyLifecycle() {
+        // Exercise Android lifecycle cleanup; memory leak detection requires
+        // allocation tracking or real-device instrumentation, not System.gc().
+        for (int i = 0; i < 10; i++) {
+            org.robolectric.android.controller.ActivityController<PcView> controller =
+                    Robolectric.buildActivity(PcView.class).create().start().resume();
+            PcView activity = controller.get();
+            assertFalse("Activity should start", activity.isFinishing());
+            controller.pause().stop().destroy();
+            assertTrue("Activity must complete destruction", activity.isDestroyed());
         }
     }
 
@@ -256,12 +247,13 @@ public class StartupCrashTest {
     }
 
     @Test
-    public void testStartupWithNetworkUnavailable() {
-        // Test startup when network is unavailable
-        // This is more of an integration test, but important for crash prevention
+    public void testActivityCreationBeforeAnyHostConnection() {
+        // No host session is established in this unit test. Network outage
+        // behavior must be tested separately with a disconnected transport.
         try {
             PcView activity = Robolectric.buildActivity(PcView.class).create().get();
-            assertNotNull("Activity should handle network unavailability", activity);
+            assertNotNull("Activity should initialize without an active host", activity);
+            assertFalse("Activity should remain usable", activity.isFinishing());
         } catch (Exception e) {
             fail("Network unavailability should not crash startup: " + e.getMessage());
         }
