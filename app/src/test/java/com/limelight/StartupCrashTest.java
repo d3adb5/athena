@@ -9,10 +9,8 @@ import androidx.test.core.app.ApplicationProvider;
 import com.limelight.preferences.PreferenceConfiguration;
 import com.limelight.profiles.ProfilesManager;
 import com.limelight.utils.UiHelper;
-import com.limelight.TestLogSuppressor;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -28,10 +26,6 @@ import static org.junit.Assert.*;
 public class StartupCrashTest {
     private Context context;
 
-    @BeforeClass
-    public static void suppressInvalidIdLogs() {
-        TestLogSuppressor.install();
-    }
 
     @Before
     public void setUp() {
