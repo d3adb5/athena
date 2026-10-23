@@ -319,13 +319,18 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         showHiddenApps = getIntent().getBooleanExtra(SHOW_HIDDEN_APPS_EXTRA, false);
         uuidString = getIntent().getStringExtra(UUID_EXTRA);
+        String computerName = getIntent().getStringExtra(NAME_EXTRA);
+        if (uuidString == null || uuidString.trim().isEmpty()
+                || computerName == null || computerName.trim().isEmpty()) {
+            LimeLog.warning("AppView: Missing computer identity in launch intent");
+            finish();
+            return;
+        }
 
         SharedPreferences hiddenAppsPrefs = getSharedPreferences(HIDDEN_APPS_PREF_FILENAME, MODE_PRIVATE);
         for (String hiddenAppIdStr : hiddenAppsPrefs.getStringSet(uuidString, new HashSet<String>())) {
             hiddenAppIds.add(Integer.parseInt(hiddenAppIdStr));
         }
-
-        String computerName = getIntent().getStringExtra(NAME_EXTRA);
 
         TextView label = findViewById(R.id.appListText);
         setTitle(computerName);
