@@ -1939,19 +1939,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // create as a result of a right-click. This event WILL repeat if
         // the right mouse button is held down, so we ignore those.
         int eventSource = event.getSource();
-        // Pen input is independent of mouse pointer capture. On Samsung
-        // tablets the S Pen can send hover/contact events with capture off.
-        // Handle pen + finger events together regardless of pointer ordering.
-        if (view != null && PenInputRouting.hasPenPointer(event)
-                && (eventSource & InputDevice.SOURCE_CLASS_POINTER) != 0) {
-            if (PenInputRouting.hasFingerPointer(event)) {
-                if (trySendMixedPenTouchEvent(view, event)) {
-                    return true;
-                }
-            } else if (trySendPenEvent(view, event)) {
-                return true;
-            }
-        }
+
         if ((eventSource == InputDevice.SOURCE_MOUSE ||
                 eventSource == InputDevice.SOURCE_MOUSE_RELATIVE) &&
                 event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
@@ -2730,6 +2718,19 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         int eventSource = event.getSource();
+        // Pen input is independent of mouse pointer capture. On Samsung
+        // tablets the S Pen can send hover/contact events with capture off.
+        // Handle pen + finger events together regardless of pointer ordering.
+        if (view != null && PenInputRouting.hasPenPointer(event)
+                && (eventSource & InputDevice.SOURCE_CLASS_POINTER) != 0) {
+            if (PenInputRouting.hasFingerPointer(event)) {
+                if (trySendMixedPenTouchEvent(view, event)) {
+                    return true;
+                }
+            } else if (trySendPenEvent(view, event)) {
+                return true;
+            }
+        }
         int deviceSources = event.getDevice() != null ? event.getDevice().getSources() : 0;
         if ((eventSource & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
             if (controllerHandler.handleMotionEvent(event)) {
