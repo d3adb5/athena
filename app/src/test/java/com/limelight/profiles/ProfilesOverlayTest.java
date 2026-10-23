@@ -5,10 +5,7 @@ import android.content.SharedPreferences;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.limelight.TestLogSuppressor;
-
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -26,10 +23,6 @@ import static org.junit.Assert.*;
 public class ProfilesOverlayTest {
     private Context context;
 
-    @BeforeClass
-    public static void suppressLogs() {
-        TestLogSuppressor.install();
-    }
 
     @Before
     public void setUp() {
