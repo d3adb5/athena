@@ -51,7 +51,9 @@ public class StartupTest {
     @Test
     public void testApplicationStartup() {
         // Test ArtemisApplication creation and initialization
-        ArtemisApplication app = new ArtemisApplication();
+        // Reuse the Robolectric-attached instance; constructing a bare
+        // Application leaves ContextWrapper.mBase null.
+        ArtemisApplication app = (ArtemisApplication) context;
         app.onCreate();
 
         // Verify ProfilesManager was initialized
