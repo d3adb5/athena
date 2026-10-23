@@ -14,6 +14,7 @@ import com.limelight.binding.audio.MicrophoneCaptureManager;
 import com.limelight.binding.input.ControllerHandler;
 import com.limelight.binding.input.GameInputDevice;
 import com.limelight.binding.input.KeyboardTranslator;
+import com.limelight.hestia.PenInputRouting;
 import com.limelight.binding.input.capture.InputCaptureManager;
 import com.limelight.binding.input.capture.InputCaptureProvider;
 import com.limelight.binding.input.touch.AbsoluteTouchContext;
@@ -1938,6 +1939,19 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // create as a result of a right-click. This event WILL repeat if
         // the right mouse button is held down, so we ignore those.
         int eventSource = event.getSource();
+        // Pen input is independent of mouse pointer capture. On Samsung
+        // tablets the S Pen can send hover/contact events with capture off.
+        // Handle pen + finger events together regardless of pointer ordering.
+        if (view != null && PenInputRouting.hasPenPointer(event)
+                && (eventSource & InputDevice.SOURCE_CLASS_POINTER) != 0) {
+            if (PenInputRouting.hasFingerPointer(event)) {
+                if (trySendMixedPenTouchEvent(view, event)) {
+                    return true;
+                }
+            } else if (trySendPenEvent(view, event)) {
+                return true;
+            }
+        }
         if ((eventSource == InputDevice.SOURCE_MOUSE ||
                 eventSource == InputDevice.SOURCE_MOUSE_RELATIVE) &&
                 event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
@@ -2400,7 +2414,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         float normalizedX = event.getX(pointerIndex);
         float normalizedY = event.getY(pointerIndex);
         //开启自定义修改触控灵敏度 并且 数值不为100
-        if(prefConfig.enableTouchSensitivity&&(prefConfig.touchSensitivityX !=100||prefConfig.touchSensitivityY!=100)){
+        if (!PenInputRouting.isPen(event.getToolType(pointerIndex)) && prefConfig.enableTouchSensitivity
+                && (prefConfig.touchSensitivityX != 100 || prefConfig.touchSensitivityY != 100)) {
             float[] normalized=getStreamViewRelativeSensitivityXY(event,normalizedX,normalizedY,pointerIndex);
             normalizedX=normalized[0];
             normalizedY=normalized[1];
@@ -2449,14 +2464,15 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 if (dev != null) {
                     InputDevice.MotionRange distanceRange = dev.getMotionRange(MotionEvent.AXIS_DISTANCE, event.getSource());
                     if (distanceRange != null) {
-                        return normalizeValueInRange(event.getAxisValue(MotionEvent.AXIS_DISTANCE, pointerIndex), distanceRange);
+                        return PenInputRouting.boundedPressure(normalizeValueInRange(
+                                event.getAxisValue(MotionEvent.AXIS_DISTANCE, pointerIndex), distanceRange));
                     }
                 }
                 return 0.0f;
 
             default:
                 // Other events report pressure
-                return event.getPressure(pointerIndex);
+                return PenInputRouting.boundedPressure(event.getPressure(pointerIndex));
         }
     }
 
@@ -2542,7 +2558,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         InputDevice dev = event.getDevice();
         if (dev != null) {
             if (dev.getMotionRange(MotionEvent.AXIS_TILT, event.getSource()) != null) {
-                tiltDegrees = (byte)Math.toDegrees(event.getAxisValue(MotionEvent.AXIS_TILT, pointerIndex));
+                tiltDegrees = PenInputRouting.tiltDegrees(event.getAxisValue(MotionEvent.AXIS_TILT, pointerIndex));
             }
         }
 
@@ -2608,6 +2624,59 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             }
             return sendPenEventForPointer(view, event, eventType, toolType, event.getActionIndex());
         }
+    }
+
+    /**
+     * Route mixed finger + pen Android gestures without treating a pen as
+     * pointer zero or sending the pen's coordinates through touch sensitivity.
+     * Pen events are attempted first; if the host has no pen protocol, leave
+     * the event for the existing mouse fallback path.
+     */
+    private boolean trySendMixedPenTouchEvent(View view, MotionEvent event) {
+        byte eventType = getLiTouchTypeFromEvent(event);
+        if (eventType < 0) {
+            return false;
+        }
+
+        if (event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+            if (!trySendPenEvent(view, event)) {
+                return false;
+            }
+            if (prefConfig.enableMultiTouchScreen && !prefConfig.touchscreenTrackpad) {
+                // Both the pen and finger contacts are cancelled by Android.
+                trySendTouchEvent(view, event);
+            }
+            return true;
+        }
+
+        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+            // Do not consume the stylus move before the finger contacts are
+            // dispatched. The host may support pen but not absolute touch.
+            if (!trySendPenEvent(view, event)) {
+                return false;
+            }
+            if (prefConfig.enableMultiTouchScreen && !prefConfig.touchscreenTrackpad) {
+                for (int i = 0; i < event.getPointerCount(); i++) {
+                    if (PenInputRouting.isFinger(event, i)
+                            && !sendTouchEventForPointer(view, event, eventType, i)) {
+                        break; // Keep the pen stream alive even if touch is unsupported.
+                    }
+                }
+            }
+            return true;
+        }
+
+        int index = event.getActionIndex();
+        if (PenInputRouting.isPen(event.getToolType(index))) {
+            return sendPenEventForPointer(view, event, eventType,
+                    convertToolTypeToStylusToolType(event, index), index);
+        }
+        if (prefConfig.enableMultiTouchScreen && !prefConfig.touchscreenTrackpad
+                && PenInputRouting.isFinger(event, index)) {
+            return sendTouchEventForPointer(view, event, eventType, index);
+        }
+        // Don't discard the finger event when absolute touch is disabled.
+        return false;
     }
 
     private boolean sendTouchEventForPointer(View view, MotionEvent event, byte eventType, int pointerIndex) {
