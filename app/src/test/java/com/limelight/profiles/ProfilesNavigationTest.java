@@ -21,8 +21,6 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.junit.BeforeClass;
-import com.limelight.TestLogSuppressor;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -31,10 +29,6 @@ import static org.mockito.Mockito.mock;
 @RunWith(RobolectricTestRunner.class)
 public class ProfilesNavigationTest {
 
-    @BeforeClass
-    public static void suppressInvalidIdLogs() {
-        TestLogSuppressor.install();
-    }
 
     private void prepareEnvironment() {
         // Ensure GL renderer prefs exist so PcView skips GLSurface initialization
