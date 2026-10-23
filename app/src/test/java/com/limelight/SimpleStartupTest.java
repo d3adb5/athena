@@ -40,8 +40,8 @@ public class SimpleStartupTest {
     @Test
     public void testApplicationCreation() {
         // Test basic application creation
-        ArtemisApplication app = new ArtemisApplication();
-        assertNotNull("Application should be created", app);
+        assertTrue("Robolectric must initialize our real Application class",
+                context instanceof ArtemisApplication);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class SimpleStartupTest {
         // Test ProfilesManager load with valid context
         try {
             ProfilesManager manager = ProfilesManager.getInstance();
-            manager.load(context);
+            assertTrue("Loading initial profiles must succeed", manager.load(context));
 
             assertNotNull("Profiles should be loaded", manager.getProfiles());
             assertEquals("Should start with empty profiles", 0, manager.getProfiles().size());
@@ -95,11 +95,10 @@ public class SimpleStartupTest {
         // Test ProfilesManager save functionality
         try {
             ProfilesManager manager = ProfilesManager.getInstance();
-            manager.load(context);
-            manager.save(context);
-
-            // Should not crash
-            assertTrue("Save operation should complete", true);
+            assertTrue(manager.load(context));
+            assertTrue("Save operation should complete", manager.save(context));
+            assertTrue("The profile JSON should exist",
+                    new File(context.getFilesDir(), "profiles/profiles.json").isFile());
         } catch (Exception e) {
             fail("ProfilesManager save should not crash: " + e.getMessage());
         }
@@ -129,9 +128,7 @@ public class SimpleStartupTest {
         ProfilesManager manager = ProfilesManager.getInstance();
 
         try {
-            manager.load(null);
-            // Should now handle null context gracefully without crashing
-            assertTrue("Should handle null context gracefully", true);
+            assertFalse("A null Context must return failure, not success", manager.load(null));
         } catch (Exception e) {
             fail("Should handle null context gracefully: " + e.getMessage());
         }
