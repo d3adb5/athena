@@ -25,8 +25,9 @@ public class LayoutInflationTest {
     @Test
     public void allLayoutsInflateSuccessfully() throws IllegalAccessException {
         Context base = ApplicationProvider.getApplicationContext();
+        // Mirror the app's MaterialComponents theme, not a generic AppCompat theme.
         Context context = new androidx.appcompat.view.ContextThemeWrapper(base,
-                androidx.appcompat.R.style.Theme_AppCompat);
+                com.limelight.R.style.AppTheme);
         for (int layoutId : getAllLayoutResourceIds()) {
             try {
                 LayoutInflater.from(context).inflate(layoutId, null);
