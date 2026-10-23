@@ -8,7 +8,6 @@ import androidx.test.core.app.ApplicationProvider;
 import com.limelight.profiles.ProfilesManager;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -19,17 +18,11 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
-import com.limelight.TestLogSuppressor;
-
 @Config(sdk = {33}, shadows = {com.limelight.shadows.ShadowMoonBridge.class, com.limelight.shadows.ShadowGameManager.class})
 @RunWith(RobolectricTestRunner.class)
 public class StartupTest {
     private Context context;
 
-    @BeforeClass
-    public static void suppressInvalidIdLogs() {
-        TestLogSuppressor.install();
-    }
 
     @Before
     public void setUp() {
