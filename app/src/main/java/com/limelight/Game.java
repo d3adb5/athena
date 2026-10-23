@@ -3283,7 +3283,15 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return handleMotionEvent(null, event) || super.onGenericMotionEvent(event);
+        // Hover and barrel-button events from a Samsung pen may arrive through
+        // the Activity's generic motion callback rather than the StreamView.
+        // These coordinates are relative to the Activity decor view, so pass
+        // that view for absolute stylus mapping while preserving the existing
+        // handling of mouse/joystick events.
+        View eventView = PenInputRouting.hasPenPointer(event)
+                ? getWindow().getDecorView() : null;
+        return handleMotionEvent(eventView, event) || super.onGenericMotionEvent(event);
+
     }
 
     /**
