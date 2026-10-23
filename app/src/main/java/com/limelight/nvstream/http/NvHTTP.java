@@ -51,6 +51,10 @@ import com.limelight.nvstream.http.PairingManager.PairState;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.utils.DeviceUtils;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.limelight.hestia.HestiaCapabilities;
+import com.limelight.hestia.HestiaSessionRequest;
 import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -67,6 +71,9 @@ public class NvHTTP {
     private PairingManager pm;
 
     private static final int DEFAULT_HTTPS_PORT = 47984;
+    // Hermes Web UI/Hestia v1 uses the same TLS identity on an HTTPS port
+    // six above GameStream HTTPS (47984 -> 47990 with default mapping).
+    private static final int HESTIA_HTTPS_PORT_OFFSET = 6;
     public static final int DEFAULT_HTTP_PORT = 47989;
     public static final int SHORT_CONNECTION_TIMEOUT = 3000;
     public static final int LONG_CONNECTION_TIMEOUT = 5000;
@@ -708,6 +715,80 @@ public class NvHTTP {
             }
         }
         return null;
+    }
+
+    /**
+     * Query Hermes's Hestia v1 API using this host's already pinned GameStream
+     * server certificate and the same paired client certificate/key.
+     *
+     * This must be called off the Android UI thread. Never bypass TLS pinning
+     * or send admin credentials, even when discovery fails.
+     */
+    private HttpUrl getHestiaBaseUrl() throws IOException {
+        int port = httpsPort > 0 ? httpsPort : DEFAULT_HTTPS_PORT;
+        int webPort = port + HESTIA_HTTPS_PORT_OFFSET;
+        if (webPort > 65535) {
+            throw new IOException("Invalid Hermes API port");
+        }
+        return new HttpUrl.Builder()
+                .scheme("https")
+                .host(baseUrlHttp.host())
+                .port(webPort)
+                .build();
+    }
+
+    public HestiaCapabilities getHestiaCapabilities() throws IOException {
+        if (serverCert == null) {
+            return HestiaCapabilities.unsupported();
+        }
+        try {
+            String json = openHttpConnectionToString(httpClientShortConnectTimeout,
+                    getHestiaBaseUrl(), "api/hestia/v1/capabilities");
+            return HestiaCapabilities.parse(json);
+        } catch (FileNotFoundException e) {
+            // Non-Hermes hosts have no such endpoint.
+            return HestiaCapabilities.unsupported();
+        }
+    }
+
+    public boolean hasHestiaLaunchPermission() throws IOException {
+        if (serverCert == null) {
+            return false;
+        }
+        String json = openHttpConnectionToString(httpClientShortConnectTimeout,
+                getHestiaBaseUrl(), "api/hestia/v1/client/permissions");
+        try {
+            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+            if (!obj.has("ok") || !obj.get("ok").getAsBoolean()
+                    || !obj.has("permissions") || !obj.get("permissions").isJsonObject()) {
+                return false;
+            }
+            JsonObject permissions = obj.getAsJsonObject("permissions");
+            return permissions.has("launch_apps")
+                    && permissions.get("launch_apps").isJsonPrimitive()
+                    && permissions.get("launch_apps").getAsJsonPrimitive().isBoolean()
+                    && permissions.get("launch_apps").getAsBoolean();
+        } catch (IllegalStateException | com.google.gson.JsonParseException e) {
+            return false;
+        }
+    }
+
+    public boolean prepareHestiaSession(HestiaSessionRequest payload) throws IOException {
+        if (serverCert == null || payload == null) {
+            return false;
+        }
+        RequestBody body = RequestBody.create(
+                payload.toJson(), MediaType.get("application/json; charset=utf-8"));
+        String response = openHttpConnectionToString(httpClientShortConnectTimeout,
+                getHestiaBaseUrl(), "api/hestia/v1/session/prepare", null, body);
+        try {
+            JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
+            return obj.has("ok") && obj.get("ok").isJsonPrimitive()
+                    && obj.get("ok").getAsJsonPrimitive().isBoolean()
+                    && obj.get("ok").getAsBoolean();
+        } catch (IllegalStateException | com.google.gson.JsonParseException e) {
+            return false;
+        }
     }
 
     public PairingManager getPairingManager() {
