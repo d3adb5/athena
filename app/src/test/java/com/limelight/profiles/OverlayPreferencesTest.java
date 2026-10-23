@@ -7,11 +7,9 @@ import androidx.test.core.app.ApplicationProvider;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.limelight.TestLogSuppressor;
 import com.limelight.preferences.PreferenceConfiguration;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -28,10 +26,6 @@ import static org.junit.Assert.*;
 public class OverlayPreferencesTest {
     private Context ctx;
 
-    @BeforeClass
-    public static void suppressInvalidIdLogs() {
-        TestLogSuppressor.install();
-    }
 
     @Before
     public void setup() {
