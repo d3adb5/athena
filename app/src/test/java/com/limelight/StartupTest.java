@@ -96,8 +96,8 @@ public class StartupTest {
 
         // Test with context that has no file access
         try {
-            manager.load(context);
-            manager.save(context);
+            assertTrue("Loading profiles should succeed", manager.load(context));
+            assertTrue("Saving profiles should succeed", manager.save(context));
         } catch (Exception e) {
             fail("ProfilesManager should handle file access gracefully: " + e.getMessage());
         }
@@ -135,10 +135,8 @@ public class StartupTest {
             writer.close();
 
             ProfilesManager manager = ProfilesManager.getInstance();
-            manager.load(context);
-
-            // Should not crash and should return empty list
-            assertNotNull("Profiles should be initialized even with corrupted file", manager.getProfiles());
+            assertFalse("Malformed JSON must report a failed load", manager.load(context));
+            assertTrue("A malformed file must not invent profiles", manager.getProfiles().isEmpty());
         } catch (Exception e) {
             fail("ProfilesManager should handle corrupted files gracefully: " + e.getMessage());
         }
@@ -150,28 +148,18 @@ public class StartupTest {
         ProfilesManager manager = ProfilesManager.getInstance();
 
         try {
-            manager.load(null);
-            // If no exception is thrown, the method handled null context correctly
-            assertTrue("Should handle null context gracefully", true);
+            assertFalse("Null Context must be rejected", manager.load(null));
         } catch (Exception e) {
             fail("Should handle null context gracefully: " + e.getMessage());
         }
     }
 
     @Test
-    public void testLowMemoryConditions() {
-        // Simulate low memory conditions during startup
-        Runtime runtime = Runtime.getRuntime();
-        long maxMemory = runtime.maxMemory();
-        long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-
-        // This test verifies the app doesn't crash under memory pressure
+    public void testLowMemoryCallbackDoesNotCloseActivity() {
+        // Verify the Android lifecycle callback, not a synthetic OOM scenario.
         try {
             PcView activity = Robolectric.buildActivity(PcView.class).create().get();
             assertNotNull("Activity should handle low memory conditions", activity);
-
-            // Simulate memory pressure
-            System.gc();
 
             activity.onLowMemory();
             assertFalse("Activity should not finish on low memory", activity.isFinishing());
