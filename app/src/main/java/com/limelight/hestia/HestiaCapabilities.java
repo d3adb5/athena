@@ -53,6 +53,12 @@ public final class HestiaCapabilities {
                     || !isObject(obj, "limits")) {
                 return unsupported();
             }
+            // Do not activate host-control APIs on a server impersonating the
+            // protocol with the wrong compatibility identifiers.
+            if (!"Hermes".equals(obj.get("server_name").getAsString())
+                    || !"Apollo".equals(obj.get("base").getAsString())) {
+                return unsupported();
+            }
             Integer version = integer(obj, "hestia_protocol");
             Integer minimum = integer(obj, "min_client_protocol");
             Integer maximum = integer(obj, "max_client_protocol");
