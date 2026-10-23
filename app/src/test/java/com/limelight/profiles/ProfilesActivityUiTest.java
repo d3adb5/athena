@@ -13,10 +13,8 @@ import androidx.test.core.app.ApplicationProvider;
 
 import com.limelight.ProfilesActivity;
 import com.limelight.R;
-import com.limelight.TestLogSuppressor;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -36,10 +34,6 @@ public class ProfilesActivityUiTest {
     private Context context;
     private ProfilesManager pm;
 
-    @BeforeClass
-    public static void suppressLogs() {
-        TestLogSuppressor.install();
-    }
 
     @Before
     public void setUp() {
