@@ -85,6 +85,10 @@ public class ShadowMoonBridge {
     }
 
     @Implementation
+    protected static void setMouseWiggleOnConnect(boolean enabled) {
+    }
+
+    @Implementation
     protected static void interruptConnection() {
     }
 

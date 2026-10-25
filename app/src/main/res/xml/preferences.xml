@@ -357,6 +357,12 @@
             android:summary="@string/summary_checkbox_absolute_mouse_mode"
             android:title="@string/title_checkbox_absolute_mouse_mode"
             app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="checkbox_connect_mouse_wiggle"
+            android:summary="@string/summary_checkbox_connect_mouse_wiggle"
+            android:title="@string/title_checkbox_connect_mouse_wiggle"
+            app:iconSpaceReserved="false" />
         <com.limelight.preferences.SeekBarPreference
             android:defaultValue="100"
             android:key="seekbar_trackpad_sensitivity_x"

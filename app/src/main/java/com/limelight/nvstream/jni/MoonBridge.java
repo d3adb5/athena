@@ -359,6 +359,10 @@ public class MoonBridge {
 
     public static native void sendMouseMove(short deltaX, short deltaY);
 
+    // Whether the connection moves the mouse by one pixel and back once it is
+    // up, to wake the host's display. Takes effect on the next connection.
+    public static native void setMouseWiggleOnConnect(boolean enabled);
+
     public static native void sendMousePosition(short x, short y, short referenceWidth, short referenceHeight);
 
     public static native void sendMouseMoveAsMousePosition(short deltaX, short deltaY, short referenceWidth, short referenceHeight);

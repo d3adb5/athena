@@ -271,6 +271,8 @@
     <string name="summary_checkbox_touchscreen_trackpad">If enabled, the touchscreen acts like a trackpad. If disabled, the touchscreen directly controls the mouse cursor.</string>
     <string name="title_checkbox_absolute_mouse_mode">Remote desktop mouse mode</string>
     <string name="summary_checkbox_absolute_mouse_mode">This can make mouse acceleration behave more naturally for remote desktop usage, but it is incompatible with many games.</string>
+    <string name="title_checkbox_connect_mouse_wiggle">Wiggle the mouse on connect</string>
+    <string name="summary_checkbox_connect_mouse_wiggle">Move the mouse by one pixel and back when the stream starts, to wake the host\'s display. Turn it off to keep the cursor hidden in Gamescope sessions, such as Hermes\' isolated sessions.</string>
     <string name="title_checkbox_mouse_nav_buttons">Enable forward/back mouse buttons</string>
     <string name="summary_checkbox_mouse_nav_buttons">Enabling this option may break right clicking on some buggy devices</string>
 

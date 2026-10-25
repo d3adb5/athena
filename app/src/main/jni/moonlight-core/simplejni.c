@@ -16,6 +16,11 @@ Java_com_limelight_nvstream_jni_MoonBridge_sendMouseMove(JNIEnv *env, jclass cla
 }
 
 JNIEXPORT void JNICALL
+Java_com_limelight_nvstream_jni_MoonBridge_setMouseWiggleOnConnect(JNIEnv *env, jclass clazz, jboolean enabled) {
+    LiSetMouseWiggleOnConnect(enabled);
+}
+
+JNIEXPORT void JNICALL
 Java_com_limelight_nvstream_jni_MoonBridge_sendExecServerCmd(JNIEnv *env, jclass clazz,
                                                              jint cmdId) {
     LiSendExecServerCmd(cmdId);

@@ -745,6 +745,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 .build();
 
         // Initialize the connection
+        MoonBridge.setMouseWiggleOnConnect(prefConfig.connectMouseWiggle);
         conn = new NvConnection(getApplicationContext(),
                 new ComputerDetails.AddressTuple(host, port),
                 httpsPort, uniqueId, config,
