@@ -4,7 +4,17 @@ import com.google.gson.JsonObject;
 
 /** Strict Android implementation of Hermes's Hestia v1 session/prepare schema. */
 public final class HestiaSessionRequest {
-    private static final int[] SUPPORTED_FPS = {30, 40, 45, 60, 90, 120};
+    /** Why a request was not built; surfaced to the user instead of a silent fallback. */
+    public enum Rejection {
+        NONE,
+        /** Hermes v1 only accepts the frame rates it advertises. */
+        FPS_UNSUPPORTED,
+        /** Above the 7680x4320 host limit, or a scale factor outside 1-500%. */
+        OUT_OF_RANGE,
+        /** Zero/negative sizes, bitrate, app id or missing client version. */
+        INVALID,
+    }
+
     private final String json;
 
     private HestiaSessionRequest(String json) {
@@ -23,20 +33,8 @@ public final class HestiaSessionRequest {
     public static HestiaSessionRequest create(int width, int height, int fps,
             int bitrateKbps, int scaleFactor, boolean hdr, boolean virtualDisplay,
             int appId, int screenRefreshRate, String clientVersion) {
-        if (width <= 0 || width > 7680 || height <= 0 || height > 4320
-                || screenRefreshRate <= 0 || bitrateKbps <= 0
-                || scaleFactor < 1 || scaleFactor > 500
-                || appId < 0 || clientVersion == null || clientVersion.isEmpty()) {
-            return null;
-        }
-        boolean supported = false;
-        for (int allowedFps : SUPPORTED_FPS) {
-            if (fps == allowedFps) {
-                supported = true;
-                break;
-            }
-        }
-        if (!supported) {
+        if (check(width, height, fps, bitrateKbps, scaleFactor, appId,
+                screenRefreshRate, clientVersion) != Rejection.NONE) {
             return null;
         }
 
@@ -77,5 +75,28 @@ public final class HestiaSessionRequest {
         request.add("virtual_display", display);
         request.add("app", app);
         return new HestiaSessionRequest(request.toString());
+    }
+
+    /** Validate settings against the Hermes v1 session/prepare schema. */
+    public static Rejection check(int width, int height, int fps, int bitrateKbps,
+            int scaleFactor, int appId, int screenRefreshRate, String clientVersion) {
+        if (width <= 0 || height <= 0 || screenRefreshRate <= 0 || bitrateKbps <= 0
+                || appId < 0 || clientVersion == null || clientVersion.isEmpty()) {
+            return Rejection.INVALID;
+        }
+        if (width > 7680 || height > 4320 || scaleFactor < 1 || scaleFactor > 500) {
+            return Rejection.OUT_OF_RANGE;
+        }
+        for (int allowedFps : HestiaCapabilities.DEFAULT_SUPPORTED_FPS) {
+            if (fps == allowedFps) {
+                return Rejection.NONE;
+            }
+        }
+        return Rejection.FPS_UNSUPPORTED;
+    }
+
+    /** Frame rates Hermes v1 accepts, for user-facing messages. */
+    public static int[] supportedFps() {
+        return HestiaCapabilities.DEFAULT_SUPPORTED_FPS.clone();
     }
 }

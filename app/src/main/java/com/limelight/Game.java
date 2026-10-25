@@ -30,8 +30,11 @@ import com.limelight.binding.video.CrashListener;
 import com.limelight.binding.video.MediaCodecDecoderRenderer;
 import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.binding.video.PerfOverlayListener;
+import com.limelight.hestia.HestiaApiResponse;
 import com.limelight.hestia.HestiaCapabilities;
+import com.limelight.hestia.HestiaPermissions;
 import com.limelight.hestia.HestiaSessionRequest;
+import com.limelight.hestia.HestiaStatusUi;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.NvConnectionListener;
 import com.limelight.nvstream.StreamConfiguration;
@@ -266,6 +269,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     public static final String EXTRA_APP_HDR = "HDR";
     public static final String EXTRA_SERVER_CERT = "ServerCert";
     public static final String EXTRA_VDISPLAY = "VirtualDisplay";
+    public static final String EXTRA_HESTIA_KNOWN = "HestiaKnown";
     public static final String EXTRA_SERVER_COMMANDS = "ServerCommands";
     public static final String EXTRA_DISPLAY_ID = "DisplayID";
 
@@ -994,6 +998,63 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     public Boolean isKeyboardLayoutVisible() {
         return keyBoardLayoutController != null && keyBoardLayoutController.shown;
+    }
+
+    /**
+     * Send Hestia session hints for this launch. Returns a user-facing notice
+     * (success or the reason the hints were not applied), or null when the
+     * host is simply not Hermes. Runs off the UI thread.
+     */
+    private String prepareHestiaSession(int width, int height, int fps, int bitrateKbps,
+            boolean hdr, int refreshRate) throws java.io.IOException {
+        HestiaCapabilities caps = httpConn.getHestiaCapabilities();
+        if (caps.isIncompatibleHermes()) {
+            LimeLog.warning("Hermes protocol is incompatible; using GameStream launch");
+            return getString(R.string.hestia_prepare_incompatible);
+        }
+        if (!caps.isSupported()) {
+            // Ordinary Moonlight/Sunshine/Apollo host: nothing to say.
+            return null;
+        }
+        if (!caps.hasVirtualDisplay()) {
+            return getString(R.string.hestia_prepare_no_virtual_display);
+        }
+
+        HestiaPermissions permissions = httpConn.getHestiaPermissions();
+        if (permissions == null) {
+            return getString(R.string.hestia_prepare_failed,
+                    getString(R.string.hestia_detail_permissions_unreadable));
+        }
+        if (!permissions.canLaunchApps()) {
+            LimeLog.warning("Hestia client lacks launch permission; using GameStream launch");
+            return getString(R.string.hestia_prepare_no_launch);
+        }
+
+        int scale = prefConfig.resolutionScaleFactor;
+        switch (HestiaSessionRequest.check(width, height, fps, bitrateKbps, scale, appId,
+                refreshRate, BuildConfig.VERSION_NAME)) {
+            case FPS_UNSUPPORTED:
+                return getString(R.string.hestia_prepare_fps_unsupported, fps,
+                        HestiaStatusUi.formatFps(caps.getSupportedFps()));
+            case OUT_OF_RANGE:
+                return getString(R.string.hestia_prepare_out_of_range, width, height, scale);
+            case INVALID:
+                return getString(R.string.hestia_prepare_failed,
+                        getString(R.string.hestia_detail_invalid_settings));
+            case NONE:
+            default:
+                break;
+        }
+
+        HestiaSessionRequest payload = HestiaSessionRequest.create(width, height, fps,
+                bitrateKbps, scale, hdr, true, appId, refreshRate, BuildConfig.VERSION_NAME);
+        HestiaApiResponse response = httpConn.prepareHestiaSession(payload);
+        if (!response.isOk()) {
+            LimeLog.warning("Hestia v1 preparation rejected: " + response.describeError());
+            return getString(R.string.hestia_prepare_failed, response.describeError());
+        }
+        LimeLog.info("Hestia v1 virtual display session prepared");
+        return getString(R.string.hestia_prepare_ok, width, height, fps);
     }
 
     private void initVirtualController(){
@@ -3821,29 +3882,31 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         // Hermes requires prepare before the normal GameStream launch.
         // All HTTP requests run off the UI thread. Any Hestia failure
-        // must fall back to the existing streaming implementation.
+        // must fall back to the existing streaming implementation,
+        // but on a Hermes host the user is told why, instead of
+        // silently getting a stream without the requested display.
+        final boolean hestiaKnown = getIntent().getBooleanExtra(EXTRA_HESTIA_KNOWN, false);
+        if (spinner != null) {
+            spinner.setMessage(getString(R.string.hestia_preparing_session));
+        }
         new Thread(() -> {
+            String notice = null;
             try {
-                HestiaCapabilities caps = httpConn.getHestiaCapabilities();
-                if (caps.isSupported() && caps.hasVirtualDisplay()
-                        && httpConn.hasHestiaLaunchPermission()) {
-                    HestiaSessionRequest payload = HestiaSessionRequest.create(
-                            hestiaPrepareWidth, hestiaPrepareHeight, hestiaPrepareFps,
-                            hestiaPrepareBitrate, prefConfig.resolutionScaleFactor,
-                            hestiaPrepareHdr, true, appId, hestiaPrepareRefreshRate,
-                            BuildConfig.VERSION_NAME);
-                    if (payload != null && httpConn.prepareHestiaSession(payload)) {
-                        LimeLog.info("Hestia v1 virtual display session prepared");
-                    } else {
-                        LimeLog.warning("Hestia v1 preparation unavailable; using GameStream launch");
-                    }
-                }
+                notice = prepareHestiaSession(hestiaPrepareWidth, hestiaPrepareHeight, hestiaPrepareFps,
+                        hestiaPrepareBitrate, hestiaPrepareHdr, hestiaPrepareRefreshRate);
             } catch (java.io.IOException e) {
                 LimeLog.info("Hestia API unavailable; using GameStream launch: "
                         + e.getClass().getSimpleName());
+                if (hestiaKnown) {
+                    notice = getString(R.string.hestia_prepare_unreachable);
+                }
             }
+            final String finalNotice = notice;
             runOnUiThread(() -> {
                 if (!isFinishing() && !isDestroyed() && conn != null) {
+                    if (finalNotice != null) {
+                        Toast.makeText(Game.this, finalNotice, Toast.LENGTH_LONG).show();
+                    }
                     conn.start(newAudioRenderer(),
                             decoderRenderer, Game.this);
                 }

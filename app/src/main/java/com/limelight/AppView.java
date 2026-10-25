@@ -9,6 +9,8 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.limelight.computers.ComputerManagerListener;
 import com.limelight.computers.ComputerManagerService;
 import com.limelight.grid.AppGridAdapter;
+import com.limelight.hestia.HestiaHostStatus;
+import com.limelight.hestia.HestiaStatusUi;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
@@ -61,6 +63,8 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
     private ShortcutHelper shortcutHelper;
 
     private ComputerDetails computer;
+    private TextView hestiaBanner;
+    private HestiaHostStatus shownHestiaStatus;
     private ComputerManagerService.ApplistPoller poller;
     private SpinnerDialog blockingLoadSpinner;
     private String lastRawApplist;
@@ -146,6 +150,8 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                             if (isFinishing() || isChangingConfigurations()) {
                                 return;
                             }
+
+                            updateHestiaBanner(computer);
 
                             // Despite my best efforts to catch all conditions that could
                             // cause the activity to be destroyed when we try to commit
@@ -242,6 +248,9 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                     return;
                 }
 
+                // Hermes health can change without any app list change
+                AppView.this.runOnUiThread(() -> updateHestiaBanner(details));
+
                 // App list is the same or empty
                 if (details.rawAppList == null || details.rawAppList.equals(lastRawApplist)) {
 
@@ -336,11 +345,45 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         setTitle(computerName);
         label.setText(computerName);
 
+        hestiaBanner = findViewById(R.id.hestiaStatusBanner);
+        hestiaBanner.setOnClickListener(v -> {
+            if (computer != null && managerBinder != null) {
+                HestiaStatusUi.showStatusDialog(AppView.this, computer,
+                        managerBinder.getUniqueId(), () -> updateHestiaBanner(computer));
+            }
+        });
+
         this.prefConfig = PreferenceConfiguration.readPreferences(this);
 
         // Bind to the computer manager service
         bindService(new Intent(this, ComputerManagerService.class), serviceConnection,
                 Service.BIND_AUTO_CREATE);
+    }
+
+    /** Show (or hide) the Hermes health banner under the host name. UI thread only. */
+    private void updateHestiaBanner(ComputerDetails details) {
+        if (hestiaBanner == null || details == null || isFinishing()) {
+            return;
+        }
+        HestiaHostStatus status = details.hestiaStatus;
+        if (!HestiaStatusUi.shouldShow(details) || status == null) {
+            hestiaBanner.setVisibility(View.GONE);
+            shownHestiaStatus = null;
+            return;
+        }
+        // Serverinfo polls arrive every ~1.5 s; only redraw on real changes.
+        if (status.equals(shownHestiaStatus) && hestiaBanner.getVisibility() == View.VISIBLE) {
+            return;
+        }
+        shownHestiaStatus = status;
+
+        String text = HestiaStatusUi.headline(this, status);
+        hestiaBanner.setText(text);
+        hestiaBanner.setTextColor(HestiaStatusUi.colorFor(this, status.getLevel()));
+        hestiaBanner.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                HestiaStatusUi.iconFor(status.getLevel()), 0, 0, 0);
+        hestiaBanner.setContentDescription(text + ". " + getString(R.string.hestia_banner_hint));
+        hestiaBanner.setVisibility(View.VISIBLE);
     }
 
     private void updateHiddenApps(boolean hideImmediately) {

@@ -28,6 +28,20 @@
             android:layout_height="50dp"
             android:indeterminate="true">
         </ProgressBar>
+        <!-- Hermes host health (ok / warning / error); hidden for other hosts -->
+        <ImageView
+            android:id="@+id/grid_hestia_badge"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignEnd="@id/grid_image"
+            android:layout_alignRight="@id/grid_image"
+            android:layout_alignBottom="@id/grid_image"
+            android:layout_marginEnd="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginBottom="16dp"
+            android:importantForAccessibility="no"
+            android:visibility="gone">
+        </ImageView>
     </RelativeLayout>
     <TextView
         android:id="@+id/grid_text"
@@ -38,5 +52,18 @@
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:textSize="18sp" >
+    </TextView>
+    <TextView
+        android:id="@+id/grid_hestia_text"
+        android:layout_width="125dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/grid_text"
+        android:layout_marginTop="2dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textSize="13sp"
+        android:visibility="gone" >
     </TextView>
 </RelativeLayout>

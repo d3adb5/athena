@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import com.limelight.PcView;
 import com.limelight.R;
+import com.limelight.hestia.HestiaHostStatus;
+import com.limelight.hestia.HestiaStatusUi;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.PairingManager;
 import com.limelight.preferences.PreferenceConfiguration;
@@ -90,5 +92,36 @@ public class PcGridAdapter extends GenericGridAdapter<PcView.ComputerObject> {
         else {
             overlayView.setVisibility(View.GONE);
         }
+
+        populateHestiaStatus(parentView, imgView, obj);
+    }
+
+    /**
+     * Hermes hosts get a badge on the computer icon and a coloured status
+     * line under the name, so a broken host is visible before tapping it.
+     * Other hosts keep the original look.
+     */
+    private void populateHestiaStatus(View parentView, ImageView imgView, PcView.ComputerObject obj) {
+        ImageView badge = parentView.findViewById(R.id.grid_hestia_badge);
+        TextView label = parentView.findViewById(R.id.grid_hestia_text);
+        if (badge == null || label == null) {
+            return;
+        }
+
+        HestiaHostStatus status = obj.details.hestiaStatus;
+        if (!HestiaStatusUi.shouldShow(obj.details) || status == null) {
+            badge.setVisibility(View.GONE);
+            label.setVisibility(View.GONE);
+            imgView.setContentDescription(obj.details.name);
+            return;
+        }
+
+        String text = HestiaStatusUi.badgeLabel(context, status);
+        badge.setImageResource(HestiaStatusUi.iconFor(status.getLevel()));
+        badge.setVisibility(View.VISIBLE);
+        label.setText(text);
+        label.setTextColor(HestiaStatusUi.colorFor(context, status.getLevel()));
+        label.setVisibility(View.VISIBLE);
+        imgView.setContentDescription(obj.details.name + ", " + text);
     }
 }

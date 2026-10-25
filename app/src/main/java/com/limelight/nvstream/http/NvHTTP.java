@@ -51,9 +51,11 @@ import com.limelight.nvstream.http.PairingManager.PairState;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.utils.DeviceUtils;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.limelight.hestia.HestiaApi;
+import com.limelight.hestia.HestiaApiResponse;
 import com.limelight.hestia.HestiaCapabilities;
+import com.limelight.hestia.HestiaHostStatus;
+import com.limelight.hestia.HestiaPermissions;
 import com.limelight.hestia.HestiaSessionRequest;
 import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
@@ -737,58 +739,83 @@ public class NvHTTP {
                 .build();
     }
 
+    /**
+     * One Hestia v1 request. Unlike the GameStream helpers, an HTTP error is
+     * returned rather than thrown so Hermes's JSON explanation survives; only
+     * transport failures raise IOException. The pinned server certificate and
+     * paired client certificate are always used and never bypassed.
+     */
+    private HestiaApiResponse hestiaRequest(String path, RequestBody requestBody) throws IOException {
+        if (serverCert == null) {
+            throw new IOException("Hestia API requires a paired host certificate");
+        }
+        HttpUrl url = getCompleteUrl(getHestiaBaseUrl(), path, null);
+        Request.Builder builder = new Request.Builder().url(url);
+        Request request = requestBody == null ? builder.get().build() : builder.post(requestBody).build();
+        try (Response response = performAndroidTlsHack(httpClientShortConnectTimeout).newCall(request).execute()) {
+            ResponseBody body = response.body();
+            String text = body != null ? body.string() : "";
+            if (verbose && !path.contains("clipboard")) {
+                LimeLog.info(url + " -> " + response.code() + " " + text);
+            }
+            return new HestiaApiResponse(response.code(), text);
+        }
+    }
+
+    public HestiaApiResponse hestiaGet(String path) throws IOException {
+        return hestiaRequest(path, null);
+    }
+
+    private HestiaApiResponse hestiaPostJson(String path, String json) throws IOException {
+        return hestiaRequest(path, RequestBody.create(
+                json, MediaType.get("application/json; charset=utf-8")));
+    }
+
     public HestiaCapabilities getHestiaCapabilities() throws IOException {
         if (serverCert == null) {
             return HestiaCapabilities.unsupported();
         }
-        try {
-            String json = openHttpConnectionToString(httpClientShortConnectTimeout,
-                    getHestiaBaseUrl(), "api/hestia/v1/capabilities");
-            return HestiaCapabilities.parse(json);
-        } catch (FileNotFoundException e) {
-            // Non-Hermes hosts have no such endpoint.
-            return HestiaCapabilities.unsupported();
-        }
+        HestiaApiResponse response = hestiaGet(HestiaApi.CAPABILITIES);
+        // Non-Hermes hosts answer 404 (or something else that is not ours).
+        return response.isHttpSuccess()
+                ? HestiaCapabilities.parse(response.getBody())
+                : HestiaCapabilities.unsupported();
     }
 
-    public boolean hasHestiaLaunchPermission() throws IOException {
+    /** The calling client's own Hermes permissions, or null if unreadable. */
+    public HestiaPermissions getHestiaPermissions() throws IOException {
         if (serverCert == null) {
-            return false;
+            return null;
         }
-        String json = openHttpConnectionToString(httpClientShortConnectTimeout,
-                getHestiaBaseUrl(), "api/hestia/v1/client/permissions");
-        try {
-            JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
-            if (!obj.has("ok") || !obj.get("ok").getAsBoolean()
-                    || !obj.has("permissions") || !obj.get("permissions").isJsonObject()) {
-                return false;
-            }
-            JsonObject permissions = obj.getAsJsonObject("permissions");
-            return permissions.has("launch_apps")
-                    && permissions.get("launch_apps").isJsonPrimitive()
-                    && permissions.get("launch_apps").getAsJsonPrimitive().isBoolean()
-                    && permissions.get("launch_apps").getAsBoolean();
-        } catch (IllegalStateException | com.google.gson.JsonParseException e) {
-            return false;
-        }
+        return HestiaPermissions.parse(hestiaGet(HestiaApi.CLIENT_PERMISSIONS));
     }
 
-    public boolean prepareHestiaSession(HestiaSessionRequest payload) throws IOException {
-        if (serverCert == null || payload == null) {
-            return false;
+    /**
+     * Evaluate this host's Hestia health. Never throws; a host that is not
+     * Hermes (or not paired) yields {@link HestiaHostStatus#legacy()}.
+     * Must be called off the UI thread.
+     */
+    public HestiaHostStatus getHestiaHostStatus(boolean knownHermes) {
+        if (serverCert == null) {
+            return HestiaHostStatus.legacy();
         }
-        RequestBody body = RequestBody.create(
-                payload.toJson(), MediaType.get("application/json; charset=utf-8"));
-        String response = openHttpConnectionToString(httpClientShortConnectTimeout,
-                getHestiaBaseUrl(), "api/hestia/v1/session/prepare", null, body);
-        try {
-            JsonObject obj = JsonParser.parseString(response).getAsJsonObject();
-            return obj.has("ok") && obj.get("ok").isJsonPrimitive()
-                    && obj.get("ok").getAsJsonPrimitive().isBoolean()
-                    && obj.get("ok").getAsBoolean();
-        } catch (IllegalStateException | com.google.gson.JsonParseException e) {
-            return false;
+        return HestiaHostStatus.probe(this::hestiaGet, knownHermes);
+    }
+
+    /** Submit session hints; inspect {@link HestiaApiResponse#isOk()} and its error. */
+    public HestiaApiResponse prepareHestiaSession(HestiaSessionRequest payload) throws IOException {
+        if (payload == null) {
+            throw new IllegalArgumentException("payload must not be null");
         }
+        return hestiaPostJson(HestiaApi.SESSION_PREPARE, payload.toJson());
+    }
+
+    /**
+     * Ask Hermes to restore the physical monitor layout. Hermes stops a
+     * running app as part of this, so callers must confirm with the user.
+     */
+    public HestiaApiResponse recoverHestiaDisplay() throws IOException {
+        return hestiaPostJson(HestiaApi.DISPLAY_RECOVER, "{\"force\":false}");
     }
 
     public PairingManager getPairingManager() {

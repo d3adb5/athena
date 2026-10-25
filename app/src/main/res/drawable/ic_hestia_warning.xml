@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hermes host needs attention. Glyph: Material "warning" (Apache 2.0) on a dark disc for contrast. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#E6121212"
+        android:pathData="M0.5,12a11.5,11.5 0,1 0,23 0a11.5,11.5 0,1 0,-23 0z" />
+    <group
+        android:pivotX="12"
+        android:pivotY="12"
+        android:scaleX="0.8"
+        android:scaleY="0.8"
+        android:translateY="-0.6">
+        <path
+            android:fillColor="#FFFFB300"
+            android:pathData="M1,21h22L12,2 1,21zM13,18h-2v-2h2v2zM13,14h-2v-4h2v4z" />
+    </group>
+</vector>

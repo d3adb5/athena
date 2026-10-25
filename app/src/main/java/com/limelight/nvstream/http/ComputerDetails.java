@@ -2,6 +2,8 @@ package com.limelight.nvstream.http;
 
 import androidx.annotation.NonNull;
 
+import com.limelight.hestia.HestiaHostStatus;
+
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Objects;
@@ -89,6 +91,10 @@ public class ComputerDetails {
     // Server commands
     public List<String> serverCommands;
 
+    // Hermes/Hestia health, refreshed by ComputerManagerService on its own
+    // slower schedule. Null until the first probe of a paired host.
+    public volatile HestiaHostStatus hestiaStatus;
+
     public ComputerDetails() {
         // Use defaults
         state = State.UNKNOWN;
@@ -165,6 +171,21 @@ public class ComputerDetails {
         this.vDisplaySupported = details.vDisplaySupported;
 
         this.serverCommands = details.serverCommands;
+
+        // Serverinfo polls never carry a Hestia probe, so keep the last one
+        // unless a newer one is supplied. Pairing is what grants API access,
+        // so an unpaired host has no meaningful Hestia status.
+        if (details.hestiaStatus != null) {
+            this.hestiaStatus = details.hestiaStatus;
+        }
+        if (this.pairState != null && this.pairState != PairingManager.PairState.PAIRED) {
+            this.hestiaStatus = null;
+        }
+    }
+
+    /** Paired host that answered as Hermes on its last Hestia probe. */
+    public boolean isKnownHermes() {
+        return hestiaStatus != null && hestiaStatus.isHermes();
     }
 
     @NonNull
@@ -234,6 +255,23 @@ public class ComputerDetails {
                 "Pair State: " + pairState + "\n" +
                 "Running Game ID: " + runningGameId + "\n" +
                 "Running Game UUID: " + runningGameUUID + "\n" +
-                "HTTPS Port: " + httpsPort + "\n";
+                "HTTPS Port: " + httpsPort + "\n" +
+                hestiaToString();
+    }
+
+    private String hestiaToString() {
+        if (hestiaStatus == null) {
+            return "";
+        }
+        if (!hestiaStatus.isHermes()) {
+            return "Hestia API: not available\n";
+        }
+        StringBuilder sb = new StringBuilder("\nHermes: ")
+                .append(hestiaStatus.getServerVersion().isEmpty() ? "?" : hestiaStatus.getServerVersion())
+                .append(" (").append(hestiaStatus.getLevel()).append(")\n");
+        for (HestiaHostStatus.Item item : hestiaStatus.getItems()) {
+            sb.append(" - ").append(item).append("\n");
+        }
+        return sb.toString();
     }
 }

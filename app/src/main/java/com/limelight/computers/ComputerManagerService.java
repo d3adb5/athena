@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.limelight.LimeLog;
 import com.limelight.binding.PlatformBinding;
 import com.limelight.discovery.DiscoveryService;
+import com.limelight.hestia.HestiaHostStatus;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
@@ -51,6 +52,12 @@ public class ComputerManagerService extends Service {
     private static final int INITIAL_POLL_TRIES = 2;
     private static final int EMPTY_LIST_THRESHOLD = 3;
     private static final int POLL_DATA_TTL_MS = 30000;
+    // Hestia probes cost up to four HTTPS requests, so they run far less often
+    // than serverinfo polls: often enough for a Hermes host's indicator to
+    // track reality, rarely for hosts that turned out not to be Hermes.
+    private static final int HESTIA_REFRESH_PERIOD_MS = 15000;
+    private static final int HESTIA_LEGACY_REFRESH_PERIOD_MS = 120000;
+    private static final int HESTIA_FAILURE_RETRY_MS = 3000;
 
     private final ComputerManagerBinder binder = new ComputerManagerBinder();
 
@@ -178,6 +185,7 @@ public class ComputerManagerService extends Service {
                             } else {
                                 tuple.lastSuccessfulPollMs = SystemClock.elapsedRealtime();
                                 offlineCount = 0;
+                                refreshHestiaStatusIfDue(tuple);
                             }
                         }
 
@@ -191,6 +199,67 @@ public class ComputerManagerService extends Service {
         };
         t.setName("Polling thread for " + tuple.computer.name);
         return t;
+    }
+
+    /**
+     * Probe a paired host's Hestia API on its own schedule (see the periods
+     * above), plus immediately when the running app changes, and notify the
+     * listener only when the findings actually change. Called from the
+     * host's polling thread while holding its network lock.
+     */
+    private void refreshHestiaStatusIfDue(PollingTuple tuple) {
+        ComputerDetails computer = tuple.computer;
+        if (computer.state != ComputerDetails.State.ONLINE
+                || computer.pairState != PairingManager.PairState.PAIRED
+                || computer.serverCert == null || computer.activeAddress == null) {
+            return;
+        }
+
+        HestiaHostStatus previous = computer.hestiaStatus;
+        boolean knownHermes = previous != null && previous.isHermes();
+        long now = SystemClock.elapsedRealtime();
+        long period = knownHermes ? HESTIA_REFRESH_PERIOD_MS : HESTIA_LEGACY_REFRESH_PERIOD_MS;
+        boolean appChanged = computer.runningGameId != tuple.hestiaRunningGameId;
+        boolean due = tuple.lastHestiaProbeMs == 0
+                || (previous != null && appChanged)
+                || now - tuple.lastHestiaProbeMs >= (previous != null ? period : HESTIA_REFRESH_PERIOD_MS);
+        if (!due) {
+            return;
+        }
+        tuple.lastHestiaProbeMs = now;
+        tuple.hestiaRunningGameId = computer.runningGameId;
+
+        HestiaHostStatus status;
+        try {
+            NvHTTP http = new NvHTTP(ServerHelper.getCurrentAddressFromComputer(computer),
+                    computer.httpsPort, idManager.getUniqueId(), computer.serverCert,
+                    PlatformBinding.getCryptoProvider(ComputerManagerService.this));
+            status = http.getHestiaHostStatus(knownHermes);
+        } catch (IOException e) {
+            return;
+        }
+
+        // One dropped request should not flash a healthy host red: retry
+        // shortly and only report the failure if it repeats.
+        if (knownHermes && status.hasCode(HestiaHostStatus.Code.API_UNREACHABLE)
+                && !previous.hasCode(HestiaHostStatus.Code.API_UNREACHABLE)
+                && ++tuple.hestiaConsecutiveFailures < 2) {
+            tuple.lastHestiaProbeMs = now - period + HESTIA_FAILURE_RETRY_MS;
+            return;
+        }
+        tuple.hestiaConsecutiveFailures = 0;
+
+        // Re-check pairing: the host may have been unpaired while we probed.
+        if (computer.pairState != PairingManager.PairState.PAIRED) {
+            return;
+        }
+        computer.hestiaStatus = status;
+        if (!status.equals(previous)) {
+            LimeLog.info("Hestia status for " + computer.name + ": " + status);
+            if (listener != null) {
+                listener.notifyComputerUpdated(computer);
+            }
+        }
     }
 
     public class ComputerManagerBinder extends Binder {
@@ -950,6 +1019,9 @@ class PollingTuple {
     public final ComputerDetails computer;
     public final Object networkLock;
     public long lastSuccessfulPollMs;
+    public long lastHestiaProbeMs;
+    public int hestiaRunningGameId;
+    public int hestiaConsecutiveFailures;
 
     public PollingTuple(ComputerDetails computer, Thread thread) {
         this.computer = computer;

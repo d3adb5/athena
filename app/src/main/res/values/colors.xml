@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="profileAccent">#FF4081</color>
+
+    <!-- Hermes/Hestia host status (shared by the grid badge, banner and dialog) -->
+    <color name="hestia_ok">#FF66BB6A</color>
+    <color name="hestia_warning">#FFFFCA28</color>
+    <color name="hestia_error">#FFEF5350</color>
+    <color name="hestia_info">#FFB0BEC5</color>
+    <color name="hestia_banner_background">#33FFFFFF</color>
 </resources>

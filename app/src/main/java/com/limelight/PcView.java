@@ -11,6 +11,8 @@ import com.limelight.computers.ComputerManagerListener;
 import com.limelight.computers.ComputerManagerService;
 import com.limelight.grid.PcGridAdapter;
 import com.limelight.grid.assets.DiskAssetLoader;
+import com.limelight.hestia.HestiaHostStatus;
+import com.limelight.hestia.HestiaStatusUi;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
@@ -136,6 +138,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     private final static int GAMESTREAM_EOL_ID = 11;
     private final static int OPEN_MANAGEMENT_PAGE_ID = 20;
     private final static int PAIR_ID_OTP = 21;
+    private final static int HESTIA_STATUS_ID = 22;
 
     private void initializeViews() {
         setContentView(R.layout.activity_pc_view);
@@ -422,7 +425,19 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 break;
         }
 
+        // Hermes hosts: say in the header whether something needs attention.
+        HestiaHostStatus hestiaStatus = computer.details.hestiaStatus;
+        boolean showHestia = HestiaStatusUi.shouldShow(computer.details) && hestiaStatus != null;
+        if (showHestia) {
+            headerTitle += " · " + HestiaStatusUi.badgeLabel(this, hestiaStatus);
+            menu.setHeaderIcon(HestiaStatusUi.iconFor(hestiaStatus.getLevel()));
+        }
+
         menu.setHeaderTitle(headerTitle);
+
+        if (showHestia) {
+            menu.add(Menu.NONE, HESTIA_STATUS_ID, 0, getResources().getString(R.string.pcview_menu_hestia_status));
+        }
 
         // Inflate the context menu
         if (computer.details.state == ComputerDetails.State.OFFLINE ||
@@ -800,6 +815,15 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 Dialog.displayDialog(PcView.this, getResources().getString(R.string.title_details), computer.details.toString(), false);
                 return true;
 
+            case HESTIA_STATUS_ID:
+                if (managerBinder == null) {
+                    Toast.makeText(PcView.this, getResources().getString(R.string.error_manager_not_running), Toast.LENGTH_LONG).show();
+                    return true;
+                }
+                HestiaStatusUi.showStatusDialog(PcView.this, computer.details,
+                        managerBinder.getUniqueId(), () -> pcGridAdapter.notifyDataSetChanged());
+                return true;
+
             case TEST_NETWORK_ID:
                 ServerHelper.doNetworkTest(PcView.this);
                 return true;
@@ -815,6 +839,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 } else {
                     HelpLauncher.launchUrl(PcView.this, managementUrl);
                 }
+                return true;
 
             default:
                 return super.onContextItemSelected(item);

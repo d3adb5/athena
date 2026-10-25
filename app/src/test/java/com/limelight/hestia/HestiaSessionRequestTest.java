@@ -43,4 +43,20 @@ public class HestiaSessionRequestTest {
         assertEquals("sdr", json.getAsJsonObject("stream").get("hdr_mode").getAsString());
         assertFalse(json.getAsJsonObject("virtual_display").get("enabled").getAsBoolean());
     }
+
+    @Test public void explainsWhyARequestWasNotBuilt() {
+        assertEquals(HestiaSessionRequest.Rejection.NONE,
+                HestiaSessionRequest.check(1920, 1080, 60, 20000, 100, 1, 60, "0.1"));
+        assertEquals(HestiaSessionRequest.Rejection.FPS_UNSUPPORTED,
+                HestiaSessionRequest.check(1920, 1080, 144, 20000, 100, 1, 144, "0.1"));
+        assertEquals(HestiaSessionRequest.Rejection.OUT_OF_RANGE,
+                HestiaSessionRequest.check(9000, 1080, 60, 20000, 100, 1, 60, "0.1"));
+        assertEquals(HestiaSessionRequest.Rejection.OUT_OF_RANGE,
+                HestiaSessionRequest.check(1920, 1080, 60, 20000, 0, 1, 60, "0.1"));
+        assertEquals(HestiaSessionRequest.Rejection.INVALID,
+                HestiaSessionRequest.check(1920, 1080, 60, 0, 100, 1, 60, "0.1"));
+        assertEquals(HestiaSessionRequest.Rejection.INVALID,
+                HestiaSessionRequest.check(1920, 1080, 60, 20000, 100, 1, 60, ""));
+        assertArrayEquals(new int[] {30, 40, 45, 60, 90, 120}, HestiaSessionRequest.supportedFps());
+    }
 }

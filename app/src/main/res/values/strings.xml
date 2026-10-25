@@ -753,4 +753,79 @@
     <string name="profile_manager_active_profile">Active profile: %s</string>
     <string name="rename">Rename</string>
     <string name="save">Save</string>
+
+    <!-- Hermes / Hestia host status -->
+    <string name="pcview_menu_hestia_status">Hermes status</string>
+    <string name="hestia_badge_ok">Hermes · Ready</string>
+    <string name="hestia_badge_warning">Hermes · Needs attention</string>
+    <string name="hestia_badge_error">Hermes · Problem</string>
+    <string name="hestia_banner_format">%1$s · %2$s</string>
+    <string name="hestia_banner_hint">Tap for Hermes details</string>
+    <string name="hestia_dialog_title">Hermes · %1$s</string>
+    <string name="hestia_dialog_footer">%1$s · Hestia protocol v%2$d · checked %3$s</string>
+    <string name="hestia_dialog_close">Close</string>
+    <string name="hestia_dialog_refresh">Refresh</string>
+    <string name="hestia_dialog_restore_display">Restore display</string>
+    <string name="hestia_checking">Checking Hermes…</string>
+    <string name="hestia_refresh_failed">Couldn\'t reach the host to check Hermes.</string>
+    <string name="hestia_no_longer_hermes">This host no longer reports the Hermes API.</string>
+    <string name="hestia_restore_display_confirm">Turn the host\'s physical monitor back on? Any app still running on the host will be closed.</string>
+    <string name="hestia_restoring_display">Restoring the physical display…</string>
+    <string name="hestia_restore_display_ok">Physical display restored.</string>
+    <string name="hestia_restore_display_failed">Couldn\'t restore the display: %1$s</string>
+
+    <string name="hestia_item_ready">Everything looks good: this host is ready to stream.</string>
+    <string name="hestia_item_protocol_incompatible">This Hermes speaks a different Hestia protocol (this app: v%1$d, host accepts v%2$s). Update Hermes or Hestia.</string>
+    <string name="hestia_item_api_unreachable">The Hermes API isn\'t responding. Check that Hermes is running and that its web/API port (47990 by default) isn\'t blocked by a firewall.</string>
+    <string name="hestia_item_api_error">The Hermes API returned an error: %1$s</string>
+    <string name="hestia_item_certificate_rejected">Hermes no longer recognises this device\'s pairing. Unpair it and pair again.</string>
+    <string name="hestia_item_no_stream_permission">This device has neither the “Launch Apps” nor the “View Streams” permission, so it can\'t stream. Grant them in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_item_no_launch_permission">This device can\'t start apps or create a virtual display (missing the “Launch Apps” permission). Grant it in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_item_no_list_permission">This device can\'t list apps (missing the “List Apps” permission).</string>
+    <string name="hestia_item_no_input_permission">Input is blocked for: %1$s. Grant the matching input permissions in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_item_no_view_permission">Host diagnostics are hidden because this device lacks the “View Streams” permission.</string>
+    <string name="hestia_item_diagnostics_unavailable">Couldn\'t read %1$s: %2$s</string>
+    <string name="hestia_item_check">%1$s: %2$s</string>
+    <string name="hestia_item_display_left_disabled">The host\'s physical monitor seems to be off even though nothing is streaming.</string>
+    <string name="hestia_item_display_left_disabled_recoverable">The host\'s physical monitor seems to be off even though nothing is streaming. Use “Restore display” to turn it back on.</string>
+    <string name="hestia_item_last_session_ended">The last session ended unexpectedly: %1$s.</string>
+    <plurals name="hestia_item_streaming">
+        <item quantity="one">%1$d session is streaming right now.</item>
+        <item quantity="other">%1$d sessions are streaming right now.</item>
+    </plurals>
+    <string name="hestia_item_awaiting_reconnect">An app is still running on the host, waiting for a client to resume it.</string>
+    <string name="hestia_item_virtual_display_active">Virtual display active: %1$s</string>
+    <string name="hestia_item_clipboard_unavailable">Clipboard sync is unavailable on the host (%1$s).</string>
+
+    <string name="hestia_endpoint_diagnostics">host diagnostics</string>
+    <string name="hestia_endpoint_display">display status</string>
+    <string name="hestia_detail_no_response">no response</string>
+    <string name="hestia_detail_permissions_unreadable">couldn\'t read this device\'s permissions</string>
+    <string name="hestia_detail_invalid_settings">invalid stream settings</string>
+    <string name="hestia_input_keyboard">keyboard</string>
+    <string name="hestia_input_mouse">mouse</string>
+    <string name="hestia_input_gamepad">gamepad</string>
+    <string name="hestia_check_encoder">Encoder</string>
+    <string name="hestia_check_display">Display</string>
+    <string name="hestia_check_virtual_display">Virtual display</string>
+    <string name="hestia_check_session_environment">Session</string>
+    <string name="hestia_check_preflight">Readiness</string>
+    <string name="hestia_check_not_ready">the host reports it isn\'t ready to stream</string>
+    <string name="hestia_termination_handshake_failed">the video/audio handshake never completed (check the UDP ports and firewall)</string>
+    <string name="hestia_termination_protocol_error">the control stream failed</string>
+    <string name="hestia_termination_permission_revoked">this device\'s “View Streams” permission was revoked</string>
+    <string name="hestia_termination_client_lost">the connection to the client was lost</string>
+    <string name="hestia_clipboard_wl_missing">install wl-clipboard on the host</string>
+    <string name="hestia_clipboard_xclip_missing">install xclip on the host</string>
+    <string name="hestia_clipboard_no_session">no desktop session</string>
+
+    <string name="hestia_preparing_session">Preparing the Hermes session…</string>
+    <string name="hestia_prepare_ok">Hermes: virtual display prepared for %1$d×%2$d at %3$d FPS.</string>
+    <string name="hestia_prepare_unreachable">The Hermes API isn\'t responding, so the virtual display settings weren\'t sent. Launching with default settings.</string>
+    <string name="hestia_prepare_incompatible">This Hermes version is incompatible with Hestia. Launching with default settings.</string>
+    <string name="hestia_prepare_no_virtual_display">Hermes reports no virtual display support. Launching with default settings.</string>
+    <string name="hestia_prepare_no_launch">Hermes: this device lacks the “Launch Apps” permission, so no virtual display was requested. Grant it in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_prepare_fps_unsupported">Hermes doesn\'t accept %1$d FPS (supported: %2$s). Launching with default settings.</string>
+    <string name="hestia_prepare_out_of_range">Hermes can\'t create a %1$d×%2$d virtual display at %3$d%% scale. Launching with default settings.</string>
+    <string name="hestia_prepare_failed">Hermes didn\'t accept the session settings: %1$s. Launching with default settings.</string>
 </resources>
