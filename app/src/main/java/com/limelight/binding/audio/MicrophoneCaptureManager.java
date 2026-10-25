@@ -6,7 +6,12 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
+import android.media.AudioTimestamp;
 import android.media.MediaRecorder;
+import android.media.audiofx.AcousticEchoCanceler;
+import android.media.audiofx.AudioEffect;
+import android.media.audiofx.AutomaticGainControl;
+import android.media.audiofx.NoiseSuppressor;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -39,6 +44,9 @@ public class MicrophoneCaptureManager {
         }
     }
 
+    public static final String ECHO_PLATFORM = "platform";
+    public static final String ECHO_WEBRTC = "webrtc";
+
     private static final int SAMPLE_RATE = 48000;
     private static final int CHANNEL_COUNT = 1;
     private static final int FRAME_SIZE = 960;
@@ -62,6 +70,9 @@ public class MicrophoneCaptureManager {
     private String currentStatus;
     private double currentLevel;
     private boolean signalDetected;
+    // Echo cancellation, noise suppression and AGC of the stream being sent (none in preview)
+    private volatile WebRtcApm apm;
+    private final List<AudioEffect> effects = new ArrayList<>();
 
     public MicrophoneCaptureManager(Context context) {
         this.context = context.getApplicationContext();
@@ -96,11 +107,29 @@ public class MicrophoneCaptureManager {
     }
 
     public boolean startPreview(int preferredDeviceId, LevelListener listener) {
-        return startCapture(preferredDeviceId, listener, false);
+        return startCapture(preferredDeviceId, listener, false, "off", false, false);
     }
 
     public boolean startStreaming(int preferredDeviceId, LevelListener listener) {
-        return startCapture(preferredDeviceId, listener, true);
+        return startStreaming(preferredDeviceId, listener, "off", false, false);
+    }
+
+    // echoCancel: off, ECHO_PLATFORM or ECHO_WEBRTC. Noise suppression and AGC use the platform
+    // effects with ECHO_PLATFORM, WebRTC otherwise.
+    public boolean startStreaming(int preferredDeviceId, LevelListener listener,
+                                  String echoCancel, boolean noiseSuppress, boolean autoGain) {
+        return startCapture(preferredDeviceId, listener, true, echoCancel, noiseSuppress, autoGain);
+    }
+
+    // Called by the renderer with each PCM buffer it actually queued for playback. The writes
+    // block at the device's playback rate, so the echo reference neither drifts from the
+    // microphone's clock nor runs behind its echo; AEC3 estimates the remaining delay
+    // (track buffer, mixer and HAL, air, capture path) by itself.
+    public void onPlayback(short[] pcm, int channels) {
+        WebRtcApm a = apm;
+        if (a != null) {
+            a.render(pcm, channels);
+        }
     }
 
     public void stop() {
@@ -132,8 +161,17 @@ public class MicrophoneCaptureManager {
 
         captureThread = null;
         audioRecord = null;
+        for (AudioEffect effect : effects) {
+            effect.release();
+        }
+        effects.clear();
         if (recordToRelease != null) {
             recordToRelease.release();
+        }
+        WebRtcApm processing = apm;
+        apm = null;
+        if (processing != null) {
+            processing.release();
         }
 
         if (wasStreaming) {
@@ -147,10 +185,14 @@ public class MicrophoneCaptureManager {
         dispatchStatus(string(R.string.microphone_preview_inactive), 0.0, false);
     }
 
-    private boolean startCapture(int preferredDeviceId, LevelListener listener, boolean streamToHost) {
+    private boolean startCapture(int preferredDeviceId, LevelListener listener, boolean streamToHost,
+                                 String echoCancel, boolean noiseSuppress, boolean autoGain) {
         CaptureConfig config;
         AudioRecord newRecord;
         final int bufferSamples;
+        boolean platform = streamToHost && ECHO_PLATFORM.equals(echoCancel);
+        boolean webrtcAec = streamToHost && ECHO_WEBRTC.equals(echoCancel);
+        WebRtcApm processing = null;
 
         stop();
         levelListener = listener;
@@ -165,8 +207,30 @@ public class MicrophoneCaptureManager {
             return false;
         }
 
-        config = createCaptureConfig(preferredDeviceId);
+        if (streamToHost && !platform && (webrtcAec || noiseSuppress || autoGain)) {
+            processing = new WebRtcApm(webrtcAec, noiseSuppress, autoGain);
+            if (!processing.isInitialized()) {
+                LimeLog.warning("Microphone: WebRTC processing failed, sending unprocessed audio");
+                processing = null;
+            }
+        }
+
+        // Software processing wants a source without the HAL's voice chain (non-linear, and
+        // latency) in front of AEC3; platform effects want the communication source.
+        int[] sources = null;
+        if (processing != null) {
+            sources = new int[] {MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC};
+        }
+        else if (platform) {
+            sources = new int[] {MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC};
+        }
+
+        config = createCaptureConfig(preferredDeviceId, sources);
         if (config == null) {
+            if (processing != null) {
+                processing.release();
+            }
             dispatchStatus(string(R.string.microphone_preview_open_failed), 0.0, false);
             return false;
         }
@@ -175,6 +239,9 @@ public class MicrophoneCaptureManager {
         bufferSamples = config.bufferSamples;
 
         if (streamToHost && MoonBridge.setupMicrophoneEncoder(SAMPLE_RATE, CHANNEL_COUNT, DEFAULT_BITRATE) != 0) {
+            if (processing != null) {
+                processing.release();
+            }
             newRecord.release();
             dispatchStatus(string(R.string.microphone_encoder_setup_failed), 0.0, false);
             return false;
@@ -187,6 +254,9 @@ public class MicrophoneCaptureManager {
             if (streamToHost) {
                 MoonBridge.cleanupMicrophoneEncoder();
             }
+            if (processing != null) {
+                processing.release();
+            }
             newRecord.release();
             dispatchStatus(string(R.string.microphone_capture_start_failed), 0.0, false);
             return false;
@@ -196,16 +266,35 @@ public class MicrophoneCaptureManager {
             if (streamToHost) {
                 MoonBridge.cleanupMicrophoneEncoder();
             }
+            if (processing != null) {
+                processing.release();
+            }
             newRecord.release();
             dispatchStatus(string(R.string.microphone_capture_start_failed), 0.0, false);
             return false;
         }
+
+        if (platform) {
+            int session = newRecord.getAudioSessionId();
+            attach("echo canceller", AcousticEchoCanceler.isAvailable() ? AcousticEchoCanceler.create(session) : null);
+            if (noiseSuppress) {
+                attach("noise suppressor", NoiseSuppressor.isAvailable() ? NoiseSuppressor.create(session) : null);
+            }
+            if (autoGain) {
+                attach("gain control", AutomaticGainControl.isAvailable() ? AutomaticGainControl.create(session) : null);
+            }
+        }
+        apm = processing;
 
         LimeLog.info(String.format((Locale) null,
                 "Microphone capture active using source %s, device %s, buffer %d samples",
                 config.sourceName,
                 config.deviceLabel,
                 bufferSamples));
+        if (streamToHost) {
+            LimeLog.info("Microphone: echo cancel " + echoCancel + ", noise suppress " + noiseSuppress +
+                    ", auto gain " + autoGain + ", WebRTC " + (processing != null));
+        }
 
         audioRecord = newRecord;
         streamingToHost = streamToHost;
@@ -218,17 +307,23 @@ public class MicrophoneCaptureManager {
             MoonBridge.startMicrophoneStreaming();
         }
 
-        captureThread = new Thread(() -> runCaptureLoop(bufferSamples), streamToHost ? "MicStreamCapture" : "MicPreviewCapture");
+        // Streams read 20 ms at a time: a whole AudioRecord buffer would add its length as latency
+        final int readSamples = streamToHost ? FRAME_SIZE : bufferSamples;
+        final WebRtcApm loopProcessing = processing;
+        final AudioRecord loopRecord = newRecord;
+        captureThread = new Thread(() -> runCaptureLoop(readSamples, loopRecord, loopProcessing),
+                streamToHost ? "MicStreamCapture" : "MicPreviewCapture");
         captureThread.start();
         dispatchStatus(config.statusMessage, 0.0, false);
         return true;
     }
 
-    private void runCaptureLoop(int bufferSamples) {
+    private void runCaptureLoop(int bufferSamples, AudioRecord record, WebRtcApm processing) {
         short[] readBuffer = new short[bufferSamples];
         int pendingPeak = 0;
         double pendingRms = 0.0;
         long lastUpdateTime = SystemClock.elapsedRealtime();
+        long samplesSent = 0, frames = 0, processNs = 0;
 
         while (running && audioRecord != null) {
             int samplesRead;
@@ -244,6 +339,16 @@ public class MicrophoneCaptureManager {
                 continue;
             }
 
+            if (processing != null) {
+                // WebRTC takes 10 ms frames; a short read leaves its tail unprocessed
+                long t = System.nanoTime();
+                for (int i = 0; i + WebRtcApm.FRAME_SAMPLES <= samplesRead; i += WebRtcApm.FRAME_SAMPLES) {
+                    processing.capture(readBuffer, i);
+                }
+                processNs += System.nanoTime() - t;
+                frames++;
+            }
+
             SignalStats signalStats = calculateSignalStats(readBuffer, samplesRead);
             if (signalStats.peak > pendingPeak) {
                 pendingPeak = signalStats.peak;
@@ -256,6 +361,11 @@ public class MicrophoneCaptureManager {
                 int queued = MoonBridge.queueMicrophonePcm(readBuffer, samplesRead);
                 if (queued < 0) {
                     LimeLog.warning("Failed to queue microphone PCM data for native encoding");
+                }
+                long before = samplesSent;
+                samplesSent += samplesRead;
+                if (before < SAMPLE_RATE && samplesSent >= SAMPLE_RATE) {
+                    logInputLatency(record, samplesSent);
                 }
             }
 
@@ -273,10 +383,42 @@ public class MicrophoneCaptureManager {
                 dispatchStatus(currentStatus, nextLevel, nextSignalDetected);
             }
         }
+
+        if (processing != null && frames > 0) {
+            LimeLog.info("Microphone: WebRTC processing " + processNs / frames / 1000 + " us per " +
+                    bufferSamples * 1000 / SAMPLE_RATE + " ms read");
+        }
     }
 
-    private CaptureConfig createCaptureConfig(int preferredDeviceId) {
-        int[] preferredSources = new int[] {
+    private void attach(String name, AudioEffect effect) {
+        if (effect == null) {
+            LimeLog.warning("Microphone: no platform " + name);
+            return;
+        }
+        try {
+            effect.setEnabled(true);
+            LimeLog.info("Microphone: platform " + name + " \"" + effect.getDescriptor().name + "\"" +
+                    (effect.getEnabled() ? "" : " not enabled"));
+        } catch (RuntimeException e) {
+            LimeLog.warning("Microphone: platform " + name + " failed: " + e);
+        }
+        effects.add(effect);
+    }
+
+    // Time from capturing the newest sample to read() returning it
+    private static void logInputLatency(AudioRecord record, long framesRead) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            return;
+        }
+        AudioTimestamp ts = new AudioTimestamp();
+        if (record.getTimestamp(ts, AudioTimestamp.TIMEBASE_MONOTONIC) == AudioRecord.SUCCESS) {
+            long capturedNs = ts.nanoTime + (framesRead - 1 - ts.framePosition) * 1_000_000_000L / SAMPLE_RATE;
+            LimeLog.info("Microphone: input latency " + (System.nanoTime() - capturedNs) / 1_000_000 + " ms");
+        }
+    }
+
+    private CaptureConfig createCaptureConfig(int preferredDeviceId, int[] sources) {
+        int[] preferredSources = sources != null ? sources : new int[] {
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? MediaRecorder.AudioSource.UNPROCESSED : -1,
                 MediaRecorder.AudioSource.VOICE_RECOGNITION,
                 MediaRecorder.AudioSource.MIC
@@ -345,15 +487,19 @@ public class MicrophoneCaptureManager {
 
     private AudioRecord buildAudioRecord(int audioSource, int bufferSizeBytes) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return new AudioRecord.Builder()
+            AudioRecord.Builder builder = new AudioRecord.Builder()
                     .setAudioSource(audioSource)
                     .setAudioFormat(new AudioFormat.Builder()
                             .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
                             .setSampleRate(SAMPLE_RATE)
                             .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
                             .build())
-                    .setBufferSizeInBytes(bufferSizeBytes)
-                    .build();
+                    .setBufferSizeInBytes(bufferSizeBytes);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Let dictation (Gboard, other IMEs) take the microphone while we hold it
+                builder.setPrivacySensitive(false);
+            }
+            return builder.build();
         }
 
         return new AudioRecord(audioSource,
@@ -424,6 +570,9 @@ public class MicrophoneCaptureManager {
     private static String audioSourceToString(int audioSource) {
         if (audioSource == MediaRecorder.AudioSource.VOICE_RECOGNITION) {
             return "VOICE_RECOGNITION";
+        }
+        if (audioSource == MediaRecorder.AudioSource.VOICE_COMMUNICATION) {
+            return "VOICE_COMMUNICATION";
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
                 audioSource == MediaRecorder.AudioSource.UNPROCESSED) {

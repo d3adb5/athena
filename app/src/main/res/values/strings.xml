@@ -237,6 +237,15 @@
     <string name="microphone_host_not_negotiated">Host did not negotiate microphone streaming; leaving client microphone disabled</string>
     <string name="microphone_stream_permission_revoked">Microphone capture skipped because RECORD_AUDIO permission is not granted</string>
     <string name="microphone_stream_start_failed">Unable to start local microphone capture; continuing without microphone input</string>
+    <string name="title_list_mic_echo_cancel">Microphone echo cancellation</string>
+    <string name="summary_list_mic_echo_cancel">Keep the stream\'s own audio from the speaker out of the microphone. WebRTC works without communication mode; Platform uses the device\'s effects, if it has any</string>
+    <string name="mic_echo_cancel_off">Off</string>
+    <string name="mic_echo_cancel_platform">Platform</string>
+    <string name="mic_echo_cancel_webrtc">WebRTC (software)</string>
+    <string name="title_checkbox_mic_noise_suppress">Microphone noise suppression</string>
+    <string name="summary_checkbox_mic_noise_suppress">Platform effect with Platform echo cancellation, WebRTC otherwise</string>
+    <string name="title_checkbox_mic_auto_gain">Microphone automatic gain</string>
+    <string name="summary_checkbox_mic_auto_gain">Platform effect with Platform echo cancellation, WebRTC otherwise</string>
 
     <string name="category_gamepad_settings">Gamepad Settings</string>
     <string name="title_checkbox_multi_controller">Automatic gamepad presence detection</string>

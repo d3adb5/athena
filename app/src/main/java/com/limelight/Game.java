@@ -3383,6 +3383,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
     }
 
+    // The microphone gets every buffer queued for playback as its echo reference
+    private AndroidAudioRenderer newAudioRenderer() {
+        if (microphoneCaptureManager == null) {
+            microphoneCaptureManager = new MicrophoneCaptureManager(this);
+        }
+        return new AndroidAudioRenderer(this, prefConfig.enableAudioFx, microphoneCaptureManager);
+    }
+
     private void stopMicrophoneCapture() {
         if (microphoneCaptureManager != null) {
             microphoneCaptureManager.stop();
@@ -3413,7 +3421,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         LimeLog.info("Starting microphone streaming on device id " + prefConfig.microphoneDeviceId +
                 " (encrypted=" + MoonBridge.isMicrophoneEncryptionEnabled() + ")");
 
-        if (!microphoneCaptureManager.startStreaming(prefConfig.microphoneDeviceId, null)) {
+        if (!microphoneCaptureManager.startStreaming(prefConfig.microphoneDeviceId, null,
+                prefConfig.micEchoCancel, prefConfig.micNoiseSuppress, prefConfig.micAutoGain)) {
             LimeLog.warning("Unable to start local microphone capture for the current stream");
             displayTransientMessage(getString(R.string.microphone_stream_start_failed));
         }
@@ -3725,7 +3734,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         if (!vDisplay || httpConn == null) {
             // No enhanced session requested. Don't delay ordinary
             // Moonlight/GameStream streaming on non-Hermes hosts.
-            conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
+            conn.start(newAudioRenderer(),
                     decoderRenderer, Game.this);
             return;
         }
@@ -3755,7 +3764,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             }
             runOnUiThread(() -> {
                 if (!isFinishing() && !isDestroyed() && conn != null) {
-                    conn.start(new AndroidAudioRenderer(Game.this, prefConfig.enableAudioFx),
+                    conn.start(newAudioRenderer(),
                             decoderRenderer, Game.this);
                 }
             });

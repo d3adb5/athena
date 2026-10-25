@@ -87,6 +87,9 @@ public class PreferenceConfiguration {
     private static final String FRAME_PACING_PREF_STRING = "frame_pacing";
     private static final String ABSOLUTE_MOUSE_MODE_PREF_STRING = "checkbox_absolute_mouse_mode";
     private static final String CONNECT_MOUSE_WIGGLE_PREF_STRING = "checkbox_connect_mouse_wiggle";
+    private static final String MIC_ECHO_CANCEL_PREF_STRING = "list_mic_echo_cancel";
+    private static final String MIC_NOISE_SUPPRESS_PREF_STRING = "checkbox_mic_noise_suppress";
+    private static final String MIC_AUTO_GAIN_PREF_STRING = "checkbox_mic_auto_gain";
     private static final String ENABLE_AUDIO_FX_PREF_STRING = "checkbox_enable_audiofx";
     private static final String REDUCE_REFRESH_RATE_PREF_STRING = "checkbox_reduce_refresh_rate";
     private static final String FULL_RANGE_PREF_STRING = "checkbox_full_range";
@@ -180,6 +183,9 @@ public class PreferenceConfiguration {
     private static final String DEFAULT_FRAME_PACING = "latency";
     private static final boolean DEFAULT_ABSOLUTE_MOUSE_MODE = false;
     private static final boolean DEFAULT_CONNECT_MOUSE_WIGGLE = true;
+    private static final String DEFAULT_MIC_ECHO_CANCEL = "off";
+    private static final boolean DEFAULT_MIC_NOISE_SUPPRESS = false;
+    private static final boolean DEFAULT_MIC_AUTO_GAIN = false;
     private static final boolean DEFAULT_ENABLE_AUDIO_FX = false;
     private static final boolean DEFAULT_REDUCE_REFRESH_RATE = false;
     private static final boolean DEFAULT_FULL_RANGE = false;
@@ -356,6 +362,9 @@ public class PreferenceConfiguration {
     public int framePacing;
     public boolean absoluteMouseMode;
     public boolean connectMouseWiggle;
+    public String micEchoCancel;
+    public boolean micNoiseSuppress;
+    public boolean micAutoGain;
     public boolean enableAudioFx;
     public boolean reduceRefreshRate;
     public boolean fullRange;
@@ -981,6 +990,9 @@ public class PreferenceConfiguration {
 
         config.absoluteMouseMode = prefs.getBoolean(ABSOLUTE_MOUSE_MODE_PREF_STRING, DEFAULT_ABSOLUTE_MOUSE_MODE);
         config.connectMouseWiggle = prefs.getBoolean(CONNECT_MOUSE_WIGGLE_PREF_STRING, DEFAULT_CONNECT_MOUSE_WIGGLE);
+        config.micEchoCancel = prefs.getString(MIC_ECHO_CANCEL_PREF_STRING, DEFAULT_MIC_ECHO_CANCEL);
+        config.micNoiseSuppress = prefs.getBoolean(MIC_NOISE_SUPPRESS_PREF_STRING, DEFAULT_MIC_NOISE_SUPPRESS);
+        config.micAutoGain = prefs.getBoolean(MIC_AUTO_GAIN_PREF_STRING, DEFAULT_MIC_AUTO_GAIN);
         config.enableBatteryReport = prefs.getBoolean(CHECKBOX_ENABLE_BATTERY_REPORT, DEFAULT_GAMEPAD_ENABLE_BATTERY_REPORT);
         config.forceQwerty = prefs.getBoolean(CHECKBOX_FORCE_QWERTY, DEFAULT_FORCE_QWERTY);
         config.backAsMeta = prefs.getBoolean(CHECKBOX_BACK_AS_META, DEFAULT_SEND_META_ON_PHYSICAL_BACK);

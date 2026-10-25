@@ -141,10 +141,19 @@ android {
         }
     }
 
+    // Microphone processing (WebRTC APM), a Meson build of its own; see buildWebrtcApm
+    sourceSets.main.jniLibs.srcDirs += layout.buildDirectory.dir('webrtc-apm/libs').get().asFile
+
     testOptions {
         unitTests.includeAndroidResources = true
     }
 }
+
+def buildWebrtcApm = tasks.register('buildWebrtcApm', Exec) {
+    commandLine 'bash', file('src/main/webrtc-apm/build.sh').absolutePath,
+            android.ndkDirectory.absolutePath, layout.buildDirectory.dir('webrtc-apm').get().asFile.absolutePath
+}
+tasks.named('preBuild') { dependsOn buildWebrtcApm }
 
 dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.81'

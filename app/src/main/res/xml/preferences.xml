@@ -203,6 +203,29 @@
             android:key="microphone_preview"
             android:title="@string/title_microphone_preview"
             app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="off"
+            android:dependency="checkbox_enable_microphone"
+            android:entries="@array/mic_echo_cancel_names"
+            android:entryValues="@array/mic_echo_cancel_values"
+            android:key="list_mic_echo_cancel"
+            android:summary="@string/summary_list_mic_echo_cancel"
+            android:title="@string/title_list_mic_echo_cancel"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="checkbox_enable_microphone"
+            android:key="checkbox_mic_noise_suppress"
+            android:summary="@string/summary_checkbox_mic_noise_suppress"
+            android:title="@string/title_checkbox_mic_noise_suppress"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="checkbox_enable_microphone"
+            android:key="checkbox_mic_auto_gain"
+            android:summary="@string/summary_checkbox_mic_auto_gain"
+            android:title="@string/title_checkbox_mic_auto_gain"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
     <PreferenceCategory

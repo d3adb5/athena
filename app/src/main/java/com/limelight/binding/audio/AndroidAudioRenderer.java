@@ -17,12 +17,15 @@ public class AndroidAudioRenderer implements AudioRenderer {
 
     private final Context context;
     private final boolean enableAudioFx;
+    private final MicrophoneCaptureManager microphone;
 
     private AudioTrack track;
+    private int channelCount;
 
-    public AndroidAudioRenderer(Context context, boolean enableAudioFx) {
+    public AndroidAudioRenderer(Context context, boolean enableAudioFx, MicrophoneCaptureManager microphone) {
         this.context = context;
         this.enableAudioFx = enableAudioFx;
+        this.microphone = microphone;
     }
 
     private AudioTrack createAudioTrack(int channelConfig, int sampleRate, int bufferSize, boolean lowLatency) {
@@ -93,6 +96,7 @@ public class AndroidAudioRenderer implements AudioRenderer {
 
         LimeLog.info("Audio channel config: "+String.format("0x%X", channelConfig));
 
+        channelCount = audioConfiguration.channelCount;
         bytesPerFrame = audioConfiguration.channelCount * samplesPerFrame * 2;
 
         // We're not supposed to request less than the minimum
@@ -193,6 +197,7 @@ public class AndroidAudioRenderer implements AudioRenderer {
             // of pending audio data, so we do the above check to be able to bound
             // latency at 40 ms in that situation.
             track.write(audioData, 0, audioData.length);
+            microphone.onPlayback(audioData, channelCount);
         }
         else {
             LimeLog.info("Too much pending audio data: " + MoonBridge.getPendingAudioDuration() +" ms");
