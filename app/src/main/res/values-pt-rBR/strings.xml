@@ -228,6 +228,8 @@
     <string name="summary_troubleshooting">Veja dicas para diagnosticar e corrigir problemas comuns de streaming</string>
     <string name="title_privacy_policy">Política de privacidade</string>
     <string name="summary_checkbox_absolute_mouse_mode">Isso pode alterar a aceleração do mouse para se comportar mais naturalmente para uso em desktop remoto, mas é incompatível com muitos jogos.</string>
+    <string name="title_checkbox_connect_mouse_wiggle">Mexer o mouse ao conectar</string>
+    <string name="summary_checkbox_connect_mouse_wiggle">Move o mouse um pixel e volta quando a transmissão começa, para acordar a tela do host. Desligue para manter o cursor escondido em sessões Gamescope, como as sessões isoladas do Hermes.</string>
     <string name="summary_privacy_policy">Veja a política de privacidade do Moonlight</string>
     <string name="pacing_balanced_alt">Equilibrado com limite de FPS</string>
     <string name="summary_seekbar_deadzone">Nota: Alguns jogos podem impor uma zona morta maior do que o Moonlight está configurado para usar.</string>
@@ -238,6 +240,26 @@
     <string name="resolution_prefix_native_portrait">(Retrato)</string>
     <string name="title_checkbox_enable_audiofx">Habilitar sistema de suporte à equalização</string>
     <string name="summary_checkbox_enable_audiofx">Permitir que efeitos de audio funcionem durante o streaming, pode acrescentar latência de audio</string>
+    <string name="title_checkbox_enable_microphone">Transmitir o microfone</string>
+    <string name="summary_checkbox_enable_microphone">Envia o áudio do seu microfone para o host quando ele oferece a passagem do microfone.</string>
+    <string name="title_microphone_device_list">Microfone de entrada</string>
+    <string name="summary_microphone_device_list">Escolha qual microfone deste dispositivo é capturado. Deixe no padrão para seguir a entrada do sistema.</string>
+    <string name="microphone_device_default">Microfone padrão do sistema</string>
+    <string name="title_microphone_preview">Teste do microfone</string>
+    <string name="microphone_preview_inactive">Teste do microfone inativo</string>
+    <string name="microphone_preview_permission_required">É preciso permitir o acesso ao microfone</string>
+    <string name="microphone_preview_signal_detected">Entrada detectada no microfone selecionado.</string>
+    <string name="microphone_preview_signal_missing">Nenhuma entrada de microfone detectada ainda.</string>
+    <string name="microphone_preview_selected_missing">Microfone selecionado indisponível; testando a entrada padrão do sistema</string>
+    <string name="microphone_preview_default_active">Testando a entrada padrão do microfone</string>
+    <string name="microphone_preview_selected_active">Testando a entrada do microfone selecionado</string>
+    <string name="microphone_preview_open_failed">Teste do microfone indisponível: não foi possível abrir a entrada selecionada</string>
+    <string name="microphone_encoder_setup_failed">Não foi possível preparar o codificador do microfone</string>
+    <string name="microphone_capture_start_failed">Não foi possível iniciar a captura do microfone</string>
+    <string name="microphone_permission_denied">Permissão do microfone negada</string>
+    <string name="microphone_host_not_negotiated">O host não aceitou a transmissão do microfone; o microfone do cliente fica desligado</string>
+    <string name="microphone_stream_permission_revoked">Captura do microfone ignorada porque a permissão RECORD_AUDIO não foi concedida</string>
+    <string name="microphone_stream_start_failed">Não foi possível iniciar a captura local do microfone; continuando sem a entrada do microfone</string>
     <string name="title_full_range">Forçar vídeo de gama completa de cores (Experimental)</string>
     <string name="frame_conversion_error">O PC host relatou um erro fatal de codificação de vídeo.
 \n
