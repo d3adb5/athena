@@ -21,6 +21,11 @@ public abstract class MdnsDiscoveryAgent {
 
     public abstract void stopDiscovery();
 
+    /** Release resources when an agent will no longer be reused. */
+    public void close() {
+        stopDiscovery();
+    }
+
     protected void reportNewComputer(String name, int port, Inet4Address[] v4Addrs, Inet6Address[] v6Addrs) {
         LimeLog.info("mDNS: "+name+" has "+v4Addrs.length+" IPv4 addresses");
         LimeLog.info("mDNS: "+name+" has "+v6Addrs.length+" IPv6 addresses");

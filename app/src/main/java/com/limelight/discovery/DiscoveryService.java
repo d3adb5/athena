@@ -3,6 +3,7 @@ package com.limelight.discovery;
 import java.util.List;
 
 import com.limelight.nvstream.mdns.MdnsComputer;
+import com.limelight.nvstream.mdns.FallbackDiscoveryAgent;
 import com.limelight.nvstream.mdns.JmDNSDiscoveryAgent;
 import com.limelight.nvstream.mdns.MdnsDiscoveryAgent;
 import com.limelight.nvstream.mdns.MdnsDiscoveryListener;
@@ -67,8 +68,16 @@ public class DiscoveryService extends Service {
             discoveryAgent = new JmDNSDiscoveryAgent(getApplicationContext(), listener);
         }
         else {
-            discoveryAgent = new NsdManagerDiscoveryAgent(getApplicationContext(), listener);
+            discoveryAgent = new FallbackDiscoveryAgent(listener,
+                    callback -> new NsdManagerDiscoveryAgent(getApplicationContext(), callback),
+                    callback -> new JmDNSDiscoveryAgent(getApplicationContext(), callback));
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        discoveryAgent.close();
+        super.onDestroy();
     }
 
     private final DiscoveryBinder binder = new DiscoveryBinder();

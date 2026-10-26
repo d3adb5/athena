@@ -144,8 +144,10 @@ public class JmDNSDiscoveryAgent extends MdnsDiscoveryAgent implements ServiceLi
 
         // Create the multicast lock required to receive mDNS traffic
         WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        multicastLock = wifiMgr.createMulticastLock("Limelight mDNS");
-        multicastLock.setReferenceCounted(false);
+        if (wifiMgr != null) {
+            multicastLock = wifiMgr.createMulticastLock("Hestia mDNS");
+            multicastLock.setReferenceCounted(false);
+        }
     }
 
     private void handleResolvedServiceInfo(ServiceInfo info) {
@@ -171,7 +173,9 @@ public class JmDNSDiscoveryAgent extends MdnsDiscoveryAgent implements ServiceLi
         stopDiscovery();
 
         // Acquire the multicast lock to start receiving mDNS traffic
-        multicastLock.acquire();
+        if (multicastLock != null) {
+            multicastLock.acquire();
+        }
         
         // Add our listener to the set
         synchronized (listeners) {
@@ -226,7 +230,9 @@ public class JmDNSDiscoveryAgent extends MdnsDiscoveryAgent implements ServiceLi
     
     public void stopDiscovery() {
         // Release the multicast lock to stop receiving mDNS traffic
-        multicastLock.release();
+        if (multicastLock != null && multicastLock.isHeld()) {
+            multicastLock.release();
+        }
 
         // Remove our listener from the set
         synchronized (listeners) {

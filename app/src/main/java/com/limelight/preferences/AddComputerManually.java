@@ -100,24 +100,6 @@ public class AddComputerManually extends AppCompatActivity {
         }
     }
 
-    private Uri parseRawUserInputToUri(String rawUserInput) {
-        // Try adding a scheme and parsing the remaining input.
-        // This handles input like 127.0.0.1:47989, [::1], [::1]:47989, and 127.0.0.1.
-        Uri uri = Uri.parse("art://" + rawUserInput);
-        if (uri.getHost() != null && !uri.getHost().isEmpty()) {
-            return uri;
-        }
-
-        // Attempt to escape the input as an IPv6 literal.
-        // This handles input like ::1.
-        uri = Uri.parse("art://[" + rawUserInput + "]");
-        if (uri.getHost() != null && !uri.getHost().isEmpty()) {
-            return uri;
-        }
-
-        return null;
-    }
-
     private void doAddPc(String rawUserInput) throws InterruptedException {
         boolean wrongSiteLocal = false;
         boolean invalidInput = false;
@@ -127,7 +109,7 @@ public class AddComputerManually extends AppCompatActivity {
         SpinnerDialog dialog = SpinnerDialog.displayDialog(this, getResources().getString(R.string.title_add_pc),
             getResources().getString(R.string.msg_add_pc), false);
 
-        Uri uri = parseRawUserInputToUri(rawUserInput);
+        Uri uri = ManualHostAddress.parse(rawUserInput);
         try {
             ComputerDetails details = new ComputerDetails();
 

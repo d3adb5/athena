@@ -97,6 +97,11 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
                         return;
                     }
 
+                    final String serviceKey = nsdServiceInfo.getServiceName() + "@" + nsdServiceInfo.getNetwork();
+                    if (serviceCallbacks.containsKey(serviceKey)) {
+                        return;
+                    }
+                    final NsdManager.DiscoveryListener discoveryListener = this;
                     LimeLog.info("NSD: Machine appeared: " + nsdServiceInfo.getServiceName());
 
                     NsdManager.ServiceInfoCallback serviceInfoCallback = new NsdManager.ServiceInfoCallback() {
@@ -108,10 +113,15 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
 
                         @Override
                         public void onServiceUpdated(NsdServiceInfo nsdServiceInfo) {
-                            LimeLog.info("NSD: Machine resolved: " + nsdServiceInfo.getServiceName());
-                            reportNewComputer(nsdServiceInfo.getServiceName(), nsdServiceInfo.getPort(),
-                                    getV4Addrs(nsdServiceInfo.getHostAddresses()),
-                                    getV6Addrs(nsdServiceInfo.getHostAddresses()));
+                            synchronized (listenerLock) {
+                                if (activeListener != discoveryListener || serviceCallbacks.get(serviceKey) != this) {
+                                    return;
+                                }
+                                LimeLog.info("NSD: Machine resolved: " + nsdServiceInfo.getServiceName());
+                                reportNewComputer(nsdServiceInfo.getServiceName(), nsdServiceInfo.getPort(),
+                                        getV4Addrs(nsdServiceInfo.getHostAddresses()),
+                                        getV6Addrs(nsdServiceInfo.getHostAddresses()));
+                            }
                         }
 
                         @Override
@@ -123,8 +133,13 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
                         }
                     };
 
-                    nsdManager.registerServiceInfoCallback(nsdServiceInfo, executor, serviceInfoCallback);
-                    serviceCallbacks.put(nsdServiceInfo.getServiceName(), serviceInfoCallback);
+                    serviceCallbacks.put(serviceKey, serviceInfoCallback);
+                    try {
+                        nsdManager.registerServiceInfoCallback(nsdServiceInfo, executor, serviceInfoCallback);
+                    } catch (RuntimeException e) {
+                        serviceCallbacks.remove(serviceKey);
+                        listener.notifyDiscoveryFailure(e);
+                    }
                 }
             }
 
@@ -139,9 +154,9 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
 
                     LimeLog.info("NSD: Machine lost: " + nsdServiceInfo.getServiceName());
 
-                    NsdManager.ServiceInfoCallback serviceInfoCallback = serviceCallbacks.remove(nsdServiceInfo.getServiceName());
+                    NsdManager.ServiceInfoCallback serviceInfoCallback = serviceCallbacks.remove(nsdServiceInfo.getServiceName() + "@" + nsdServiceInfo.getNetwork());
                     if (serviceInfoCallback != null) {
-                        nsdManager.unregisterServiceInfoCallback(serviceInfoCallback);
+                        unregisterCallback(serviceInfoCallback);
                     }
                 }
             }
@@ -174,7 +189,13 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
 
             // Unregister the service discovery listener
             if (activeListener != null) {
-                nsdManager.stopServiceDiscovery(activeListener);
+                NsdManager.DiscoveryListener stopping = activeListener;
+                activeListener = null;
+                try {
+                    nsdManager.stopServiceDiscovery(stopping);
+                } catch (RuntimeException e) {
+                    LimeLog.warning("NSD: Unable to stop discovery: " + e);
+                }
 
                 // Even though listener stoppage is asynchronous, the listener is gone as far as
                 // we're concerned. We null this right now to ensure pending callbacks know it's
@@ -186,9 +207,26 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
 
             // Unregister all service info callbacks
             for (NsdManager.ServiceInfoCallback callback : serviceCallbacks.values()) {
-                nsdManager.unregisterServiceInfoCallback(callback);
+                unregisterCallback(callback);
             }
             serviceCallbacks.clear();
+        }
+    }
+
+    private void unregisterCallback(NsdManager.ServiceInfoCallback callback) {
+        try {
+            nsdManager.unregisterServiceInfoCallback(callback);
+        } catch (RuntimeException e) {
+            LimeLog.warning("NSD: Unable to unregister service callback: " + e);
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            stopDiscovery();
+        } finally {
+            executor.shutdown();
         }
     }
 
