@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Keep native discovery, adding direct mDNS when it fails or returns no hosts. */
 public final class FallbackDiscoveryAgent extends MdnsDiscoveryAgent {
@@ -18,6 +19,7 @@ public final class FallbackDiscoveryAgent extends MdnsDiscoveryAgent {
     private final Factory fallbackFactory;
     private final long fallbackDelayMs;
     private final AtomicInteger generation = new AtomicInteger();
+    private final AtomicBoolean closed = new AtomicBoolean();
     // Service callbacks perform blocking host probes. Keep them off the UI and
     // serialize lifecycle changes with callbacks without nesting agent locks.
     private final ScheduledThreadPoolExecutor worker = new ScheduledThreadPoolExecutor(1);
@@ -107,10 +109,13 @@ public final class FallbackDiscoveryAgent extends MdnsDiscoveryAgent {
 
     @Override
     public void startDiscovery(int discoveryIntervalMs) {
+        if (closed.get()) {
+            return;
+        }
         final int token = generation.incrementAndGet();
         submit(() -> {
             stopAgents();
-            if (generation.get() != token) {
+            if (closed.get() || generation.get() != token) {
                 return;
             }
             intervalMs = discoveryIntervalMs;
@@ -162,8 +167,18 @@ public final class FallbackDiscoveryAgent extends MdnsDiscoveryAgent {
 
     @Override
     public void close() {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         generation.incrementAndGet();
-        submit(this::stopAgents);
-        worker.shutdown();
+        // Shut down only after cleanup has executed, so executor shutdown
+        // policies cannot cancel queued resolver cleanup on Android runtimes.
+        submit(() -> {
+            try {
+                stopAgents();
+            } finally {
+                worker.shutdown();
+            }
+        });
     }
 }

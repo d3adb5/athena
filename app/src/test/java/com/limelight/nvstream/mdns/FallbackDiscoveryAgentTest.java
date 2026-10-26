@@ -25,7 +25,9 @@ public class FallbackDiscoveryAgentTest {
 
     private static class Observer implements MdnsDiscoveryListener {
         final AtomicInteger count = new AtomicInteger();
-        final CountDownLatch added = new CountDownLatch(1);
+        final CountDownLatch added;
+        Observer() { this(1); }
+        Observer(int results) { added = new CountDownLatch(results); }
         @Override public void notifyComputerAdded(MdnsComputer computer) {
             count.incrementAndGet();
             added.countDown();
@@ -109,7 +111,7 @@ public class FallbackDiscoveryAgentTest {
     @Test public void bothBackendsReportingSameHostOnlyNotifyOnce() throws Exception {
         FakeAgent primary = new FakeAgent();
         FakeAgent fallback = new FakeAgent();
-        Observer observer = new Observer();
+        Observer observer = new Observer(2);
         FallbackDiscoveryAgent agent = new FallbackDiscoveryAgent(observer,
                 primary::attach, fallback::attach, 20);
         try {
@@ -117,10 +119,14 @@ public class FallbackDiscoveryAgentTest {
             await(fallback.started);
             primary.emit(pc());
             fallback.emit(pc());
+            // A different host is a queue barrier: the duplicate must have
+            // been processed before this second distinct result is delivered.
+            fallback.emit(new MdnsComputer("Other host", InetAddress.getByName("192.168.1.11"), null, 47989));
             await(observer.added);
             agent.stopDiscovery();
-            await(primary.stopped); // queued after both results
-            assertEquals(1, observer.count.get());
+            await(primary.stopped);
+            assertEquals(2, observer.count.get());
+            assertEquals(2, agent.getComputerSet().size());
         } finally { agent.close(); }
     }
 }
