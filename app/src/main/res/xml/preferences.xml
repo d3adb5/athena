@@ -5,7 +5,7 @@
     app:iconSpaceReserved="false">
     <com.bytehamster.lib.preferencesearch.SearchPreference android:key="searchPreference" />
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_video_settings"
         android:title="@string/category_video_settings"
         app:iconSpaceReserved="false">
@@ -167,9 +167,9 @@
             android:title="@string/title_fullexdisplay_mode"
             app:iconSpaceReserved="false" />
 
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:title="@string/category_audio_settings"
         app:iconSpaceReserved="false">
         <ListPreference
@@ -286,9 +286,9 @@
             android:summary="@string/summary_checkbox_mic_auto_gain"
             android:title="@string/title_checkbox_mic_auto_gain"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_gamepad_settings"
         android:title="@string/category_gamepad_settings"
         app:iconSpaceReserved="false">
@@ -399,9 +399,9 @@
             android:summary="@string/summary_device_rumble"
             android:title="@string/title_device_rumble"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_input_settings"
         android:title="@string/category_input_settings"
         app:iconSpaceReserved="false">
@@ -518,9 +518,9 @@
             android:summary="@string/summary_enable_commit_text"
             android:title="@string/title_enable_commit_text"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:title="@string/category_host_settings"
         app:iconSpaceReserved="false">
         <CheckBoxPreference
@@ -535,9 +535,9 @@
             android:summary="@string/summary_checkbox_host_audio"
             android:title="@string/title_checkbox_host_audio"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:title="@string/category_general_settings"
         app:iconSpaceReserved="false">
 
@@ -559,9 +559,9 @@
             android:summary="@string/summary_hide_clipboard_content"
             android:title="@string/title_hide_clipboard_content"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_ui_settings"
         android:title="@string/category_ui_settings"
         app:iconSpaceReserved="false">
@@ -703,9 +703,9 @@
             android:summary="@string/summary_checkbox_enable_pip"
             android:title="@string/title_checkbox_enable_pip"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_onscreen_controls"
         android:title="@string/category_on_screen_controls_settings"
         app:iconSpaceReserved="false">
@@ -797,9 +797,9 @@
             android:title="@string/title_reset_osc"
             app:iconSpaceReserved="false" />
 
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_special_key_layout"
         android:title="@string/title_special_key_layout"
         app:iconSpaceReserved="false">
@@ -866,9 +866,9 @@
             android:title="@string/title_export_keyboard_layout"
             app:iconSpaceReserved="false" />
 
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_virtual_trackpad_settings"
         android:title="@string/title_virtual_trackpad_settings"
         app:iconSpaceReserved="false">
@@ -942,9 +942,9 @@
             seekbar:min="10"
             seekbar:step="10" />
 
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_advanced_settings"
         android:title="@string/category_advanced_settings"
         app:iconSpaceReserved="false">
@@ -974,9 +974,9 @@
             android:summary="@string/summary_video_format"
             android:title="@string/title_video_format"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 
-    <PreferenceCategory
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_settings_misc"
         android:title="@string/title_settings_misc"
         app:iconSpaceReserved="false">
@@ -1043,5 +1043,5 @@
             android:summary="@string/summary_follow_update"
             android:title="@string/title_follow_update"
             app:iconSpaceReserved="false" />
-    </PreferenceCategory>
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
 </PreferenceScreen>
