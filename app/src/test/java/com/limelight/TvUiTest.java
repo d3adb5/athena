@@ -64,7 +64,7 @@ public class TvUiTest {
 
     @Test
     public void uiModeAloneSelectsTvLayoutsAndLargeTiles() {
-        RuntimeEnvironment.setQualifiers("television-land");
+        RuntimeEnvironment.setQualifiers("land-television");
         assertTvDefaults();
     }
 
@@ -141,7 +141,7 @@ public class TvUiTest {
 
     @Test
     public void hiddenHostStatusDoesNotTrapFocusOnNonHermesHosts() {
-        RuntimeEnvironment.setQualifiers("television-land");
+        RuntimeEnvironment.setQualifiers("land-television");
         Context themed = new androidx.appcompat.view.ContextThemeWrapper(context, R.style.AppTheme);
         android.widget.RelativeLayout root = (android.widget.RelativeLayout) LayoutInflater.from(themed)
                 .inflate(R.layout.activity_app_view_tv, null);
@@ -164,7 +164,7 @@ public class TvUiTest {
 
     @Test
     public void emptyGridFocusesManualAddAndPopulatedGridSupportsRemoteMenu() {
-        RuntimeEnvironment.setQualifiers("television-land");
+        RuntimeEnvironment.setQualifiers("land-television");
         org.robolectric.android.controller.ActivityController<Activity> controller =
                 Robolectric.buildActivity(Activity.class);
         Activity activity = controller.get();
