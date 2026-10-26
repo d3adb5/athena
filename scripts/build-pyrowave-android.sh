@@ -57,4 +57,9 @@ fi
 printf '%s\n' "$pyrowave_revision" > "$output/REVISION"
 mkdir -p "$repo_root/app/src/main/assets/third_party"
 cp "$source_dir/LICENSE" "$repo_root/app/src/main/assets/third_party/pyrowave-LICENSE.txt"
+cp "$source_dir/Granite/LICENSE" "$repo_root/app/src/main/assets/third_party/Granite-LICENSE.txt"
+for license in "$source_dir/Granite/third_party/volk"/LICENSE*; do
+    [[ -f "$license" ]] || continue
+    cp "$license" "$repo_root/app/src/main/assets/third_party/volk-LICENSE.txt"
+done
 echo "PyroWave arm64 SDK ready; build with -PhestiaPyrowave=true"
