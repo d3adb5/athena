@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceManager;
 
 import com.limelight.R;
 
@@ -36,8 +37,17 @@ public class CollapsiblePreferenceCategory extends PreferenceCategory {
             collapse.setVisible(false);
             return true;
         });
-        addPreference(collapse);
         setOnExpandButtonClickListener(() -> collapse.setVisible(true));
+    }
+
+    @Override
+    protected void onAttachedToHierarchy(PreferenceManager preferenceManager) {
+        super.onAttachedToHierarchy(preferenceManager);
+        // Adding children requires the manager assigned by the superclass.
+        // This also runs during default-value inflation before any screen is displayed.
+        if (collapse != null && collapse.getParent() != this) {
+            addPreference(collapse);
+        }
     }
 
     @Override
