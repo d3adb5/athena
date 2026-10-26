@@ -561,19 +561,9 @@ public class PreferenceConfiguration {
     }
 
     public static boolean getDefaultSmallMode(Context context) {
-        PackageManager manager = context.getPackageManager();
-        if (manager != null) {
-            // TVs shouldn't use small mode by default
-            if (manager.hasSystemFeature(PackageManager.FEATURE_TELEVISION)) {
-                return false;
-            }
-
-            // API 21 uses LEANBACK instead of TELEVISION
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                if (manager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
-                    return false;
-                }
-            }
+        // TVs use readable large tiles, regardless of which TV marker the firmware exposes.
+        if (com.limelight.utils.TvUi.isTv(context)) {
+            return false;
         }
 
         // Use small mode on anything smaller than a 7" tablet

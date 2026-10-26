@@ -31,6 +31,7 @@ import com.limelight.utils.HelpLauncher;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.UiHelper;
+import com.limelight.utils.TvUi;
 
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -141,7 +142,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     private final static int HESTIA_STATUS_ID = 22;
 
     private void initializeViews() {
-        setContentView(R.layout.activity_pc_view);
+        setContentView(TvUi.pcLayout(this));
 
         UiHelper.notifyNewRootView(this);
 
@@ -178,7 +179,11 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
         helpButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                HelpLauncher.launchSetupGuide(PcView.this);
+                if (TvUi.isTv(PcView.this)) {
+                    TvUi.showHelp(PcView.this);
+                } else {
+                    HelpLauncher.launchSetupGuide(PcView.this);
+                }
             }
         });
         profilesButton.setOnClickListener(new OnClickListener() {
@@ -188,11 +193,10 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
             }
         });
 
-        // Amazon review didn't like the help button because the wiki was not entirely
-        // navigable via the Fire TV remote (though the relevant parts were). Let's hide
-        // it on Fire TV.
-        if (getPackageManager().hasSystemFeature("amazon.hardware.fire_tv")) {
-            helpButton.setVisibility(View.GONE);
+        if (TvUi.isTv(this)) {
+            TvUi.configureToolbar(settingsButton, helpButton, addComputerButton, profilesButton);
+            // No hosts yet: make manual addition immediately reachable without touch.
+            addComputerButton.requestFocus();
         }
 
         getFragmentManager().beginTransaction()
@@ -353,7 +357,10 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
             return;
         }
         String activeProfileName = ProfilesManager.getInstance().getActiveName();
-        if (activeProfileName.isEmpty()) {
+        if (activeProfileName.isEmpty() && TvUi.isTv(this)) {
+            profilesButton.setText(R.string.tv_profiles);
+            profilesButton.extend();
+        } else if (activeProfileName.isEmpty()) {
             profilesButton.shrink();
         } else {
             profilesButton.setText(activeProfileName);
@@ -934,6 +941,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
         });
         UiHelper.applyStatusBarPadding(listView);
         registerForContextMenu(listView);
+        TvUi.configureGrid(listView, R.id.settingsButton, findViewById(R.id.manuallyAddPc));
     }
 
     public static class ComputerObject {

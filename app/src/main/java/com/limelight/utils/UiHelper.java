@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.GameManager;
 import android.app.GameState;
 import android.app.LocaleManager;
-import android.app.UiModeManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -125,7 +124,6 @@ public class UiHelper {
     public static void notifyNewRootView(final Activity activity)
     {
         View rootView = activity.findViewById(android.R.id.content);
-        UiModeManager modeMgr = (UiModeManager) activity.getSystemService(Context.UI_MODE_SERVICE);
 
         // Set GameState.MODE_NONE initially for all activities
         setGameModeStatus(activity, false, false);
@@ -140,7 +138,7 @@ public class UiHelper {
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
         }
 
-        if (modeMgr.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+        if (TvUi.isTv(activity)) {
             // Increase view padding on TVs
             float scale = activity.getResources().getDisplayMetrics().density;
             int verticalPaddingPixels = (int) (TV_VERTICAL_PADDING_DP*scale + 0.5f);

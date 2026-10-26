@@ -539,7 +539,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
 
                     // Some TVs report strange values here, so let's avoid native resolutions on a TV
                     // unless they report greater than 4K resolutions.
-                    if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
+                    if (!com.limelight.utils.TvUi.isTv(activity) ||
                             (width > 3840 || height > 2160)) {
                         addNativeResolutionEntries(width, height, hasInsets, false);
                     }

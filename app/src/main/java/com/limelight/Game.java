@@ -1601,9 +1601,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         // Set the desired refresh rate that will get passed into setFrameRate() later
         desiredRefreshRate = displayRefreshRate;
 
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEVISION) ||
-                getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK)
-            || isOnExternalDisplay()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
+        if (com.limelight.utils.TvUi.isTv(this) || isOnExternalDisplay()) {// TVs may take a few moments to switch refresh rates, and we can probably assume
             // it will be eventually activated.
             // external displays cant be compared with displaymanager currents display refreshrate
             // TODO: Improve this

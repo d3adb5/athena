@@ -1,5 +1,11 @@
 # Artemis Android
 
+## Hestia Android TV support
+
+The same Hestia APK supports phones, tablets, Android TV, Google TV and compatible
+Fire TV devices, with automatic TV layouts and remote navigation.
+See [installation, controls and hardware testing](docs/android-tv.md).
+
 Previously named Moonlight Noir
 
 An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine).

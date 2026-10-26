@@ -25,6 +25,7 @@ import com.limelight.utils.ServerHelper;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
+import com.limelight.utils.TvUi;
 
 import android.app.Activity;
 import android.app.Service;
@@ -313,7 +314,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
 
         UiHelper.setLocale(this);
 
-        setContentView(R.layout.activity_app_view);
+        setContentView(TvUi.appLayout(this));
 
         // Allow floating expanded PiP overlays while browsing apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -368,6 +369,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         HestiaHostStatus status = details.hestiaStatus;
         if (!HestiaStatusUi.shouldShow(details) || status == null) {
             hestiaBanner.setVisibility(View.GONE);
+            TvUi.updateAppFocus(findViewById(android.R.id.content));
             shownHestiaStatus = null;
             return;
         }
@@ -384,6 +386,7 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
                 HestiaStatusUi.iconFor(status.getLevel()), 0, 0, 0);
         hestiaBanner.setContentDescription(text + ". " + getString(R.string.hestia_banner_hint));
         hestiaBanner.setVisibility(View.VISIBLE);
+        TvUi.updateAppFocus(findViewById(android.R.id.content));
     }
 
     private void updateHiddenApps(boolean hideImmediately) {
@@ -453,7 +456,10 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
             return;
         }
         String activeProfileName = ProfilesManager.getInstance().getActiveName();
-        if (activeProfileName.isEmpty()) {
+        if (activeProfileName.isEmpty() && TvUi.isTv(this)) {
+            profilesButton.setText(R.string.tv_profiles);
+            profilesButton.extend();
+        } else if (activeProfileName.isEmpty()) {
             profilesButton.shrink();
         } else {
             profilesButton.setText(activeProfileName);
@@ -821,6 +827,12 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         UiHelper.applyStatusBarPadding(listView);
         registerForContextMenu(listView);
         listView.requestFocus();
+        if (TvUi.isTv(this)) {
+            View profiles = findViewById(R.id.profilesButton);
+            TvUi.configureToolbar(profiles);
+            TvUi.configureGrid(listView, R.id.profilesButton, profiles);
+            TvUi.updateAppFocus(findViewById(android.R.id.content));
+        }
     }
 
     public static class AppObject {

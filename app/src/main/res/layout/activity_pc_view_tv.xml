@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="#1A1A1A">
+    <LinearLayout android:id="@+id/tvToolbar"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal" android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="Hestia" android:textSize="28sp"
+            android:textColor="@android:color/white" />
+        <LinearLayout android:layout_width="110dp" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <ImageButton android:id="@+id/settingsButton" style="@style/TvToolbarButton"
+                android:src="@drawable/ic_settings" android:contentDescription="@string/tv_settings" />
+            <TextView style="@style/TvToolbarLabel" android:text="@string/tv_settings" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="80dp" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <ImageButton android:id="@+id/helpButton" style="@style/TvToolbarButton"
+                android:src="@drawable/ic_help" android:contentDescription="@string/tv_help" />
+            <TextView style="@style/TvToolbarLabel" android:text="@string/tv_help" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="140dp" android:layout_height="wrap_content"
+            android:orientation="vertical" android:gravity="center_horizontal">
+            <ImageButton android:id="@+id/manuallyAddPc" style="@style/TvToolbarButton"
+                android:src="@drawable/ic_add" android:contentDescription="@string/title_add_pc" />
+            <TextView style="@style/TvToolbarLabel" android:text="@string/title_add_pc" />
+        </LinearLayout>
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/profilesButton" android:layout_width="180dp"
+            android:layout_height="wrap_content" android:text="@string/tv_profiles"
+            android:singleLine="true" android:ellipsize="end"
+            android:contentDescription="@string/profile_manager_choose_profile"
+            app:icon="@drawable/ic_profiles" />
+    </LinearLayout>
+    <RelativeLayout android:id="@+id/pcFragmentContainer"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_below="@id/tvToolbar" android:layout_above="@+id/tvNavigationHint">
+        <RelativeLayout android:id="@+id/no_pc_found_layout"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
+            <ProgressBar android:id="@+id/pcs_loading" android:layout_width="48dp"
+                android:layout_height="48dp" android:indeterminate="true" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/pcs_loading" android:layout_centerVertical="true"
+                android:layout_marginStart="16dp" android:textSize="22sp"
+                android:text="@string/searching_pc" />
+        </RelativeLayout>
+    </RelativeLayout>
+    <TextView android:id="@id/tvNavigationHint" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+        android:paddingTop="8dp" android:gravity="center" android:textSize="16sp"
+        android:text="@string/tv_navigation_hint" />
+</RelativeLayout>

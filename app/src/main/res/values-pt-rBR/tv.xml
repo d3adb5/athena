@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tv_settings">Configurações</string>
+    <string name="tv_help_title">Hestia na TV</string>
+    <string name="tv_help">Ajuda</string>
+    <string name="tv_profiles">Perfis</string>
+    <string name="tv_navigation_hint">Use as setas para navegar e OK para selecionar. Segure OK ou pressione Menu para mais opções.</string>
+    <string name="tv_help_message">Inicie o Hermes no PC e conecte a TV à mesma rede. Selecione o PC para parear e digite no Hermes o PIN exibido aqui. Se a busca não encontrar o PC, use Adicionar PC manualmente e informe o endereço da rede local.\n\nUse as setas do controle remoto para navegar e OK para selecionar. Segure OK ou pressione Menu sobre um PC ou jogo para mais opções. Durante a transmissão, use um controle de jogos compatível ou teclado e mouse.\n\nEste APK funciona em celulares, tablets, Android TV, Google TV e dispositivos Fire TV compatíveis. Ele não roda diretamente em TVs Samsung com Tizen ou LG com webOS.</string>
+</resources>
