@@ -424,8 +424,9 @@ public class MicrophoneCaptureManager {
     }
 
     private CaptureConfig createCaptureConfig(int preferredDeviceId, int[] sources) {
+        // No UNPROCESSED: the RP6 routes it to an analog mic that isn't wired (handset-mic-unprocessed, amic1),
+        // so it opens fine and records silence. VOICE_RECOGNITION is unprocessed by definition (no AGC/NS).
         int[] preferredSources = sources != null ? sources : new int[] {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? MediaRecorder.AudioSource.UNPROCESSED : -1,
                 MediaRecorder.AudioSource.VOICE_RECOGNITION,
                 MediaRecorder.AudioSource.MIC
         };
