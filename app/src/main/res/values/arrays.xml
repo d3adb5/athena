@@ -136,6 +136,23 @@
         <item>smoothness</item>
     </string-array>
 
+    <string-array name="mic_bitrate_names">
+        <item>@string/mic_bitrate_24</item>
+        <item>@string/mic_bitrate_32</item>
+        <item>@string/mic_bitrate_48</item>
+        <item>@string/mic_bitrate_64</item>
+        <item>@string/mic_bitrate_96</item>
+        <item>@string/mic_bitrate_128</item>
+    </string-array>
+    <string-array name="mic_bitrate_values" translatable="false">
+        <item>24</item>
+        <item>32</item>
+        <item>48</item>
+        <item>64</item>
+        <item>96</item>
+        <item>128</item>
+    </string-array>
+
     <string-array name="mic_echo_cancel_names">
         <item>@string/mic_echo_cancel_off</item>
         <item>@string/mic_echo_cancel_platform</item>

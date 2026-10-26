@@ -87,6 +87,7 @@ public class PreferenceConfiguration {
     private static final String FRAME_PACING_PREF_STRING = "frame_pacing";
     private static final String ABSOLUTE_MOUSE_MODE_PREF_STRING = "checkbox_absolute_mouse_mode";
     private static final String CONNECT_MOUSE_WIGGLE_PREF_STRING = "checkbox_connect_mouse_wiggle";
+    private static final String MIC_BITRATE_PREF_STRING = "list_mic_bitrate";
     private static final String MIC_ECHO_CANCEL_PREF_STRING = "list_mic_echo_cancel";
     private static final String MIC_NOISE_SUPPRESS_PREF_STRING = "checkbox_mic_noise_suppress";
     private static final String MIC_AUTO_GAIN_PREF_STRING = "checkbox_mic_auto_gain";
@@ -183,6 +184,7 @@ public class PreferenceConfiguration {
     private static final String DEFAULT_FRAME_PACING = "latency";
     private static final boolean DEFAULT_ABSOLUTE_MOUSE_MODE = false;
     private static final boolean DEFAULT_CONNECT_MOUSE_WIGGLE = true;
+    private static final String DEFAULT_MIC_BITRATE = "96";
     private static final String DEFAULT_MIC_ECHO_CANCEL = "off";
     private static final boolean DEFAULT_MIC_NOISE_SUPPRESS = false;
     private static final boolean DEFAULT_MIC_AUTO_GAIN = false;
@@ -362,6 +364,7 @@ public class PreferenceConfiguration {
     public int framePacing;
     public boolean absoluteMouseMode;
     public boolean connectMouseWiggle;
+    public int micBitrateKbps;
     public String micEchoCancel;
     public boolean micNoiseSuppress;
     public boolean micAutoGain;
@@ -990,6 +993,11 @@ public class PreferenceConfiguration {
 
         config.absoluteMouseMode = prefs.getBoolean(ABSOLUTE_MOUSE_MODE_PREF_STRING, DEFAULT_ABSOLUTE_MOUSE_MODE);
         config.connectMouseWiggle = prefs.getBoolean(CONNECT_MOUSE_WIGGLE_PREF_STRING, DEFAULT_CONNECT_MOUSE_WIGGLE);
+        try {
+            config.micBitrateKbps = Integer.parseInt(prefs.getString(MIC_BITRATE_PREF_STRING, DEFAULT_MIC_BITRATE));
+        } catch (NumberFormatException e) {
+            config.micBitrateKbps = Integer.parseInt(DEFAULT_MIC_BITRATE);
+        }
         config.micEchoCancel = prefs.getString(MIC_ECHO_CANCEL_PREF_STRING, DEFAULT_MIC_ECHO_CANCEL);
         config.micNoiseSuppress = prefs.getBoolean(MIC_NOISE_SUPPRESS_PREF_STRING, DEFAULT_MIC_NOISE_SUPPRESS);
         config.micAutoGain = prefs.getBoolean(MIC_AUTO_GAIN_PREF_STRING, DEFAULT_MIC_AUTO_GAIN);

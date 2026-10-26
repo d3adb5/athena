@@ -237,6 +237,13 @@
     <string name="microphone_host_not_negotiated">Host did not negotiate microphone streaming; leaving client microphone disabled</string>
     <string name="microphone_stream_permission_revoked">Microphone capture skipped because RECORD_AUDIO permission is not granted</string>
     <string name="microphone_stream_start_failed">Unable to start local microphone capture; continuing without microphone input</string>
+    <string name="title_list_mic_bitrate">Microphone quality</string>
+    <string name="mic_bitrate_24">24 kbps (low data)</string>
+    <string name="mic_bitrate_32">32 kbps</string>
+    <string name="mic_bitrate_48">48 kbps</string>
+    <string name="mic_bitrate_64">64 kbps</string>
+    <string name="mic_bitrate_96">96 kbps (high quality)</string>
+    <string name="mic_bitrate_128">128 kbps</string>
     <string name="title_list_mic_echo_cancel">Microphone echo cancellation</string>
     <string name="summary_list_mic_echo_cancel">Keep the stream\'s own audio from the speaker out of the microphone. WebRTC works without communication mode; Platform uses the device\'s effects, if it has any</string>
     <string name="mic_echo_cancel_off">Off</string>

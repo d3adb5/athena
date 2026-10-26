@@ -3421,6 +3421,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         LimeLog.info("Starting microphone streaming on device id " + prefConfig.microphoneDeviceId +
                 " (encrypted=" + MoonBridge.isMicrophoneEncryptionEnabled() + ")");
 
+        microphoneCaptureManager.setBitrate(prefConfig.micBitrateKbps * 1000);
         if (!microphoneCaptureManager.startStreaming(prefConfig.microphoneDeviceId, null,
                 prefConfig.micEchoCancel, prefConfig.micNoiseSuppress, prefConfig.micAutoGain)) {
             LimeLog.warning("Unable to start local microphone capture for the current stream");

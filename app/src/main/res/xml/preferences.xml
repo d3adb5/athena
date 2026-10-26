@@ -204,6 +204,15 @@
             android:title="@string/title_microphone_preview"
             app:iconSpaceReserved="false" />
         <ListPreference
+            android:defaultValue="96"
+            android:dependency="checkbox_enable_microphone"
+            android:entries="@array/mic_bitrate_names"
+            android:entryValues="@array/mic_bitrate_values"
+            android:key="list_mic_bitrate"
+            android:summary="%s"
+            android:title="@string/title_list_mic_bitrate"
+            app:iconSpaceReserved="false" />
+        <ListPreference
             android:defaultValue="off"
             android:dependency="checkbox_enable_microphone"
             android:entries="@array/mic_echo_cancel_names"

@@ -51,6 +51,7 @@ public class MicrophoneCaptureManager {
     private static final int CHANNEL_COUNT = 1;
     private static final int FRAME_SIZE = 960;
     private static final int DEFAULT_BITRATE = 24000;
+    private int bitrate = DEFAULT_BITRATE;
     private static final int LEVEL_UPDATE_INTERVAL_MS = 50;
     private static final int SIGNAL_PEAK_THRESHOLD = 250;
     private static final double SIGNAL_RMS_THRESHOLD = 90.0;
@@ -108,6 +109,11 @@ public class MicrophoneCaptureManager {
 
     public boolean startPreview(int preferredDeviceId, LevelListener listener) {
         return startCapture(preferredDeviceId, listener, false, "off", false, false);
+    }
+
+    // Opus bitrate of the streamed microphone, in bits per second; applies from the next start
+    public void setBitrate(int bitsPerSecond) {
+        bitrate = bitsPerSecond > 0 ? bitsPerSecond : DEFAULT_BITRATE;
     }
 
     public boolean startStreaming(int preferredDeviceId, LevelListener listener) {
@@ -238,7 +244,7 @@ public class MicrophoneCaptureManager {
         newRecord = config.record;
         bufferSamples = config.bufferSamples;
 
-        if (streamToHost && MoonBridge.setupMicrophoneEncoder(SAMPLE_RATE, CHANNEL_COUNT, DEFAULT_BITRATE) != 0) {
+        if (streamToHost && MoonBridge.setupMicrophoneEncoder(SAMPLE_RATE, CHANNEL_COUNT, bitrate) != 0) {
             if (processing != null) {
                 processing.release();
             }
