@@ -5,6 +5,17 @@ include $(call all-subdir-makefiles)
 
 LOCAL_PATH := $(MY_LOCAL_PATH)
 
+# Only opt-in arm64 builds link the pinned PyroWave SDK. Other ABIs use JNI stubs.
+ifeq ($(HESTIA_PYROWAVE),1)
+ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+include $(CLEAR_VARS)
+LOCAL_MODULE := pyrowave-shared
+LOCAL_SRC_FILES := ../pyrowave/$(TARGET_ARCH_ABI)/libpyrowave-shared.so
+LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/../pyrowave/$(TARGET_ARCH_ABI)/include
+include $(PREBUILT_SHARED_LIBRARY)
+endif
+endif
+
 include $(CLEAR_VARS)
 LOCAL_MODULE    := moonlight-core
 
@@ -41,7 +52,8 @@ LOCAL_SRC_FILES := moonlight-common-c/src/AudioStream.c \
                    moonlight-common-c/enet/protocol.c \
                    moonlight-common-c/enet/unix.c \
                    moonlight-common-c/enet/win32.c \
-                   simplejni.c \
+                   pyrowave_bridge.cpp \
++                   simplejni.c \
                    callbacks.c \
                    minisdl.c \
 
@@ -58,6 +70,14 @@ LOCAL_CFLAGS += -DLC_DEBUG
 endif
 
 LOCAL_LDLIBS := -llog
+LOCAL_CPPFLAGS := -std=c++14 -fexceptions
+ifeq ($(HESTIA_PYROWAVE),1)
+ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
+LOCAL_CPPFLAGS += -DHESTIA_HAVE_PYROWAVE
+LOCAL_SHARED_LIBRARIES += pyrowave-shared
+LOCAL_LDLIBS += -landroid -lEGL -lGLESv2
+endif
+endif
 
 LOCAL_STATIC_LIBRARIES := libopus libssl libcrypto cpufeatures
 LOCAL_LDFLAGS += -Wl,--exclude-libs,ALL
@@ -67,3 +87,4 @@ LOCAL_BRANCH_PROTECTION := standard
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,android/cpufeatures)
+

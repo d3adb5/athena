@@ -1,7 +1,7 @@
 [submodule "app/src/main/jni/moonlight-core/moonlight-common-c"]
 	path = app/src/main/jni/moonlight-core/moonlight-common-c
 	url = https://github.com/MrOz59/moonlight-common-c
-	branch = hestia-android
+	branch = feature/pyrowave-android
 [submodule "app/src/main/webrtc-apm/webrtc-audio-processing"]
 	path = app/src/main/webrtc-apm/webrtc-audio-processing
 	url = https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git

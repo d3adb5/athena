@@ -21,6 +21,7 @@ public class PreferenceConfiguration {
     public enum FormatOption {
         AUTO,
         FORCE_AV1,
+        FORCE_PYROWAVE,
         FORCE_HEVC,
         FORCE_H264,
     };
@@ -593,6 +594,9 @@ public class PreferenceConfiguration {
         if (str.equals("auto")) {
             return FormatOption.AUTO;
         }
+        else if (str.equals("pyrowave")) {
+            return FormatOption.FORCE_PYROWAVE;
+        }
         else if (str.equals("forceav1")) {
             return FormatOption.FORCE_AV1;
         }
@@ -1058,3 +1062,4 @@ public class PreferenceConfiguration {
         return config;
     }
 }
+

@@ -75,6 +75,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private boolean invertResolution;
     private int videoFormat;
     private Surface renderTarget;
+    private PyroWaveDecoderRenderer pyroWaveRenderer;
     private volatile boolean stopping;
     private CrashListener crashListener;
     private boolean reportedCrash;
@@ -300,6 +301,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     public void setRenderTarget(Surface renderTarget) {
         this.renderTarget = renderTarget;
+        if (pyroWaveRenderer != null) pyroWaveRenderer.setRenderTarget(renderTarget);
     }
 
     public MediaCodecDecoderRenderer(Activity activity, PreferenceConfiguration prefs,
@@ -311,6 +313,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         this.context = activity;
         this.activity = activity;
         this.prefs = prefs;
+        if (prefs.videoFormat == PreferenceConfiguration.FormatOption.FORCE_PYROWAVE) {
+            pyroWaveRenderer = new PyroWaveDecoderRenderer();
+        }
         this.crashListener = crashListener;
         this.consecutiveCrashCount = consecutiveCrashCount;
         this.glRenderer = glRenderer;
@@ -394,14 +399,17 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public boolean isHevcSupported() {
+        if (pyroWaveRenderer != null) return false;
         return hevcDecoder != null;
     }
 
     public boolean isAvcSupported() {
+        if (pyroWaveRenderer != null) return true;
         return avcDecoder != null;
     }
 
     public boolean isHevcMain10Hdr10Supported() {
+        if (pyroWaveRenderer != null) return false;
         if (hevcDecoder == null) {
             return false;
         }
@@ -417,10 +425,12 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public boolean isAv1Supported() {
+        if (pyroWaveRenderer != null) return false;
         return av1Decoder != null;
     }
 
     public boolean isAv1Main10Supported() {
+        if (pyroWaveRenderer != null) return false;
         if (av1Decoder == null) {
             return false;
         }
@@ -436,6 +446,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public int getPreferredColorSpace() {
+        if (pyroWaveRenderer != null) return MoonBridge.COLORSPACE_REC_709;
         // Default to Rec 709 which is probably better supported on modern devices.
         //
         // We are sticking to Rec 601 on older devices unless the device has an HEVC decoder
@@ -452,6 +463,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public int getPreferredColorRange() {
+        if (pyroWaveRenderer != null) return MoonBridge.COLOR_RANGE_LIMITED;
         if (prefs.fullRange) {
             return MoonBridge.COLOR_RANGE_FULL;
         }
@@ -469,6 +481,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public int getActiveVideoFormat() {
+        if (pyroWaveRenderer != null) return MoonBridge.VIDEO_FORMAT_PYROWAVE;
         return this.videoFormat;
     }
 
@@ -713,6 +726,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public int setup(int format, int width, int height, int redrawRate) {
+        if (pyroWaveRenderer != null) return pyroWaveRenderer.setup(format, width, height, redrawRate);
+        if ((format & MoonBridge.VIDEO_FORMAT_MASK_PYROWAVE) != 0) return -1;
         this.initialWidth = invertResolution ? height : width;
         this.initialHeight = invertResolution ? width : height;
         this.videoFormat = format;
@@ -1240,12 +1255,14 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public void start() {
+        if (pyroWaveRenderer != null) { pyroWaveRenderer.start(); return; }
         startRendererThread();
         startChoreographerThread();
     }
 
     // !!! May be called even if setup()/start() fails !!!
     public void prepareForStop() {
+        if (pyroWaveRenderer != null) { pyroWaveRenderer.prepareForStop(); return; }
         // Let the decoding code know to ignore codec exceptions now
         stopping = true;
 
@@ -1277,6 +1294,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public void stop() {
+        if (pyroWaveRenderer != null) { pyroWaveRenderer.stop(); return; }
         // May be called already, but we'll call it now to be safe
         prepareForStop();
 
@@ -1309,11 +1327,13 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public void cleanup() {
+        if (pyroWaveRenderer != null) { pyroWaveRenderer.cleanup(); return; }
         videoDecoder.release();
     }
 
     @Override
     public void setHdrMode(boolean enabled, byte[] hdrMetadata) {
+        if (pyroWaveRenderer != null) return;
         // HDR metadata is only supported in Android 7.0 and later, so don't bother
         // restarting the codec on anything earlier than that.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -1408,6 +1428,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     public int submitDecodeUnit(byte[] decodeUnitData, int decodeUnitLength, int decodeUnitType,
                                 int frameNumber, int frameType, char frameHostProcessingLatency,
                                 long receiveTimeMs, long enqueueTimeMs) {
+        if (pyroWaveRenderer != null) return pyroWaveRenderer.submitDecodeUnit(
+                decodeUnitData, decodeUnitLength, decodeUnitType, frameNumber, frameType,
+                frameHostProcessingLatency, receiveTimeMs, enqueueTimeMs);
         if (stopping) {
             // Don't bother if we're stopping
             return MoonBridge.DR_OK;
@@ -1840,6 +1863,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public int getCapabilities() {
+        if (pyroWaveRenderer != null) return 0;
         int capabilities = 0;
 
         // Request the optimal number of slices per frame for this decoder
@@ -1865,6 +1889,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public int getAverageEndToEndLatency() {
+        if (pyroWaveRenderer != null) return pyroWaveRenderer.getAverageEndToEndLatency();
         if (globalVideoStats.totalFramesReceived == 0) {
             return 0;
         }
@@ -1872,6 +1897,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public int getAverageDecoderLatency() {
+        if (pyroWaveRenderer != null) return pyroWaveRenderer.getAverageDecoderLatency();
         if (globalVideoStats.totalFramesReceived == 0) {
             return 0;
         }
@@ -1879,15 +1905,18 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     public Boolean performanceWasTracked() {
+        if (pyroWaveRenderer != null) return false;
         return minDecodeTime < Float.MAX_VALUE;
     }
 
     @SuppressLint("DefaultLocale")
     public String getMinDecoderLatency() {
+        if (pyroWaveRenderer != null) return "N/A";
         return String.format("%1$.2f", minDecodeTime);
     }
 
     public String getMinDecoderLatencyFullLog() {
+        if (pyroWaveRenderer != null) return "PyroWave baseline";
         return minDecodeTimeFullLog;
     }
 

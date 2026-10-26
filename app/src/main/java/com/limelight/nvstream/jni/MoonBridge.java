@@ -11,6 +11,10 @@ public class MoonBridge {
     public static final AudioConfiguration AUDIO_CONFIGURATION_51_SURROUND = new AudioConfiguration(6, 0x3F);
     public static final AudioConfiguration AUDIO_CONFIGURATION_71_SURROUND = new AudioConfiguration(8, 0x63F);
 
+    public static final int VIDEO_FORMAT_PYROWAVE = 0x01000000;
+    public static final int VIDEO_FORMAT_MASK_PYROWAVE = 0x0F000000;
+    public static final int SCM_PYROWAVE = 0x40000000;
+
     public static final int VIDEO_FORMAT_H264 = 0x0001;
     public static final int VIDEO_FORMAT_H265 = 0x0100;
     public static final int VIDEO_FORMAT_H265_MAIN10 = 0x0200;
@@ -441,3 +445,4 @@ public class MoonBridge {
 
     public static native void init();
 }
+

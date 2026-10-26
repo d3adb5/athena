@@ -687,6 +687,21 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             }
         }
 
+        if (prefConfig.videoFormat == PreferenceConfiguration.FormatOption.FORCE_PYROWAVE) {
+            if (willStreamHdr || prefConfig.enableHdr) {
+                Toast.makeText(this, "PyroWave requires HDR to be disabled", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+            if (!com.limelight.nvstream.jni.PyroWaveBridge.isSupported()) {
+                Toast.makeText(this, "This build or device has no compatible PyroWave Vulkan decoder", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+            supportedVideoFormats = MoonBridge.VIDEO_FORMAT_PYROWAVE;
+            willStreamHdr = false;
+        }
+
         int gamepadMask = ControllerHandler.getAttachedControllerMask(this);
         if (!prefConfig.multiController) {
             // Always set gamepad 1 present for when multi-controller is
@@ -1760,6 +1775,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 selectedVideoFormat += "H.264";
             } else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_H265) != 0) {
                 selectedVideoFormat += "HEVC";
+            } else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_PYROWAVE) != 0) {
+                selectedVideoFormat += "PyroWave";
             } else if ((videoFormat & MoonBridge.VIDEO_FORMAT_MASK_AV1) != 0) {
                 selectedVideoFormat += "AV1";
             }
