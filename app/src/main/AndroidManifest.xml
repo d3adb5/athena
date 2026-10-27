@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REORDER_TASKS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Normal permission; only the focused streaming window can capture shortcuts. -->
+    <uses-permission android:name="android.permission.CAPTURE_KEYBOARD" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -246,22 +248,6 @@
 
         <activity android:name=".DebugInfoActivity"
             android:launchMode="singleTask"/>
-
-        <!-- 无障碍 实体键盘 屏蔽某些快捷键 -->
-        <service
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:name="com.limelight.KeyboardAccessibilityService"
-            android:label="@string/keyboard_service_label"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/keyboard_accessibility_service" />
-        </service>
-
 
         <provider
             android:name="androidx.core.content.FileProvider"

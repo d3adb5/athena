@@ -1320,6 +1320,24 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     }
 
     public void setMetaKeyCaptureState(boolean enabled) {
+        // Android 16.1 adds a public, window-scoped capture API. Reflect on
+        // this public method so we can keep compiling against the base API 36
+        // SDK; Android 16.0 and older devices retain the Samsung fallback below.
+        if (Build.VERSION.SDK_INT >= 36) {
+            WindowManager.LayoutParams attributes = getWindow().getAttributes();
+            try {
+                Method capture = WindowManager.LayoutParams.class.getMethod(
+                        "setKeyboardCaptureEnabled", boolean.class);
+                capture.invoke(attributes, enabled);
+                getWindow().setAttributes(attributes);
+                return;
+            } catch (NoSuchMethodException e) {
+                // This minor Android release doesn't support native capture.
+            } catch (IllegalAccessException | InvocationTargetException | RuntimeException e) {
+                LimeLog.warning("Native keyboard capture unavailable: " + e);
+            }
+        }
+
         // This uses custom APIs present on some Samsung devices to allow capture of
         // meta key events while streaming.
         try {
