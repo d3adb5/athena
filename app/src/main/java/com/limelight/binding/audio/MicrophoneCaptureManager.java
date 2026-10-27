@@ -73,6 +73,7 @@ public class MicrophoneCaptureManager {
     private boolean signalDetected;
     // Echo cancellation, noise suppression and AGC of the stream being sent (none in preview)
     private volatile WebRtcApm apm;
+    private DeepFilterNet deepFilter;
     private final List<AudioEffect> effects = new ArrayList<>();
 
     public MicrophoneCaptureManager(Context context) {
@@ -108,7 +109,7 @@ public class MicrophoneCaptureManager {
     }
 
     public boolean startPreview(int preferredDeviceId, LevelListener listener) {
-        return startCapture(preferredDeviceId, listener, false, "off", false, false);
+        return startCapture(preferredDeviceId, listener, false, "off", false, false, null);
     }
 
     // Opus bitrate of the streamed microphone, in bits per second; applies from the next start
@@ -117,14 +118,16 @@ public class MicrophoneCaptureManager {
     }
 
     public boolean startStreaming(int preferredDeviceId, LevelListener listener) {
-        return startStreaming(preferredDeviceId, listener, "off", false, false);
+        return startStreaming(preferredDeviceId, listener, "off", false, false, null);
     }
 
     // echoCancel: off, ECHO_PLATFORM or ECHO_WEBRTC. Noise suppression and AGC use the platform
-    // effects with ECHO_PLATFORM, WebRTC otherwise.
-    public boolean startStreaming(int preferredDeviceId, LevelListener listener,
-                                  String echoCancel, boolean noiseSuppress, boolean autoGain) {
-        return startCapture(preferredDeviceId, listener, true, echoCancel, noiseSuppress, autoGain);
+    // effects with ECHO_PLATFORM, WebRTC otherwise. deepFilter (null for none) runs DeepFilterNet3
+    // after them, in place of noiseSuppress.
+    public boolean startStreaming(int preferredDeviceId, LevelListener listener, String echoCancel,
+                                  boolean noiseSuppress, boolean autoGain, DeepFilterNet.Params deepFilter) {
+        return startCapture(preferredDeviceId, listener, true, echoCancel,
+                noiseSuppress && deepFilter == null, autoGain, deepFilter);
     }
 
     // Called by the renderer with each PCM buffer it actually queued for playback. The writes
@@ -179,6 +182,10 @@ public class MicrophoneCaptureManager {
         if (processing != null) {
             processing.release();
         }
+        if (deepFilter != null) {
+            deepFilter.release();
+            deepFilter = null;
+        }
 
         if (wasStreaming) {
             MoonBridge.stopMicrophoneStreaming();
@@ -192,13 +199,15 @@ public class MicrophoneCaptureManager {
     }
 
     private boolean startCapture(int preferredDeviceId, LevelListener listener, boolean streamToHost,
-                                 String echoCancel, boolean noiseSuppress, boolean autoGain) {
+                                 String echoCancel, boolean noiseSuppress, boolean autoGain,
+                                 DeepFilterNet.Params deepFilterParams) {
         CaptureConfig config;
         AudioRecord newRecord;
         final int bufferSamples;
         boolean platform = streamToHost && ECHO_PLATFORM.equals(echoCancel);
         boolean webrtcAec = streamToHost && ECHO_WEBRTC.equals(echoCancel);
         WebRtcApm processing = null;
+        DeepFilterNet denoiser = null;
 
         stop();
         levelListener = listener;
@@ -220,11 +229,18 @@ public class MicrophoneCaptureManager {
                 processing = null;
             }
         }
+        if (streamToHost && deepFilterParams != null) {
+            denoiser = new DeepFilterNet(deepFilterParams);
+            if (!denoiser.isInitialized()) {
+                LimeLog.warning("Microphone: DeepFilterNet failed, sending audio without it");
+                denoiser = null;
+            }
+        }
 
         // Software processing wants a source without the HAL's voice chain (non-linear, and
         // latency) in front of AEC3; platform effects want the communication source.
         int[] sources = null;
-        if (processing != null) {
+        if (processing != null || (denoiser != null && !platform)) {
             sources = new int[] {MediaRecorder.AudioSource.VOICE_RECOGNITION, MediaRecorder.AudioSource.MIC};
         }
         else if (platform) {
@@ -237,6 +253,9 @@ public class MicrophoneCaptureManager {
             if (processing != null) {
                 processing.release();
             }
+            if (denoiser != null) {
+                denoiser.release();
+            }
             dispatchStatus(string(R.string.microphone_preview_open_failed), 0.0, false);
             return false;
         }
@@ -247,6 +266,9 @@ public class MicrophoneCaptureManager {
         if (streamToHost && MoonBridge.setupMicrophoneEncoder(SAMPLE_RATE, CHANNEL_COUNT, bitrate) != 0) {
             if (processing != null) {
                 processing.release();
+            }
+            if (denoiser != null) {
+                denoiser.release();
             }
             newRecord.release();
             dispatchStatus(string(R.string.microphone_encoder_setup_failed), 0.0, false);
@@ -263,6 +285,9 @@ public class MicrophoneCaptureManager {
             if (processing != null) {
                 processing.release();
             }
+            if (denoiser != null) {
+                denoiser.release();
+            }
             newRecord.release();
             dispatchStatus(string(R.string.microphone_capture_start_failed), 0.0, false);
             return false;
@@ -274,6 +299,9 @@ public class MicrophoneCaptureManager {
             }
             if (processing != null) {
                 processing.release();
+            }
+            if (denoiser != null) {
+                denoiser.release();
             }
             newRecord.release();
             dispatchStatus(string(R.string.microphone_capture_start_failed), 0.0, false);
@@ -291,6 +319,7 @@ public class MicrophoneCaptureManager {
             }
         }
         apm = processing;
+        deepFilter = denoiser;
 
         LimeLog.info(String.format((Locale) null,
                 "Microphone capture active using source %s, device %s, buffer %d samples",
@@ -299,7 +328,8 @@ public class MicrophoneCaptureManager {
                 bufferSamples));
         if (streamToHost) {
             LimeLog.info("Microphone: echo cancel " + echoCancel + ", noise suppress " + noiseSuppress +
-                    ", auto gain " + autoGain + ", WebRTC " + (processing != null));
+                    ", auto gain " + autoGain + ", WebRTC " + (processing != null) +
+                    ", DeepFilterNet " + (denoiser != null ? deepFilterParams : "off"));
         }
 
         audioRecord = newRecord;
@@ -316,20 +346,22 @@ public class MicrophoneCaptureManager {
         // Streams read 20 ms at a time: a whole AudioRecord buffer would add its length as latency
         final int readSamples = streamToHost ? FRAME_SIZE : bufferSamples;
         final WebRtcApm loopProcessing = processing;
+        final DeepFilterNet loopDenoiser = denoiser;
         final AudioRecord loopRecord = newRecord;
-        captureThread = new Thread(() -> runCaptureLoop(readSamples, loopRecord, loopProcessing),
+        captureThread = new Thread(() -> runCaptureLoop(readSamples, loopRecord, loopProcessing, loopDenoiser),
                 streamToHost ? "MicStreamCapture" : "MicPreviewCapture");
         captureThread.start();
         dispatchStatus(config.statusMessage, 0.0, false);
         return true;
     }
 
-    private void runCaptureLoop(int bufferSamples, AudioRecord record, WebRtcApm processing) {
+    private void runCaptureLoop(int bufferSamples, AudioRecord record, WebRtcApm processing,
+                                DeepFilterNet denoiser) {
         short[] readBuffer = new short[bufferSamples];
         int pendingPeak = 0;
         double pendingRms = 0.0;
         long lastUpdateTime = SystemClock.elapsedRealtime();
-        long samplesSent = 0, frames = 0, processNs = 0;
+        long samplesSent = 0, frames = 0, processNs = 0, denoiseNs = 0;
 
         while (running && audioRecord != null) {
             int samplesRead;
@@ -352,6 +384,16 @@ public class MicrophoneCaptureManager {
                     processing.capture(readBuffer, i);
                 }
                 processNs += System.nanoTime() - t;
+            }
+            if (denoiser != null) {
+                // After echo cancellation, so the model sees no echo to keep as speech
+                long t = System.nanoTime();
+                for (int i = 0; i + DeepFilterNet.FRAME_SAMPLES <= samplesRead; i += DeepFilterNet.FRAME_SAMPLES) {
+                    denoiser.process(readBuffer, i);
+                }
+                denoiseNs += System.nanoTime() - t;
+            }
+            if (processing != null || denoiser != null) {
                 frames++;
             }
 
@@ -392,6 +434,10 @@ public class MicrophoneCaptureManager {
 
         if (processing != null && frames > 0) {
             LimeLog.info("Microphone: WebRTC processing " + processNs / frames / 1000 + " us per " +
+                    bufferSamples * 1000 / SAMPLE_RATE + " ms read");
+        }
+        if (denoiser != null && frames > 0) {
+            LimeLog.info("Microphone: DeepFilterNet " + denoiseNs / frames / 1000 + " us per " +
                     bufferSamples * 1000 / SAMPLE_RATE + " ms read");
         }
     }

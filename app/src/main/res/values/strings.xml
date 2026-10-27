@@ -249,8 +249,22 @@
     <string name="mic_echo_cancel_off">Off</string>
     <string name="mic_echo_cancel_platform">Platform</string>
     <string name="mic_echo_cancel_webrtc">WebRTC (software)</string>
-    <string name="title_checkbox_mic_noise_suppress">Microphone noise suppression</string>
-    <string name="summary_checkbox_mic_noise_suppress">Platform effect with Platform echo cancellation, WebRTC otherwise</string>
+    <string name="title_list_mic_noise_suppress">Microphone noise suppression</string>
+    <string name="summary_list_mic_noise_suppress">Standard: the platform effect with Platform echo cancellation, WebRTC otherwise. DeepFilterNet3: a neural denoiser, the strongest and the most CPU, 30 ms more latency</string>
+    <string name="mic_noise_suppress_off">Off</string>
+    <string name="mic_noise_suppress_standard">Standard</string>
+    <string name="mic_noise_suppress_deepfilter">DeepFilterNet3</string>
+    <string name="suffix_seekbar_mic_df_db">dB</string>
+    <string name="title_seekbar_mic_df_atten_limit">DeepFilterNet3 strength</string>
+    <string name="summary_seekbar_mic_df_atten_limit">The most noise it may remove. 100 dB leaves it unconstrained; lower keeps more of the room</string>
+    <string name="title_seekbar_mic_df_post_filter">DeepFilterNet3 post-filter</string>
+    <string name="summary_seekbar_mic_df_post_filter">Strength (beta × 1000) of the post-filter that curbs noise left between words and watery artefacts. 0 turns it off</string>
+    <string name="title_seekbar_mic_df_min_db">DeepFilterNet3 noise-only threshold</string>
+    <string name="summary_seekbar_mic_df_min_db">Frames with a local SNR below this are treated as noise only and silenced. -15 dB (lowest) never does</string>
+    <string name="title_seekbar_mic_df_max_erb_db">DeepFilterNet3 clean-speech threshold</string>
+    <string name="summary_seekbar_mic_df_max_erb_db">Frames with a local SNR above this are passed through untouched. 35 dB (highest) always processes</string>
+    <string name="title_seekbar_mic_df_max_df_db">DeepFilterNet3 deep filter threshold</string>
+    <string name="summary_seekbar_mic_df_max_df_db">Above this local SNR, only the coarse (ERB) stage runs, saving CPU. 35 dB (highest) always runs the deep filter</string>
     <string name="title_checkbox_mic_auto_gain">Microphone automatic gain</string>
     <string name="summary_checkbox_mic_auto_gain">Platform effect with Platform echo cancellation, WebRTC otherwise</string>
 

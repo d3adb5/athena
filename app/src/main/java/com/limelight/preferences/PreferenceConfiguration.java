@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.view.Display;
 
+import com.limelight.binding.audio.DeepFilterNet;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.profiles.ProfilesManager;
 
@@ -89,7 +90,14 @@ public class PreferenceConfiguration {
     private static final String CONNECT_MOUSE_WIGGLE_PREF_STRING = "checkbox_connect_mouse_wiggle";
     private static final String MIC_BITRATE_PREF_STRING = "list_mic_bitrate";
     private static final String MIC_ECHO_CANCEL_PREF_STRING = "list_mic_echo_cancel";
-    private static final String MIC_NOISE_SUPPRESS_PREF_STRING = "checkbox_mic_noise_suppress";
+    private static final String LEGACY_MIC_NOISE_SUPPRESS_PREF_STRING = "checkbox_mic_noise_suppress";
+    static final String MIC_NOISE_SUPPRESS_PREF_STRING = "list_mic_noise_suppress";
+    static final String MIC_DF_ATTEN_LIMIT_PREF_STRING = "seekbar_mic_df_atten_limit";
+    static final String MIC_DF_POST_FILTER_PREF_STRING = "seekbar_mic_df_post_filter";
+    static final String MIC_DF_MIN_DB_PREF_STRING = "seekbar_mic_df_min_db";
+    static final String MIC_DF_MAX_ERB_DB_PREF_STRING = "seekbar_mic_df_max_erb_db";
+    static final String MIC_DF_MAX_DF_DB_PREF_STRING = "seekbar_mic_df_max_df_db";
+    static final String MIC_NOISE_SUPPRESS_DEEPFILTER = "deepfilter";
     private static final String MIC_AUTO_GAIN_PREF_STRING = "checkbox_mic_auto_gain";
     private static final String ENABLE_AUDIO_FX_PREF_STRING = "checkbox_enable_audiofx";
     private static final String REDUCE_REFRESH_RATE_PREF_STRING = "checkbox_reduce_refresh_rate";
@@ -186,7 +194,7 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_CONNECT_MOUSE_WIGGLE = true;
     private static final String DEFAULT_MIC_BITRATE = "96";
     private static final String DEFAULT_MIC_ECHO_CANCEL = "off";
-    private static final boolean DEFAULT_MIC_NOISE_SUPPRESS = false;
+    private static final String DEFAULT_MIC_NOISE_SUPPRESS = "off";
     private static final boolean DEFAULT_MIC_AUTO_GAIN = false;
     private static final boolean DEFAULT_ENABLE_AUDIO_FX = false;
     private static final boolean DEFAULT_REDUCE_REFRESH_RATE = false;
@@ -367,6 +375,8 @@ public class PreferenceConfiguration {
     public int micBitrateKbps;
     public String micEchoCancel;
     public boolean micNoiseSuppress;
+    // DeepFilterNet3 in place of micNoiseSuppress; null when not chosen
+    public DeepFilterNet.Params micDeepFilter;
     public boolean micAutoGain;
     public boolean enableAudioFx;
     public boolean reduceRefreshRate;
@@ -999,7 +1009,24 @@ public class PreferenceConfiguration {
             config.micBitrateKbps = Integer.parseInt(DEFAULT_MIC_BITRATE);
         }
         config.micEchoCancel = prefs.getString(MIC_ECHO_CANCEL_PREF_STRING, DEFAULT_MIC_ECHO_CANCEL);
-        config.micNoiseSuppress = prefs.getBoolean(MIC_NOISE_SUPPRESS_PREF_STRING, DEFAULT_MIC_NOISE_SUPPRESS);
+        if (prefs.contains(LEGACY_MIC_NOISE_SUPPRESS_PREF_STRING)) {
+            prefs.edit()
+                    .putString(MIC_NOISE_SUPPRESS_PREF_STRING,
+                            prefs.getBoolean(LEGACY_MIC_NOISE_SUPPRESS_PREF_STRING, false) ? "standard" : "off")
+                    .remove(LEGACY_MIC_NOISE_SUPPRESS_PREF_STRING)
+                    .apply();
+        }
+        String micNoise = prefs.getString(MIC_NOISE_SUPPRESS_PREF_STRING, DEFAULT_MIC_NOISE_SUPPRESS);
+        config.micNoiseSuppress = "standard".equals(micNoise);
+        if (MIC_NOISE_SUPPRESS_DEEPFILTER.equals(micNoise)) {
+            DeepFilterNet.Params df = new DeepFilterNet.Params();
+            df.attenLimitDb = prefs.getInt(MIC_DF_ATTEN_LIMIT_PREF_STRING, (int) df.attenLimitDb);
+            df.postFilterBeta = prefs.getInt(MIC_DF_POST_FILTER_PREF_STRING, 0) / 1000f;
+            df.minDbThresh = prefs.getInt(MIC_DF_MIN_DB_PREF_STRING, (int) df.minDbThresh);
+            df.maxDbErbThresh = prefs.getInt(MIC_DF_MAX_ERB_DB_PREF_STRING, (int) df.maxDbErbThresh);
+            df.maxDbDfThresh = prefs.getInt(MIC_DF_MAX_DF_DB_PREF_STRING, (int) df.maxDbDfThresh);
+            config.micDeepFilter = df;
+        }
         config.micAutoGain = prefs.getBoolean(MIC_AUTO_GAIN_PREF_STRING, DEFAULT_MIC_AUTO_GAIN);
         config.enableBatteryReport = prefs.getBoolean(CHECKBOX_ENABLE_BATTERY_REPORT, DEFAULT_GAMEPAD_ENABLE_BATTERY_REPORT);
         config.forceQwerty = prefs.getBoolean(CHECKBOX_FORCE_QWERTY, DEFAULT_FORCE_QWERTY);

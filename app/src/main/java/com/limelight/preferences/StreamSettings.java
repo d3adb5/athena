@@ -1045,11 +1045,36 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
             }
 
+            ListPreference noisePreference = findPreference(PreferenceConfiguration.MIC_NOISE_SUPPRESS_PREF_STRING);
+            if (noisePreference != null) {
+                showDeepFilterPreferences(noisePreference.getValue());
+                noisePreference.setOnPreferenceChangeListener((preference, newValue) -> {
+                    showDeepFilterPreferences((String) newValue);
+                    return true;
+                });
+            }
+
             if (microphonePreviewPreference != null) {
                 int statusResId = MicrophoneCaptureManager.hasRecordAudioPermission(requireContext()) ?
                         R.string.microphone_preview_inactive :
                         R.string.microphone_preview_permission_required;
                 microphonePreviewPreference.updatePreviewState(getString(statusResId), 0.0, false);
+            }
+        }
+
+        // The DeepFilterNet3 settings, shown only while it is the noise suppressor
+        private void showDeepFilterPreferences(String noiseSuppress) {
+            boolean shown = PreferenceConfiguration.MIC_NOISE_SUPPRESS_DEEPFILTER.equals(noiseSuppress);
+            for (String key : new String[] {
+                    PreferenceConfiguration.MIC_DF_ATTEN_LIMIT_PREF_STRING,
+                    PreferenceConfiguration.MIC_DF_POST_FILTER_PREF_STRING,
+                    PreferenceConfiguration.MIC_DF_MIN_DB_PREF_STRING,
+                    PreferenceConfiguration.MIC_DF_MAX_ERB_DB_PREF_STRING,
+                    PreferenceConfiguration.MIC_DF_MAX_DF_DB_PREF_STRING}) {
+                Preference preference = findPreference(key);
+                if (preference != null) {
+                    preference.setVisible(shown);
+                }
             }
         }
 

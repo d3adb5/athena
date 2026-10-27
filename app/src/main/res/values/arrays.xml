@@ -164,6 +164,17 @@
         <item>webrtc</item>
     </string-array>
 
+    <string-array name="mic_noise_suppress_names">
+        <item>@string/mic_noise_suppress_off</item>
+        <item>@string/mic_noise_suppress_standard</item>
+        <item>@string/mic_noise_suppress_deepfilter</item>
+    </string-array>
+    <string-array name="mic_noise_suppress_values" translatable="false">
+        <item>off</item>
+        <item>standard</item>
+        <item>deepfilter</item>
+    </string-array>
+
     <string-array name="analog_scrolling_names">
         <item>@string/analogscroll_none</item>
         <item>@string/analogscroll_right</item>

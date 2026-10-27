@@ -3423,7 +3423,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         microphoneCaptureManager.setBitrate(prefConfig.micBitrateKbps * 1000);
         if (!microphoneCaptureManager.startStreaming(prefConfig.microphoneDeviceId, null,
-                prefConfig.micEchoCancel, prefConfig.micNoiseSuppress, prefConfig.micAutoGain)) {
+                prefConfig.micEchoCancel, prefConfig.micNoiseSuppress, prefConfig.micAutoGain,
+                prefConfig.micDeepFilter)) {
             LimeLog.warning("Unable to start local microphone capture for the current stream");
             displayTransientMessage(getString(R.string.microphone_stream_start_failed));
         }

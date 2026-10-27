@@ -221,13 +221,64 @@
             android:summary="@string/summary_list_mic_echo_cancel"
             android:title="@string/title_list_mic_echo_cancel"
             app:iconSpaceReserved="false" />
-        <CheckBoxPreference
-            android:defaultValue="false"
+        <ListPreference
+            android:defaultValue="off"
             android:dependency="checkbox_enable_microphone"
-            android:key="checkbox_mic_noise_suppress"
-            android:summary="@string/summary_checkbox_mic_noise_suppress"
-            android:title="@string/title_checkbox_mic_noise_suppress"
+            android:entries="@array/mic_noise_suppress_names"
+            android:entryValues="@array/mic_noise_suppress_values"
+            android:key="list_mic_noise_suppress"
+            android:summary="@string/summary_list_mic_noise_suppress"
+            android:title="@string/title_list_mic_noise_suppress"
             app:iconSpaceReserved="false" />
+        <com.limelight.preferences.SeekBarPreference
+            android:defaultValue="100"
+            android:dependency="checkbox_enable_microphone"
+            android:key="seekbar_mic_df_atten_limit"
+            android:max="100"
+            android:summary="@string/summary_seekbar_mic_df_atten_limit"
+            android:text="@string/suffix_seekbar_mic_df_db"
+            android:title="@string/title_seekbar_mic_df_atten_limit"
+            app:iconSpaceReserved="false"
+            seekbar:min="0" />
+        <com.limelight.preferences.SeekBarPreference
+            android:defaultValue="0"
+            android:dependency="checkbox_enable_microphone"
+            android:key="seekbar_mic_df_post_filter"
+            android:max="50"
+            android:summary="@string/summary_seekbar_mic_df_post_filter"
+            android:title="@string/title_seekbar_mic_df_post_filter"
+            app:iconSpaceReserved="false"
+            seekbar:min="0" />
+        <com.limelight.preferences.SeekBarPreference
+            android:defaultValue="-15"
+            android:dependency="checkbox_enable_microphone"
+            android:key="seekbar_mic_df_min_db"
+            android:max="35"
+            android:summary="@string/summary_seekbar_mic_df_min_db"
+            android:text="@string/suffix_seekbar_mic_df_db"
+            android:title="@string/title_seekbar_mic_df_min_db"
+            app:iconSpaceReserved="false"
+            seekbar:min="-15" />
+        <com.limelight.preferences.SeekBarPreference
+            android:defaultValue="35"
+            android:dependency="checkbox_enable_microphone"
+            android:key="seekbar_mic_df_max_erb_db"
+            android:max="35"
+            android:summary="@string/summary_seekbar_mic_df_max_erb_db"
+            android:text="@string/suffix_seekbar_mic_df_db"
+            android:title="@string/title_seekbar_mic_df_max_erb_db"
+            app:iconSpaceReserved="false"
+            seekbar:min="-15" />
+        <com.limelight.preferences.SeekBarPreference
+            android:defaultValue="35"
+            android:dependency="checkbox_enable_microphone"
+            android:key="seekbar_mic_df_max_df_db"
+            android:max="35"
+            android:summary="@string/summary_seekbar_mic_df_max_df_db"
+            android:text="@string/suffix_seekbar_mic_df_db"
+            android:title="@string/title_seekbar_mic_df_max_df_db"
+            app:iconSpaceReserved="false"
+            seekbar:min="-15" />
         <CheckBoxPreference
             android:defaultValue="false"
             android:dependency="checkbox_enable_microphone"
