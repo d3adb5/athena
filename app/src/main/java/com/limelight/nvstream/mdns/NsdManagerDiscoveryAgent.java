@@ -13,6 +13,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +27,17 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
     private NsdManager.DiscoveryListener activeListener;
     private final HashMap<String, NsdManager.ServiceInfoCallback> serviceCallbacks = new HashMap<>();
     private final ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    private boolean closed;
+    // NsdManager keeps the supplied Executor until asynchronous unregistration
+    // completes. Give it a lifecycle gate, never the worker that close() shuts
+    // down: a late framework dispatch must not throw on NsdManager's own thread.
+    private final Executor callbackExecutor = command -> {
+        synchronized (listenerLock) {
+            if (!closed) {
+                executor.execute(command);
+            }
+        }
+    };
 
     private NsdManager.DiscoveryListener createDiscoveryListener() {
         return new NsdManager.DiscoveryListener() {
@@ -66,7 +78,7 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
                 synchronized (listenerLock) {
                     if (pendingListener != this) {
                         // If we registered another discovery listener in the meantime, stop this one
-                        nsdManager.stopServiceDiscovery(this);
+                        stopListener(this);
                         return;
                     }
 
@@ -107,8 +119,14 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
                     NsdManager.ServiceInfoCallback serviceInfoCallback = new NsdManager.ServiceInfoCallback() {
                         @Override
                         public void onServiceInfoCallbackRegistrationFailed(int errorCode) {
-                            LimeLog.severe("NSD: Service info callback registration failed: " + errorCode);
-                            listener.notifyDiscoveryFailure(new RuntimeException("onServiceInfoCallbackRegistrationFailed(): " + errorCode));
+                            synchronized (listenerLock) {
+                                if (closed || activeListener != discoveryListener || serviceCallbacks.get(serviceKey) != this) {
+                                    return;
+                                }
+                                serviceCallbacks.remove(serviceKey);
+                                LimeLog.severe("NSD: Service info callback registration failed: " + errorCode);
+                                listener.notifyDiscoveryFailure(new RuntimeException("onServiceInfoCallbackRegistrationFailed(): " + errorCode));
+                            }
                         }
 
                         @Override
@@ -135,7 +153,7 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
 
                     serviceCallbacks.put(serviceKey, serviceInfoCallback);
                     try {
-                        nsdManager.registerServiceInfoCallback(nsdServiceInfo, executor, serviceInfoCallback);
+                        nsdManager.registerServiceInfoCallback(nsdServiceInfo, callbackExecutor, serviceInfoCallback);
                     } catch (RuntimeException e) {
                         serviceCallbacks.remove(serviceKey);
                         listener.notifyDiscoveryFailure(e);
@@ -172,9 +190,14 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
     public void startDiscovery(int discoveryIntervalMs) {
         synchronized (listenerLock) {
             // Register a new service discovery listener if there's not already one starting or running
-            if (pendingListener == null && activeListener == null) {
+            if (!closed && pendingListener == null && activeListener == null) {
                 pendingListener = createDiscoveryListener();
-                nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, pendingListener);
+                try {
+                    nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, pendingListener);
+                } catch (RuntimeException e) {
+                    pendingListener = null;
+                    throw e;
+                }
             }
         }
     }
@@ -191,11 +214,7 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
             if (activeListener != null) {
                 NsdManager.DiscoveryListener stopping = activeListener;
                 activeListener = null;
-                try {
-                    nsdManager.stopServiceDiscovery(stopping);
-                } catch (RuntimeException e) {
-                    LimeLog.warning("NSD: Unable to stop discovery: " + e);
-                }
+                stopListener(stopping);
 
                 // Even though listener stoppage is asynchronous, the listener is gone as far as
                 // we're concerned. We null this right now to ensure pending callbacks know it's
@@ -213,6 +232,15 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
         }
     }
 
+    private void stopListener(NsdManager.DiscoveryListener discoveryListener) {
+        try {
+            nsdManager.stopServiceDiscovery(discoveryListener);
+        } catch (RuntimeException e) {
+            // A delayed onDiscoveryStarted() can arrive after cancellation.
+            LimeLog.warning("NSD: Unable to stop discovery: " + e);
+        }
+    }
+
     private void unregisterCallback(NsdManager.ServiceInfoCallback callback) {
         try {
             nsdManager.unregisterServiceInfoCallback(callback);
@@ -223,10 +251,18 @@ public class NsdManagerDiscoveryAgent extends MdnsDiscoveryAgent {
 
     @Override
     public void close() {
-        try {
-            stopDiscovery();
-        } finally {
-            executor.shutdown();
+        synchronized (listenerLock) {
+            if (closed) {
+                return;
+            }
+            // Serialize framework submissions with shutdown, including callbacks
+            // dispatched after unregisterServiceInfoCallback() returns.
+            closed = true;
+            try {
+                stopDiscovery();
+            } finally {
+                executor.shutdown();
+            }
         }
     }
 
