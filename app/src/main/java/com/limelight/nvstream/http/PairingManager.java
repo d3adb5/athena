@@ -1,7 +1,5 @@
 package com.limelight.nvstream.http;
 
-import android.widget.Toast;
-
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.engines.AESLightEngine;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -16,6 +14,10 @@ import java.security.*;
 import java.security.cert.*;
 import java.util.Arrays;
 import java.util.Locale;
+import java.net.SocketTimeoutException;
+
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLProtocolException;
 
 public class PairingManager {
 
@@ -184,7 +186,33 @@ public class PairingManager {
         return serverCert;
     }
     
-    public PairState pair(String serverInfo, String pin, String passphrase) throws IOException, XmlPullParserException {
+    public synchronized PairState pair(String serverInfo, String pin, String passphrase) throws IOException, XmlPullParserException {
+        boolean paired = false;
+        serverCert = null;
+        try {
+            PairState result = performPairing(serverInfo, pin, passphrase);
+            paired = result == PairState.PAIRED;
+            return result;
+        } catch (IOException | XmlPullParserException | RuntimeException e) {
+            // Do not log request URLs, PINs, OTP passphrases or certificate material.
+            LimeLog.warning("Pairing interrupted: " + e.getClass().getSimpleName());
+            throw e;
+        } finally {
+            if (!paired) {
+                serverCert = null;
+                try {
+                    // Also cancel sessions interrupted by I/O or malformed responses.
+                    // Otherwise a subsequent attempt can collide with the old phase.
+                    http.unpair();
+                } catch (IOException e) {
+                    // Cleanup must not replace the original result or exception.
+                    LimeLog.warning("Pairing cleanup failed: " + e.getClass().getSimpleName());
+                }
+            }
+        }
+    }
+
+    private PairState performPairing(String serverInfo, String pin, String passphrase) throws IOException, XmlPullParserException {
         PairingHashAlgorithm hashAlgo;
 
         int serverMajorVersion = http.getServerMajorVersion(serverInfo);
@@ -228,6 +256,7 @@ public class PairingManager {
         
         // Send the salt and get the server cert. This doesn't have a read timeout
         // because the user must enter the PIN before the server responds
+        LimeLog.info("Pairing phase: waiting for PIN approval");
         String getCert = http.executePairingCommand(pairingArguments, false);
         if (!NvHTTP.getXmlString(getCert, "paired", true).equals("1")) {
             return PairState.FAILED;
@@ -238,7 +267,6 @@ public class PairingManager {
         if (serverCert == null) {
             // Attempting to pair while another device is pairing will cause GFE
             // to give an empty cert in the response.
-            http.unpair();
             return PairState.ALREADY_IN_PROGRESS;
         }
 
@@ -250,9 +278,9 @@ public class PairingManager {
         byte[] encryptedChallenge = encryptAes(randomChallenge, aesKey);
         
         // Send the encrypted challenge to the server
+        LimeLog.info("Pairing phase: client challenge");
         String challengeResp = http.executePairingCommand("clientchallenge="+bytesToHex(encryptedChallenge), true);
         if (!NvHTTP.getXmlString(challengeResp, "paired", true).equals("1")) {
-            http.unpair();
             return PairState.FAILED;
         }
         
@@ -267,9 +295,9 @@ public class PairingManager {
         byte[] clientSecret = generateRandomBytes(16);
         byte[] challengeRespHash = hashAlgo.hashData(concatBytes(concatBytes(serverChallenge, cert.getSignature()), clientSecret));
         byte[] challengeRespEncrypted = encryptAes(challengeRespHash, aesKey);
+        LimeLog.info("Pairing phase: server challenge response");
         String secretResp = http.executePairingCommand("serverchallengeresp="+bytesToHex(challengeRespEncrypted), true);
         if (!NvHTTP.getXmlString(secretResp, "paired", true).equals("1")) {
-            http.unpair();
             return PairState.FAILED;
         }
         
@@ -281,7 +309,6 @@ public class PairingManager {
         // Ensure the authenticity of the data
         if (!verifySignature(serverSecret, serverSignature, serverCert)) {
             // Cancel the pairing process
-            http.unpair();
             
             // Looks like a MITM
             return PairState.FAILED;
@@ -291,7 +318,6 @@ public class PairingManager {
         byte[] serverChallengeRespHash = hashAlgo.hashData(concatBytes(concatBytes(randomChallenge, serverCert.getSignature()), serverSecret));
         if (!Arrays.equals(serverChallengeRespHash, serverResponse)) {
             // Cancel the pairing process
-            http.unpair();
             
             // Probably got the wrong PIN
             return PairState.PIN_WRONG;
@@ -299,22 +325,63 @@ public class PairingManager {
         
         // Send the server our signed secret
         byte[] clientPairingSecret = concatBytes(clientSecret, signData(clientSecret, pk));
+        LimeLog.info("Pairing phase: client secret verification");
         String clientSecretResp = http.executePairingCommand("clientpairingsecret="+bytesToHex(clientPairingSecret), true);
         if (!NvHTTP.getXmlString(clientSecretResp, "paired", true).equals("1")) {
-            http.unpair();
             return PairState.FAILED;
         }
         
         // Do the initial challenge (seems necessary for us to show as paired)
-        String pairChallenge = http.executePairingChallenge();
+        LimeLog.info("Pairing phase: HTTPS confirmation");
+        String pairChallenge = confirmPairing();
         if (!NvHTTP.getXmlString(pairChallenge, "paired", true).equals("1")) {
-            http.unpair();
             return PairState.FAILED;
         }
 
         return PairState.PAIRED;
     }
     
+    private String confirmPairing() throws IOException, XmlPullParserException {
+        // Only this final, read-only confirmation is safe to repeat. Replaying
+        // any challenge command could advance the server's state twice.
+        for (int attempt = 0; ; attempt++) {
+            try {
+                String response = http.executePairingChallenge();
+                NvHTTP.getXmlString(response, "paired", true);
+                return response;
+            } catch (IOException e) {
+                if (attempt >= 2 || !canRetryConfirmation(e)) {
+                    throw e;
+                }
+                LimeLog.info("Retrying pairing HTTPS confirmation (attempt " + (attempt + 2) + "/3)");
+                try {
+                    Thread.sleep(250L << attempt);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new InterruptedIOException("Pairing confirmation interrupted");
+                }
+            }
+        }
+    }
+
+    private static boolean canRetryConfirmation(IOException error) {
+        if (Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof CertificateException || cause instanceof SSLPeerUnverifiedException ||
+                    cause instanceof SSLProtocolException) {
+                return false;
+            }
+        }
+        if (error instanceof HostHttpResponseException) {
+            int code = ((HostHttpResponseException) error).getErrorCode();
+            // A host can briefly reject the new client while publishing its cert.
+            return code == 401 || code == 500 || code == 502 || code == 503 || code == 504;
+        }
+        return !(error instanceof InterruptedIOException) || error instanceof SocketTimeoutException;
+    }
+
     private interface PairingHashAlgorithm {
         int getHashLength();
         byte[] hashData(byte[] data);

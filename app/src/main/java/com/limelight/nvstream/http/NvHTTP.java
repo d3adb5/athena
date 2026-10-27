@@ -536,13 +536,13 @@ public class NvHTTP {
             String respString = resp.string();
             resp.close();
 
-            if (verbose && !path.equals("serverinfo")) {
+            if (verbose && !path.equals("serverinfo") && !path.equals("pair")) {
                 LimeLog.info(getCompleteUrl(baseUrl, path, query)+" -> "+respString);
             }
 
             return respString;
         } catch (IOException e) {
-            if (verbose && !path.equals("serverinfo")) {
+            if (verbose && !path.equals("serverinfo") && !path.equals("pair")) {
                 LimeLog.warning(getCompleteUrl(baseUrl, path, query)+" -> "+e.getMessage());
                 e.printStackTrace();
             }
@@ -905,8 +905,15 @@ public class NvHTTP {
     }
 
     String executePairingCommand(String additionalArguments, boolean enableReadTimeout) throws HostHttpResponseException, IOException {
-        return openHttpConnectionToString(enableReadTimeout ? httpClientLongConnectTimeout : httpClientLongConnectNoReadTimeout,
-                baseUrlHttp, "pair", "updateState=1&" + additionalArguments);
+        // Pairing commands change the host's handshake state. A transparent GET
+        // retry after a lost response can replay a challenge and invalidate it.
+        OkHttpClient client = (enableReadTimeout ? httpClientLongConnectTimeout : httpClientLongConnectNoReadTimeout)
+                .newBuilder()
+                .retryOnConnectionFailure(false)
+                .followRedirects(false)
+                .followSslRedirects(false)
+                .build();
+        return openHttpConnectionToString(client, baseUrlHttp, "pair", "updateState=1&" + additionalArguments);
     }
 
     String executePairingChallenge() throws HostHttpResponseException, IOException {

@@ -3,6 +3,7 @@ package com.limelight;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.limelight.binding.PlatformBinding;
@@ -79,6 +80,9 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     private ShortcutHelper shortcutHelper;
     private ComputerManagerService.ComputerManagerBinder managerBinder;
     private boolean freezeUpdates, runningPolling, inForeground, completeOnCreateCalled;
+    // Pairing uses one PIN dialog and one client identity, including across
+    // activity recreation. Do not run concurrent handshakes from repeated taps.
+    private static final AtomicBoolean pairingInProgress = new AtomicBoolean();
     private ComputerDetails.AddressTuple pendingPairingAddress;
     private String pendingPairingPin, pendingPairingPassphrase;
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -293,7 +297,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     private void startComputerUpdates() {
         // Only allow polling to start if we're bound to CMS, polling is not already running,
         // and our activity is in the foreground.
-        if (managerBinder != null && !runningPolling && inForeground) {
+        if (managerBinder != null && !runningPolling && inForeground && !pairingInProgress.get()) {
             freezeUpdates = false;
             managerBinder.startPolling(new ComputerManagerListener() {
                 @Override
@@ -499,6 +503,10 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
             return;
         }
 
+        if (!pairingInProgress.compareAndSet(false, true)) {
+            return;
+        }
+
         Toast.makeText(PcView.this, getResources().getString(R.string.pairing), Toast.LENGTH_SHORT).show();
         new Thread(new Runnable() {
             @Override
@@ -574,8 +582,13 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 } catch (FileNotFoundException e) {
                     message = getResources().getString(R.string.error_404);
                 } catch (XmlPullParserException | IOException e) {
-                    e.printStackTrace();
+                    LimeLog.warning("Pairing failed: " + e.getClass().getSimpleName());
                     message = e.getMessage();
+                } catch (RuntimeException e) {
+                    LimeLog.warning("Pairing failed: " + e.getClass().getSimpleName());
+                    message = getResources().getString(R.string.pair_fail);
+                } finally {
+                    pairingInProgress.set(false);
                 }
 
                 Dialog.closeDialogs();
