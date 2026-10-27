@@ -6,3 +6,6 @@
 	path = app/src/main/webrtc-apm/webrtc-audio-processing
 	url = https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git
 	ignore = dirty
+[submodule "app/src/main/deepfilter/DeepFilterNet"]
+	path = app/src/main/deepfilter/DeepFilterNet
+	url = https://github.com/Rikorose/DeepFilterNet.git

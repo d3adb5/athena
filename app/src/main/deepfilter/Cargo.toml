@@ -1,0 +1,25 @@
+# JNI shim around DeepFilterNet (submodule, v0.5.6) with its embedded DFN3 model; backs
+# com.limelight.binding.audio.DeepFilterNet. Built per ABI by build.sh via cargo-ndk.
+[package]
+name = "deepfilter"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "deepfilter"
+crate-type = ["cdylib"]
+
+[dependencies]
+# Not on crates.io: the DeepFilterNet submodule
+deep_filter = { path = "DeepFilterNet/libDF", default-features = false, features = ["tract", "default-model"] }
+ndarray = "^0.15"
+jni = { version = "0.21", default-features = false }
+
+[profile.release]
+# No unwinding across JNI
+panic = "abort"
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

@@ -69,6 +69,7 @@ The main repo had stayed silent for 5 months, with nobody actually responding to
 ## Building
 * Install Android Studio and the Android NDK
 * Run ‘git submodule update --init --recursive’ from within moonlight-android/
+* Microphone noise suppression (DeepFilterNet3) needs Rust with the Android targets and cargo-ndk: ‘rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android’, ‘cargo install cargo-ndk’
 * In moonlight-android/, create a file called ‘local.properties’. Add an ‘ndk.dir=’ property to the local.properties file and set it equal to your NDK directory.
 * Build the APK using Android Studio or gradle
 
