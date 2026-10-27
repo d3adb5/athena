@@ -910,6 +910,9 @@ public class NvHTTP {
         OkHttpClient client = (enableReadTimeout ? httpClientLongConnectTimeout : httpClientLongConnectNoReadTimeout)
                 .newBuilder()
                 .retryOnConnectionFailure(false)
+                // Bound the human PIN wait too, so abandoning its dialog cannot
+                // hold the single pairing operation open indefinitely.
+                .callTimeout(enableReadTimeout ? 30 : 180, TimeUnit.SECONDS)
                 .followRedirects(false)
                 .followSslRedirects(false)
                 .build();
