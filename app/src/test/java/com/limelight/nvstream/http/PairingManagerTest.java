@@ -186,6 +186,21 @@ public class PairingManagerTest {
     }
 
     @Test
+    public void wrongPinOnFirstAttemptIsRejectedBeforeRetryCanPair() throws Exception {
+        wrongPin = true;
+        assertEquals(PairState.PIN_WRONG, pair());
+        assertNull(manager.getPairedCert());
+        verify(http, times(1)).unpair();
+        verify(http, never()).executePairingChallenge();
+
+        wrongPin = false;
+        assertEquals(PairState.PAIRED, pair());
+        assertEquals(serverCert, manager.getPairedCert());
+        verify(http, times(1)).unpair();
+        verify(http, times(1)).executePairingChallenge();
+    }
+
+    @Test
     public void tamperedServerSecretIsRejectedAndCleanedUp() throws Exception {
         corruptSignature = true;
         assertEquals(PairState.FAILED, pair());
