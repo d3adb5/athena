@@ -109,6 +109,24 @@ public class CollapsiblePreferenceCategory extends PreferenceCategory {
         });
     }
 
+    private int nextChildOrder;
+
+    @Override
+    public boolean addPreference(Preference preference) {
+        if (preference != collapse) {
+            // AndroidX assigns 0, 1, 2, ... to XML children. Reserve slot N
+            // for the collapse control; otherwise child N also gets order N,
+            // and a title-based tie can put the control in the wrong place.
+            if (collapsedCount != Integer.MAX_VALUE
+                    && preference.getOrder() == Integer.MAX_VALUE) {
+                int order = nextChildOrder;
+                preference.setOrder(order < collapsedCount ? order : order + 1);
+            }
+            nextChildOrder++;
+        }
+        return super.addPreference(preference);
+    }
+
     @Override
     protected void onAttachedToHierarchy(PreferenceManager preferenceManager) {
         super.onAttachedToHierarchy(preferenceManager);
