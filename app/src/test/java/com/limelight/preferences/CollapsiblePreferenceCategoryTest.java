@@ -55,6 +55,50 @@ public class CollapsiblePreferenceCategoryTest {
     }
 
     @Test
+    public void collapseControlReplacesExpandControlAtSamePosition() {
+        Context context = new androidx.appcompat.view.ContextThemeWrapper(
+                ApplicationProvider.getApplicationContext(), R.style.AppTheme);
+        PreferenceManager manager = new PreferenceManager(context);
+        PreferenceScreen screen = manager.createPreferenceScreen(context);
+        manager.setPreferences(screen);
+        manager.inflateFromResource(context, R.xml.preferences, screen);
+        PreferenceGroupAdapter adapter = new PreferenceGroupAdapter(screen);
+
+        String expandTitle = context.getString(androidx.preference.R.string.expand_button_title);
+        int expandedAt = findPositionByTitle(adapter, expandTitle);
+        assertTrue(expandedAt >= 0);
+        adapter.getItem(expandedAt).performClick();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+        int collapsedAt = findPositionByKey(adapter, "category_video_settings_collapse");
+        assertEquals("The up arrow must replace the down arrow in-place", expandedAt, collapsedAt);
+        adapter.getItem(collapsedAt).performClick();
+        Shadows.shadowOf(Looper.getMainLooper()).idle();
+        assertEquals("The down arrow must return to the same place",
+                expandedAt, findPositionByTitle(adapter, expandTitle));
+    }
+
+    private int findPositionByTitle(PreferenceGroupAdapter adapter, String title) {
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            Preference item = adapter.getItem(i);
+            if (title.contentEquals(item.getTitle() == null ? "" : item.getTitle())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int findPositionByKey(PreferenceGroupAdapter adapter, String key) {
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            Preference item = adapter.getItem(i);
+            if (key.equals(item.getKey())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Test
     public void restoringExpandedStateKeepsCollapseActionAvailable() {
         Context context = new androidx.appcompat.view.ContextThemeWrapper(
                 ApplicationProvider.getApplicationContext(), R.style.AppTheme);
