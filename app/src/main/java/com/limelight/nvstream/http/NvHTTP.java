@@ -57,6 +57,7 @@ import com.limelight.hestia.HestiaCapabilities;
 import com.limelight.hestia.HestiaHostStatus;
 import com.limelight.hestia.HestiaPermissions;
 import com.limelight.hestia.HestiaSessionRequest;
+import com.limelight.hestia.HestiaStreamInfo;
 import okhttp3.ConnectionPool;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -800,6 +801,14 @@ public class NvHTTP {
             return HestiaHostStatus.legacy();
         }
         return HestiaHostStatus.probe(this::hestiaGet, knownHermes);
+    }
+
+    /** How Hermes serves the stream, or null when the host does not say. */
+    public HestiaStreamInfo getHestiaStreamInfo() throws IOException {
+        if (serverCert == null) {
+            return null;
+        }
+        return HestiaStreamInfo.parse(hestiaGet(HestiaApi.STREAM_INFO));
     }
 
     /** Submit session hints; inspect {@link HestiaApiResponse#isOk()} and its error. */

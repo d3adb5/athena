@@ -35,6 +35,7 @@ import com.limelight.hestia.HestiaCapabilities;
 import com.limelight.hestia.HestiaPermissions;
 import com.limelight.hestia.HestiaSessionRequest;
 import com.limelight.hestia.HestiaStatusUi;
+import com.limelight.hestia.HestiaStreamInfo;
 import com.limelight.nvstream.NvConnection;
 import com.limelight.nvstream.NvConnectionListener;
 import com.limelight.nvstream.StreamConfiguration;
@@ -294,6 +295,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
     private boolean clipboardSyncRunning = false;
 
     private NvHTTP httpConn;
+    private StreamConfiguration streamConfig;
 
     public interface GameMenuCallbacks {
         void showMenu(GameInputDevice devic);
@@ -772,6 +774,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         // Initialize the connection
         MoonBridge.setMouseWiggleOnConnect(prefConfig.connectMouseWiggle);
+        streamConfig = config;
         conn = new NvConnection(getApplicationContext(),
                 new ComputerDetails.AddressTuple(host, port),
                 httpsPort, uniqueId, config,
@@ -3840,6 +3843,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                     usbDriverServiceConnection, Service.BIND_AUTO_CREATE);
         }
 
+        showHestiaStreamInfo();
+
         // Report this shortcut being used (off the main thread to prevent ANRs)
         ComputerDetails computer = new ComputerDetails();
         computer.name = pcName;
@@ -3850,6 +3855,71 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             // This may be null if launched from the "Resume Session" PC context menu item
             shortcutHelper.reportGameLaunched(computer, app);
         }
+    }
+
+    /**
+     * Say for a few seconds how Hermes serves this stream: what it captures,
+     * the stream's size, rate and codec, the encoder and GPU, and the network
+     * latency, so the user sees it is working as intended. Hosts that do not
+     * report it, and a stream that has already ended, show nothing.
+     */
+    private void showHestiaStreamInfo() {
+        if (httpConn == null || streamConfig == null) {
+            return;
+        }
+        final NvHTTP http = httpConn;
+        final StreamConfiguration config = streamConfig;
+        new Thread(() -> {
+            HestiaStreamInfo info;
+            try {
+                info = http.getHestiaStreamInfo();
+            } catch (Exception e) {
+                LimeLog.info("Hermes stream info unavailable: " + e.getMessage());
+                return;
+            }
+            if (info == null) {
+                return;
+            }
+
+            String message;
+            if (!info.isOk()) {
+                message = getString(R.string.hestia_stream_info_failed, info.getFailure());
+            } else {
+                String codec;
+                int format = decoderRenderer != null ? decoderRenderer.getActiveVideoFormat() : 0;
+                if ((format & MoonBridge.VIDEO_FORMAT_MASK_AV1) != 0) {
+                    codec = "AV1";
+                } else if ((format & MoonBridge.VIDEO_FORMAT_MASK_H265) != 0) {
+                    codec = "HEVC";
+                } else if ((format & MoonBridge.VIDEO_FORMAT_MASK_PYROWAVE) != 0) {
+                    codec = "PyroWave";
+                } else {
+                    codec = "H.264";
+                }
+                if ((format & MoonBridge.VIDEO_FORMAT_MASK_10BIT) != 0) {
+                    codec += " HDR";
+                }
+                // The estimate needs a few round trips; a second in it has them.
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    return;
+                }
+                long rtt = MoonBridge.getEstimatedRttInfo();
+                String latency = rtt != -1 ? getString(R.string.hestia_stream_info_latency, (int) (rtt >> 32)) : "";
+                message = getString(R.string.hestia_stream_info,
+                        HestiaStreamInfo.sentenceCase(info.getCapture()),
+                        config.getWidth(), config.getHeight(), config.getLaunchRefreshRate(), codec,
+                        HestiaStreamInfo.encoderName(info.getEncoder()),
+                        HestiaStreamInfo.gpuName(info.getGpu())) + latency;
+            }
+            final String text = message;
+            runOnUiThread(() -> {
+                if (connected) {
+                    Toast.makeText(Game.this, text, Toast.LENGTH_LONG).show();
+                }
+            });
+        }, "HestiaStreamInfo").start();
     }
 
     @Override

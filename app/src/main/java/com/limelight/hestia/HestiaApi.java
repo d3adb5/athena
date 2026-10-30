@@ -12,6 +12,7 @@ public final class HestiaApi {
     public static final String DISPLAY_STATUS = "api/hestia/v1/display/status";
     public static final String DISPLAY_RECOVER = "api/hestia/v1/display/recover";
     public static final String SESSION_PREPARE = "api/hestia/v1/session/prepare";
+    public static final String STREAM_INFO = "api/hestia/v1/stream/info";
 
     /**
      * Minimal request surface so status evaluation can be unit tested without
