@@ -3916,10 +3916,48 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             final String text = message;
             runOnUiThread(() -> {
                 if (connected) {
-                    Toast.makeText(Game.this, text, Toast.LENGTH_LONG).show();
+                    showStreamInfoOverlay(text);
                 }
             });
         }, "HestiaStreamInfo").start();
+    }
+
+    /**
+     * A toast would cut the message to two lines on Android 12 and later, so
+     * show every line in a box of its own over the top of the stream. It takes
+     * no touches, so input goes on reaching the stream beneath it.
+     */
+    private void showStreamInfoOverlay(String text) {
+        if (!(rootView instanceof FrameLayout)) {
+            Toast.makeText(this, text, Toast.LENGTH_LONG).show();
+            return;
+        }
+        final FrameLayout root = (FrameLayout) rootView;
+        final float density = getResources().getDisplayMetrics().density;
+        final TextView view = new TextView(this);
+        view.setText(text);
+        view.setTextColor(0xFFFFFFFF);
+        view.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 14);
+        view.setGravity(Gravity.CENTER);
+        view.setLineSpacing(0, 1.15f);
+        int padH = (int) (16 * density);
+        int padV = (int) (10 * density);
+        view.setPadding(padH, padV, padH, padV);
+        android.graphics.drawable.GradientDrawable background = new android.graphics.drawable.GradientDrawable();
+        background.setColor(0xCC000000);
+        background.setCornerRadius(12 * density);
+        view.setBackground(background);
+        view.setClickable(false);
+        view.setFocusable(false);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        params.topMargin = (int) (16 * density);
+        root.addView(view, params);
+        view.setAlpha(0f);
+        view.animate().alpha(1f).setDuration(200).start();
+        view.postDelayed(() -> view.animate().alpha(0f).setDuration(400)
+                .withEndAction(() -> root.removeView(view)).start(), 4000);
     }
 
     @Override
