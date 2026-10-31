@@ -144,6 +144,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
     private final static int OPEN_MANAGEMENT_PAGE_ID = 20;
     private final static int PAIR_ID_OTP = 21;
     private final static int HESTIA_STATUS_ID = 22;
+    private final static int HESTIA_REPORT_ID = 23;
 
     private void initializeViews() {
         setContentView(TvUi.pcLayout(this));
@@ -448,6 +449,10 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
 
         if (showHestia) {
             menu.add(Menu.NONE, HESTIA_STATUS_ID, 0, getResources().getString(R.string.pcview_menu_hestia_status));
+            if (computer.details.state == ComputerDetails.State.ONLINE &&
+                    computer.details.pairState == PairingManager.PairState.PAIRED) {
+                menu.add(Menu.NONE, HESTIA_REPORT_ID, 0, getResources().getString(R.string.pcview_menu_hestia_report));
+            }
         }
 
         // Inflate the context menu
@@ -842,6 +847,14 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
                 }
                 HestiaStatusUi.showStatusDialog(PcView.this, computer.details,
                         managerBinder.getUniqueId(), () -> pcGridAdapter.notifyDataSetChanged());
+                return true;
+
+            case HESTIA_REPORT_ID:
+                if (managerBinder == null) {
+                    Toast.makeText(PcView.this, getResources().getString(R.string.error_manager_not_running), Toast.LENGTH_LONG).show();
+                    return true;
+                }
+                HestiaStatusUi.shareDiagnosticReport(PcView.this, computer.details, managerBinder.getUniqueId());
                 return true;
 
             case TEST_NETWORK_ID:

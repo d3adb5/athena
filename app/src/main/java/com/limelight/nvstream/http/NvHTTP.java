@@ -756,7 +756,7 @@ public class NvHTTP {
         try (Response response = performAndroidTlsHack(httpClientShortConnectTimeout).newCall(request).execute()) {
             ResponseBody body = response.body();
             String text = body != null ? body.string() : "";
-            if (verbose && !path.contains("clipboard")) {
+            if (verbose && !path.contains("clipboard") && !path.contains("diagnostics/report")) {
                 LimeLog.info(url + " -> " + response.code() + " " + text);
             }
             return new HestiaApiResponse(response.code(), text);
@@ -801,6 +801,19 @@ public class NvHTTP {
             return HestiaHostStatus.legacy();
         }
         return HestiaHostStatus.probe(this::hestiaGet, knownHermes);
+    }
+
+    /**
+     * The host's diagnostic report, as plain text: its machine, GPUs, recent
+     * streams, warnings and log. Null when the host has none to give (a host
+     * without the endpoint, or a client without view permission).
+     */
+    public String getHestiaDiagnosticReport() throws IOException {
+        if (serverCert == null) {
+            return null;
+        }
+        HestiaApiResponse response = hestiaGet(HestiaApi.DIAGNOSTIC_REPORT);
+        return response.isHttpSuccess() ? response.getBody() : null;
     }
 
     /** How Hermes serves the stream, or null when the host does not say. */

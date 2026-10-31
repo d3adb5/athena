@@ -3,6 +3,8 @@ package com.limelight.hestia;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.format.DateUtils;
@@ -12,6 +14,7 @@ import android.graphics.Typeface;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.limelight.LimeLog;
 import com.limelight.R;
@@ -22,7 +25,13 @@ import com.limelight.nvstream.http.PairingManager;
 import com.limelight.utils.ServerHelper;
 import com.limelight.utils.SpinnerDialog;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Turns a {@link HestiaHostStatus} into icons, colours and localised text,
@@ -390,6 +399,58 @@ public final class HestiaStatusUi {
                 }
             });
         }, "HestiaDisplayRecover").start();
+    }
+
+    /**
+     * Fetch the host's diagnostic report (off the UI thread) and hand it to
+     * the share sheet, to save, mail or attach to an issue. The file stays in
+     * the app's cache, where the system may clear it.
+     */
+    public static void shareDiagnosticReport(final Activity activity, final ComputerDetails computer,
+            final String uniqueId) {
+        final SpinnerDialog spinner = SpinnerDialog.displayDialog(activity,
+                activity.getString(R.string.hestia_report_title, computer.name),
+                activity.getString(R.string.hestia_report_fetching), false);
+        new Thread(() -> {
+            Uri report = null;
+            try {
+                String text = createHttp(activity, computer, uniqueId).getHestiaDiagnosticReport();
+                if (text != null && !text.isEmpty()) {
+                    File directory = new File(activity.getCacheDir(), "reports");
+                    if (!directory.isDirectory() && !directory.mkdirs()) {
+                        throw new IOException("Could not create " + directory);
+                    }
+                    String stamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT).format(new Date());
+                    File file = new File(directory, "hermes-report-" + stamp + ".txt");
+                    try (FileOutputStream out = new FileOutputStream(file)) {
+                        out.write(text.getBytes(StandardCharsets.UTF_8));
+                    }
+                    report = FileProvider.getUriForFile(activity,
+                            activity.getPackageName() + ".fileprovider", file);
+                }
+            } catch (IOException | IllegalArgumentException e) {
+                LimeLog.warning("Hermes diagnostic report failed: " + e.getMessage());
+            }
+            final Uri uri = report;
+            activity.runOnUiThread(() -> {
+                spinner.dismiss();
+                if (activity.isFinishing()) {
+                    return;
+                }
+                if (uri == null) {
+                    Toast.makeText(activity, R.string.hestia_report_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                Intent share = new Intent(Intent.ACTION_SEND)
+                        .setType("text/plain")
+                        .putExtra(Intent.EXTRA_STREAM, uri)
+                        .putExtra(Intent.EXTRA_SUBJECT,
+                                activity.getString(R.string.hestia_report_title, computer.name))
+                        .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                activity.startActivity(Intent.createChooser(share,
+                        activity.getString(R.string.hestia_report_share)));
+            });
+        }, "HestiaDiagnosticReport").start();
     }
 
     private static NvHTTP createHttp(Context context, ComputerDetails computer, String uniqueId)
