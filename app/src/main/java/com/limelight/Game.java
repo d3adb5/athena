@@ -3907,11 +3907,16 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 }
                 long rtt = MoonBridge.getEstimatedRttInfo();
                 String latency = rtt != -1 ? getString(R.string.hestia_stream_info_latency, (int) (rtt >> 32)) : "";
+                // Hermes names no GPU for a software encoder, or where it cannot tell.
+                String encoder = HestiaStreamInfo.encoderName(info.getEncoder());
+                String gpu = HestiaStreamInfo.gpuName(info.getGpu());
+                if (!gpu.isEmpty()) {
+                    encoder = getString(R.string.hestia_stream_info_gpu, encoder, gpu);
+                }
                 message = getString(R.string.hestia_stream_info,
                         HestiaStreamInfo.sentenceCase(info.getCapture()),
                         config.getWidth(), config.getHeight(), config.getLaunchRefreshRate(), codec,
-                        HestiaStreamInfo.encoderName(info.getEncoder()),
-                        HestiaStreamInfo.gpuName(info.getGpu())) + latency;
+                        encoder) + latency;
             }
             final String text = message;
             runOnUiThread(() -> {

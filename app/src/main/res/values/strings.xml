@@ -818,7 +818,8 @@
     <string name="hestia_clipboard_no_session">no desktop session</string>
 
     <string name="hestia_preparing_session">Preparing the Hermes session…</string>
-    <string name="hestia_stream_info">Hermes ✓ %1$s\n%2$d×%3$d at %4$d FPS · %5$s · %6$s on %7$s</string>
+    <string name="hestia_stream_info">Hermes ✓ %1$s\n%2$d×%3$d at %4$d FPS · %5$s · %6$s</string>
+    <string name="hestia_stream_info_gpu">%1$s on %2$s</string>
     <string name="hestia_stream_info_latency">\nNetwork latency %1$d ms</string>
     <string name="hestia_stream_info_failed">Hermes: %1$s</string>
     <string name="hestia_prepare_ok">Hermes: virtual display prepared for %1$d×%2$d at %3$d FPS.</string>
