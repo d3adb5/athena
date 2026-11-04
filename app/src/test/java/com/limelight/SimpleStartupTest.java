@@ -41,7 +41,7 @@ public class SimpleStartupTest {
     public void testApplicationCreation() {
         // Test basic application creation
         assertTrue("Robolectric must initialize our real Application class",
-                context instanceof ArtemisApplication);
+                context instanceof AthenaApplication);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class SimpleStartupTest {
         try {
             // ApplicationProvider returns a Robolectric-attached Application.
             // A manually constructed Application has no base Context.
-            ArtemisApplication app = (ArtemisApplication) context;
+            AthenaApplication app = (AthenaApplication) context;
             app.onCreate();
 
             // Should now work without crashing
