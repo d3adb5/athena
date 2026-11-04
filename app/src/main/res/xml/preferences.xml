@@ -7,6 +7,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_video_settings"
+        app:initialExpandedChildrenCount="3"
         android:title="@string/category_video_settings"
         app:iconSpaceReserved="false">
         <ListPreference
@@ -290,6 +291,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_gamepad_settings"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/category_gamepad_settings"
         app:iconSpaceReserved="false">
         <com.limelight.preferences.SeekBarPreference
@@ -403,6 +405,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_input_settings"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/category_input_settings"
         app:iconSpaceReserved="false">
         <ListPreference
@@ -563,6 +566,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_ui_settings"
+        app:initialExpandedChildrenCount="3"
         android:title="@string/category_ui_settings"
         app:iconSpaceReserved="false">
         <CheckBoxPreference
@@ -707,6 +711,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_onscreen_controls"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/category_on_screen_controls_settings"
         app:iconSpaceReserved="false">
         <CheckBoxPreference
@@ -801,6 +806,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_special_key_layout"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/title_special_key_layout"
         app:iconSpaceReserved="false">
 
@@ -870,6 +876,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_virtual_trackpad_settings"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/title_virtual_trackpad_settings"
         app:iconSpaceReserved="false">
 
@@ -946,6 +953,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_advanced_settings"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/category_advanced_settings"
         app:iconSpaceReserved="false">
         <CheckBoxPreference
@@ -978,6 +986,7 @@
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_settings_misc"
+        app:initialExpandedChildrenCount="1"
         android:title="@string/title_settings_misc"
         app:iconSpaceReserved="false">
 
