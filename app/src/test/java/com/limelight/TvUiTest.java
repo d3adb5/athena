@@ -115,7 +115,7 @@ public class TvUiTest {
             }
             assertTrue("Missing optional feature: " + feature, found);
         }
-        assertEquals(R.drawable.hestia_tv_banner, info.applicationInfo.banner);
+        assertEquals(R.drawable.atv_banner, info.applicationInfo.banner);
         assertNotNull(context.getDrawable(info.applicationInfo.banner));
     }
 

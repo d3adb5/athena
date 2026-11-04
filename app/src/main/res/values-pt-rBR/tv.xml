@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tv_settings">Configurações</string>
-    <string name="tv_help_title">Hestia na TV</string>
+    <string name="tv_help_title">Streaming na TV</string>
     <string name="tv_help">Ajuda</string>
     <string name="tv_profiles">Perfis</string>
     <string name="tv_navigation_hint">Use as setas para navegar e OK para selecionar. Segure OK ou pressione Menu para mais opções.</string>
