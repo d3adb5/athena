@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432">
+  <!-- Athena's owl. 108 dp adaptive canvas at 4x: stays inside the 66 dp safe circle. Eyes and marks are cut out. -->
+  <defs>
+    <mask id="cuts">
+      <rect width="432" height="432" fill="#fff"/>
+      <circle cx="170" cy="202" r="42" fill="#000"/>
+      <circle cx="262" cy="202" r="42" fill="#000"/>
+      <circle cx="170" cy="202" r="17" fill="#fff"/>
+      <circle cx="262" cy="202" r="17" fill="#fff"/>
+      <path d="M216 232 L232 254 L216 280 L200 254 Z" fill="#000"/>
+      <path d="M168 288 L190 304 L212 288 M220 288 L242 304 L264 288 M194 318 L216 334 L238 318"
+            fill="none" stroke="#000" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <path mask="url(#cuts)" fill="#E9C46A"
+        d="M128 120 L176 146 Q216 134 256 146 L304 120 C322 172 324 228 300 276 C280 314 246 336 216 348
+           C186 336 152 314 132 276 C108 228 110 172 128 120 Z"/>
+</svg>
