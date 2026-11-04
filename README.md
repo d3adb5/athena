@@ -1,84 +1,131 @@
-# Artemis Android
+# Athena
 
-Previously named Moonlight Noir
+Athena is an Android client for [Hermes](https://github.com/MrOz59/hermes), Apollo and Sunshine. It is a fork of
+[Artemis](https://github.com/ClassicOldSong/moonlight-android) (Moonlight Noir) built for the Retroid Pocket 6 and
+other Android handhelds, and carries every feature of [Hestia](https://github.com/MrOz59/hestia-android).
 
-An open source client for [Apollo](https://github.com/ClassicOldSong/Apollo)/[Sunshine](https://github.com/LizardByte/Sunshine).
+It keeps the Artemis 20.2.6-era video path. ClassicOldSong's later frame pacing rework (latest-frame rendering,
+unified decoder latency, strict vsync, MediaTek/Qualcomm low-latency flags) regresses on the Snapdragon 8 Gen 2, so
+none of it is here.
 
-Artemis Android will allow you to stream your collection of games from your Windows PC to your Android device,
-whether in your own home or over the internet.
+Athena's package is `local.retroid.athena` (`.root` for the root build, `.debug` for debug builds). It installs
+beside Artemis (`com.limelight.noir`), Artemis RP (`local.retroid.artemis`) and Hestia (`com.mroz59.hestia`). Each is
+a separate client to the host, so pair Athena on its own.
 
-Artemis is currently the best fork of Moonlight with loads of optimizations for office usage.
+## What it adds to Artemis
 
-A more seamless experience with virtual display will be Artemis paired with [Apollo](https://github.com/ClassicOldSong/Apollo).
+From Hestia:
 
-# Features
+- Hermes session preparation: the virtual display is set up for this device's resolution, frame rate, bitrate and
+  HDR before launch, with the reason shown when Hermes can't.
+- Hermes status in the host list, the app list and at launch (encoder, display, permissions, last session), with a
+  "Restore display" action and a diagnostic report you can share from the PC menu.
+- Stream info for a few seconds after connecting: what Hermes captures, the encoder, the GPU, size, rate, codec and
+  latency.
+- Microphone streaming to hosts that support it, the mouse wiggle on connect as a setting.
+- PyroWave, an optional Vulkan wavelet codec (see below).
+- More reliable pairing (no replayed challenges, recovery after a wrong PIN, bounded PIN waits), manual IPv6
+  addresses with ports, a direct mDNS fallback when Android's discovery stalls, a fix for late discovery callbacks.
+- S Pen and stylus input, an Android TV layout in the same APK, settings categories that fold and unfold with the
+  D-pad, no global keyboard accessibility service, no phone or storage permissions.
 
-If you switch back to the main stream version, you'll be missing the following awesome features which are very unlikely to be added there:
+Its own:
 
-1. Custom virtual buttons with import and export support.
-2. [Custom resolutions](https://github.com/moonlight-stream/moonlight-android/pull/1349).
-3. Custom bitrates.
-4. [Multiple mouse mode switching](https://github.com/moonlight-stream/moonlight-android/pull/1304) (normal mouse, [multi-touch](https://github.com/moonlight-stream/moonlight-android/pull/1364), touchpad, disabled, local cursor mode).
-5. Optimized virtual gamepad skins and free joystick.
-6. External monitor mode.
-7. Joycon D-pad support.
-8. Simplified performance information display.
-9. [Game back menu](https://github.com/moonlight-stream/moonlight-android/pull/1171).
-10. Custom shortcut commands.
-11. Easy soft keyboard switching.
-12. Portrait mode.
-13. Display on top mode, useful for foldable phones.
-14. [Virtual touchpad space and sensitivity adjustment](https://github.com/moonlight-stream/moonlight-android/issues/1348#issuecomment-2236344729) for playing right-click view games, such as Warcraft.
-15. Force use device's own vibration motor (in case your gamepad's vibration is not effective).
-16. Gamepad debugging page to view gamepad vibration and gyroscope information, as well as Android kernel version information.
-17. Trackpad tap/scrolling support
-18. Natural track pad mode with touch screen
-19. Non-QWERTY keyboard layout support
-20. Quick Meta key with physical BACK button
-21. Frame rate lock fix for some devices
-22. Video scale mode: Fit/Fill/Stretch
-23. View pan/zoom support
-24. Rotate screen in-game
-25. Add option to quit app directly
-26. Samsung DeX scrolling support
-27. Proper click/scroll/right-click for trackpad on generic Android tablet when using local cursor
-28. Virtual Display integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
-29. Server Command integration with [Apollo](https://github.com/ClassicOldSong/Apollo)
-30. Clipboard sync (requires Apollo)
+- The Retroid Pocket's built-in gamepad counts as internal, so its Back button opens the game menu.
+- Microphone echo cancellation, noise suppression (Standard or DeepFilterNet3) and gain control; a microphone
+  quality setting (24-128 kbps). It never captures from `UNPROCESSED`, which the RP6 routes to an unwired mic.
+- Settings > Host ports (below).
 
-# Disclaimer
+## Ports and protocols
 
-This is the `go away` version of Moonlight Android.
+Everything Athena connects to on a host. Settings > Host ports changes each of them for every host; leave a field
+blank to use the port the host names, or the default. Set one when a router forwards a port somewhere else. A
+change takes effect on the next connection.
 
-I got kicked from Moonlight and Sunshine's Discord server literally for helping people out.
+| Setting | Protocol | Default | Used for | Blank means |
+|---|---|---|---|---|
+| HTTP | TCP | 47989 | Host info, pairing (plain HTTP) | 47989, for an address typed without a port |
+| HTTPS | TCP | 47984 | App list, launch, quit (TLS, pinned host certificate) | The port in the host's `serverinfo` |
+| Hermes API | TCP | 47990 | Hestia v1 API: capabilities, permissions, session prepare, status, display restore, stream info, diagnostic report (HTTPS, same pinned identity) | HTTPS + 6 |
+| RTSP | TCP | 48010 | Stream setup | The port in the host's launch reply |
+| Video | UDP | 47998 | Video packets | The port in the host's RTSP SETUP reply |
+| Control | UDP | 47999 | ENet control stream, which also carries input | The host's RTSP SETUP reply |
+| Audio | UDP | 48000 | Audio packets | The host's RTSP SETUP reply |
+| Microphone | UDP | 47996 | Microphone packets, only while the mic is streamed | The host's RTSP SETUP reply |
+| Wake-on-LAN | UDP | 9, 47009 | Magic packet | (a list; blank sends none to these) |
 
-This is what I got for finding a bug, opened an issue, getting no response, troubleshoot myself, fixed the issue myself, shared it by PR to the main repo hoping my efforts can help someone else during the maintainance gap.
+Not configurable:
 
-Yes, I'm going away. Fixes and improvements on this fork are not necessarily be merged to the main repo either. I have also started [a fork of Sunshine called Apollo](https://github.com/ClassicOldSong/Apollo) and will add useful features that will never get merged by the main repo shortly. [Apollo](https://github.com/ClassicOldSong/Apollo) and [Moonlight Noir](https://github.com/ClassicOldSong/moonlight-android) will no longer be compatible with OG Sunshine and OG Moonlight eventually, but they'll work even better with much more carefully designed features.
+- Wake-on-LAN also goes to 47998, 47999, 48000, 48002 and 48010, shifted by the host's HTTP port (as Moonlight
+  does), to each known address and to the broadcast address.
+- Discovery uses mDNS (`_nvstream._tcp`, UDP 5353 multicast), fixed by the protocol.
+- Two connections don't go to the host: STUN to `stun.moonlight-stream.org` UDP 3478 to learn the external address,
+  and the network test in the connection error dialog (Moonlight's test server).
 
-The main repo had stayed silent for 5 months, with nobody actually responding to issues, and people are getting totally no help besides the limited FAQ in their Discord server. I tried to answer issues and questions, solve problems within my ablilty but I got kicked out just for helping others.
+The stream ports reach moonlight-common-c through `LiSetPortOverrides` (our fork,
+[d3adb5/moonlight-common-c](https://github.com/d3adb5/moonlight-common-c), branch `athena`).
 
-**PRs for feature improvements are welcomed here unlike the main repo, your ideas are more likely to be appreciated and your efforts are actually being respected. We welcome people who can and willing to share their efforts, helping yourselves and other people in need.**
+## PyroWave
 
-**Update**: They have contacted me and apologized for this incident, but the fact it **happened** still motivated me to start my own fork.
+PyroWave sends every frame on its own (no motion prediction), with a wavelet transform that encodes and decodes in
+a fraction of a millisecond. The price is size: for the same picture its frames are 4-5 times bigger than HEVC's.
+Whether it lowers latency depends on whether the time saved encoding and decoding beats the extra time the bigger
+frame spends on Wi-Fi.
 
-## Downloads
-* [Download APK directly](https://github.com/ClassicOldSong/moonlight-android/releases)
-* [Use Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.limelight.noir%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FClassicOldSong%2Fmoonlight-android%22%2C%22author%22%3A%22ClassicOldSong%22%2C%22name%22%3A%22Artemis%22%2C%22additionalSettings%22%3A%22%7B%5C%22apkFilterRegEx%5C%22%3A%5C%22nonRoot%5C%22%2C%5C%22matchGroutToUse%5C%22%3A%5C%22%241%5C%22%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22v(.%2B)%5C%22%7D%22%7D) (recommended)
+In short, on the Retroid Pocket 6 over Wi-Fi, PyroWave makes the stream slower, by about 1.5-3 ms per frame. With
+the Wi-Fi receive interrupts moved to the big cores it comes out about even. It does handle packet loss better: a
+lost packet blurs one small block instead of stalling the picture until the stream recovers. It is a clear win only
+on a wired or very fast link.
+
+How we got there (1080p at 120 fps, host RX 7900 GRE, client Snapdragon 8 Gen 2):
+
+Δ = (PyroWave frame − HEVC frame) / Wi-Fi rate − encode saving − decode saving (positive: PyroWave is slower)
+
+| Input | Value | Source |
+|---|---|---|
+| HEVC frame | 0.42 Mbit (50 Mbit/s) | |
+| PyroWave frame | 2.07 Mbit per bit per pixel | 0.8 bpp ≈ its usable floor, 1.5 bpp ≈ artefacts hard to see |
+| RP6 Wi-Fi receive | ~350 Mbit/s; ~700 with RX interrupts on the big cores | measured, single stream, 6 GHz |
+| Encode saving | ~1.05 ms (HEVC ~1.2 ms, PyroWave ~0.15 ms) | measured HEVC; PyroWave's published 0.08-0.13 ms |
+| Decode saving | −1 to +3.5 ms, ~1 ms likely | HEVC measured 2-5 ms; PyroWave on Adreno 740 estimated 1.5-3 ms |
+
+| PyroWave quality | Stream rate | Stock Wi-Fi | RX interrupts on big cores |
+|---|---|---|---|
+| 0.8 bpp | 199 Mbit/s | +1.5 ms (−1.0 to +3.5) | −0.3 ms (−2.8 to +1.7) |
+| 1.0 bpp | 249 Mbit/s | +2.7 ms (+0.2 to +4.7) | +0.3 ms (−2.2 to +2.3) |
+| 1.5 bpp | 373 Mbit/s | doesn't fit | +1.8 ms (−0.7 to +3.8) |
+
+Break-even is 0.55 bpp (137 Mbit/s) on stock Wi-Fi and 0.89 bpp (222 Mbit/s) with the interrupt fix. At 1 bpp the
+stream keeps the stock link 71% busy, so Wi-Fi retries spill into the next frame as jitter. At a handheld's
+viewing distance (the RP6's 6.9 cm tall panel at ~30 cm), ~0.8 bpp should already look clean.
+
+What is not measured yet: PyroWave's decode time on the Adreno 740. Athena's PyroWave decoder copies each frame from
+Vulkan to the CPU and uploads it to OpenGL ES (no zero-copy yet), and that cost decides the result. To measure it,
+stream the same game at 1080p120 with HEVC and with PyroWave and compare the decode time in the performance overlay,
+then put it in the formula.
+
+To use PyroWave: build Athena with it (below), run a Hermes built with PyroWave and `pyrowave = enabled`, turn HDR
+off, and pick "PyroWave (Experimental, SDR LAN)" as the video codec. A host that doesn't offer it is refused before
+launch.
 
 ## Building
-* Install Android Studio and the Android NDK
-* Run ‘git submodule update --init --recursive’ from within moonlight-android/
-* Microphone noise suppression (DeepFilterNet3) needs Rust with the Android targets and cargo-ndk: ‘rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android’, ‘cargo install cargo-ndk’
-* In moonlight-android/, create a file called ‘local.properties’. Add an ‘ndk.dir=’ property to the local.properties file and set it equal to your NDK directory.
-* Build the APK using Android Studio or gradle
 
-## Authors
+- Android SDK with NDK 27.0.12077973, JDK 21.
+- `git submodule update --init --recursive`
+- Microphone noise suppression (DeepFilterNet3) needs Rust with the Android targets and cargo-ndk:
+  `rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android`,
+  `cargo install cargo-ndk`.
+- `local.properties`: `sdk.dir=`, and optionally `signing.storeFile`, `signing.storePassword`, `signing.keyAlias`
+  for a signed release.
+- `./gradlew assembleNonRoot_gameRelease` → `app/build/outputs/apk/nonRoot_game/release/`
+- With PyroWave (arm64 only): `ANDROID_HOME=<sdk> bash scripts/build-pyrowave-android.sh`, then
+  `./gradlew assembleNonRoot_gameRelease -PhestiaPyrowave=true`. Details: [docs/pyrowave.md](docs/pyrowave.md).
+- Unit tests: `./gradlew testNonRoot_gameReleaseUnitTest`
 
-* [Cameron Gutman](https://github.com/cgutman)  
-* [Diego Waxemberg](https://github.com/dwaxemberg)  
-* [Aaron Neyer](https://github.com/Aaronneyer)  
-* [Andrew Hennessy](https://github.com/yetanothername)
+## Credits
 
-Moonlight is the work of students at [Case Western](http://case.edu) and was
-started as a project at [MHacks](http://mhacks.org).
+Athena builds on [Moonlight](https://github.com/moonlight-stream/moonlight-android) (Cameron Gutman, Diego
+Waxemberg, Aaron Neyer, Andrew Hennessy, started at Case Western and MHacks),
+[Artemis](https://github.com/ClassicOldSong/moonlight-android) by ClassicOldSong,
+[Hestia](https://github.com/MrOz59/hestia-android) by MrOz59 and [PyroWave](https://github.com/Themaister/pyrowave) by
+Hans-Kristian Arntzen.
