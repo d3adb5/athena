@@ -267,7 +267,7 @@ public class PcView extends AppCompatActivity implements AdapterFragmentCallback
         Intent intent = getIntent();
 
         String hostname = intent.getStringExtra("hostname");
-        int port = intent.getIntExtra("port", NvHTTP.DEFAULT_HTTP_PORT);
+        int port = intent.getIntExtra("port", com.limelight.preferences.HostPorts.get().http);
         pendingPairingPin = intent.getStringExtra("pin");
         pendingPairingPassphrase = intent.getStringExtra("passphrase");
 

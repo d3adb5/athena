@@ -10,11 +10,8 @@ import com.limelight.LimeLog;
 import com.limelight.nvstream.http.ComputerDetails;
 
 public class WakeOnLanSender {
-    // These ports will always be tried as-is.
-    private static final int[] STATIC_PORTS_TO_TRY = new int[] {
-        9, // Standard WOL port (privileged port)
-        47009, // Port opened by Moonlight Internet Hosting Tool for WoL (non-privileged port)
-    };
+    // Tried as they are: Settings > Host ports > Wake-on-LAN (default 9, the standard port, and 47009, the port the
+    // Moonlight Internet Hosting Tool opens).
 
     // These ports will be offset by the base port number (47989) to support alternate ports.
     private static final int[] DYNAMIC_PORTS_TO_TRY = new int[] {
@@ -26,7 +23,7 @@ public class WakeOnLanSender {
         boolean sentWolPacket = false;
 
         // Try the static ports
-        for (int port : STATIC_PORTS_TO_TRY) {
+        for (int port : com.limelight.preferences.HostPorts.get().wolPorts()) {
             try {
                 DatagramPacket dp = new DatagramPacket(payload, payload.length);
                 dp.setAddress(address);

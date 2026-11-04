@@ -54,6 +54,7 @@ import com.limelight.utils.DeviceUtils;
 import com.limelight.hestia.HestiaApi;
 import com.limelight.hestia.HestiaApiResponse;
 import com.limelight.hestia.HestiaCapabilities;
+import com.limelight.preferences.HostPorts;
 import com.limelight.hestia.HestiaHostStatus;
 import com.limelight.hestia.HestiaPermissions;
 import com.limelight.hestia.HestiaSessionRequest;
@@ -74,10 +75,7 @@ public class NvHTTP {
     private PairingManager pm;
 
     private static final int DEFAULT_HTTPS_PORT = 47984;
-    // Hermes Web UI/Hestia v1 uses the same TLS identity on an HTTPS port
-    // six above GameStream HTTPS (47984 -> 47990 with default mapping).
-    private static final int HESTIA_HTTPS_PORT_OFFSET = 6;
-    public static final int DEFAULT_HTTP_PORT = 47989;
+    public static final int DEFAULT_HTTP_PORT = HostPorts.DEFAULT_HTTP;
     public static final int SHORT_CONNECTION_TIMEOUT = 3000;
     public static final int LONG_CONNECTION_TIMEOUT = 5000;
     public static final int READ_TIMEOUT = 7000;
@@ -220,7 +218,8 @@ public class NvHTTP {
 
         initializeHttpState(cryptoProvider);
 
-        this.httpsPort = httpsPort;
+        int httpsOverride = HostPorts.get().https;
+        this.httpsPort = httpsOverride != 0 ? httpsOverride : httpsPort;
 
         try {
             // If this is an IPv4-mapped IPv6 address, OkHTTP will choke on it if it's
@@ -660,6 +659,9 @@ public class NvHTTP {
     }
 
     public int getHttpsPort(String serverInfo) {
+        if (HostPorts.get().https != 0) {
+            return HostPorts.get().https;
+        }
         try {
             return Integer.parseInt(getXmlString(serverInfo, "HttpsPort", true));
         } catch (XmlPullParserException e) {
@@ -729,7 +731,7 @@ public class NvHTTP {
      */
     private HttpUrl getHestiaBaseUrl() throws IOException {
         int port = httpsPort > 0 ? httpsPort : DEFAULT_HTTPS_PORT;
-        int webPort = port + HESTIA_HTTPS_PORT_OFFSET;
+        int webPort = HostPorts.get().hestiaApiFor(port);
         if (webPort > 65535) {
             throw new IOException("Invalid Hermes API port");
         }

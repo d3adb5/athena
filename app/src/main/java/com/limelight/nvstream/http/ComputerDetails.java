@@ -122,7 +122,7 @@ public class ComputerDetails {
             return localAddress.port;
         }
         else {
-            return NvHTTP.DEFAULT_HTTP_PORT;
+            return com.limelight.preferences.HostPorts.get().http;
         }
     }
 

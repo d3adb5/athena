@@ -835,4 +835,30 @@
     <string name="hestia_prepare_fps_unsupported">Hermes doesn\'t accept %1$d FPS (supported: %2$s). Launching with default settings.</string>
     <string name="hestia_prepare_out_of_range">Hermes can\'t create a %1$d×%2$d virtual display at %3$d%% scale. Launching with default settings.</string>
     <string name="hestia_prepare_failed">Hermes didn\'t accept the session settings: %1$s. Launching with default settings.</string>
+
+    <!-- Host ports -->
+    <string name="category_host_ports">Host ports</string>
+    <string name="summary_host_ports_info">Ports Athena connects to on every host. Leave a port blank to use the one the host names, or the default shown. Set one when a router forwards it elsewhere. Takes effect on the next connection.</string>
+    <string name="host_port_auto">Automatic (default %1$d)</string>
+    <string name="host_port_auto_hestia">Automatic (HTTPS + 6, default 47990)</string>
+    <string name="host_port_invalid">Enter a port from 1 to 65535, or leave it blank.</string>
+    <string name="host_ports_invalid">Enter ports from 1 to 65535, separated by commas.</string>
+    <string name="title_port_http">HTTP (TCP)</string>
+    <string name="dialog_port_http">Pairing and host info, used when an address has no port of its own. Default 47989.</string>
+    <string name="title_port_https">HTTPS (TCP)</string>
+    <string name="dialog_port_https">App list and launch. Blank: the port the host reports (default 47984).</string>
+    <string name="title_port_hestia_api">Hermes API (TCP)</string>
+    <string name="dialog_port_hestia_api">Hermes status, virtual display and stream info, over the pinned HTTPS identity. Blank: HTTPS + 6 (default 47990).</string>
+    <string name="title_port_rtsp">RTSP (TCP)</string>
+    <string name="dialog_port_rtsp">Stream setup. Blank: the port in the host\'s launch reply (default 48010).</string>
+    <string name="title_port_video">Video (UDP)</string>
+    <string name="dialog_port_video">Blank: the port the host names in RTSP setup (default 47998).</string>
+    <string name="title_port_control">Control and input (UDP)</string>
+    <string name="dialog_port_control">ENet control stream, also carrying input. Blank: the host\'s (default 47999).</string>
+    <string name="title_port_audio">Audio (UDP)</string>
+    <string name="dialog_port_audio">Blank: the port the host names in RTSP setup (default 48000).</string>
+    <string name="title_port_mic">Microphone (UDP)</string>
+    <string name="dialog_port_mic">Only while the microphone is streamed. Blank: the host\'s (default 47996).</string>
+    <string name="title_ports_wol">Wake-on-LAN (UDP)</string>
+    <string name="dialog_ports_wol">Ports for the magic packet, separated by commas. Athena also sends it to the stream ports above, offset by the host\'s HTTP port.</string>
 </resources>

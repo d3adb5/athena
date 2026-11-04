@@ -21,6 +21,16 @@ Java_com_limelight_nvstream_jni_MoonBridge_setMouseWiggleOnConnect(JNIEnv *env, 
 }
 
 JNIEXPORT void JNICALL
+Java_com_limelight_nvstream_jni_MoonBridge_setPortOverrides(JNIEnv *env, jclass clazz, jint rtsp, jint video,
+                                                            jint audio, jint control, jint mic) {
+    PORT_OVERRIDES overrides = {
+        .rtsp = (uint16_t) rtsp, .video = (uint16_t) video, .audio = (uint16_t) audio,
+        .control = (uint16_t) control, .mic = (uint16_t) mic,
+    };
+    LiSetPortOverrides(&overrides);
+}
+
+JNIEXPORT void JNICALL
 Java_com_limelight_nvstream_jni_MoonBridge_sendExecServerCmd(JNIEnv *env, jclass clazz,
                                                              jint cmdId) {
     LiSendExecServerCmd(cmdId);

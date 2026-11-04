@@ -360,9 +360,51 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             config.index(R.xml.preferences);
         }
 
+        private void setupHostPorts() {
+            String[] keys = {HostPorts.HTTP, HostPorts.HTTPS, HostPorts.HESTIA_API, HostPorts.RTSP, HostPorts.VIDEO,
+                    HostPorts.CONTROL, HostPorts.AUDIO, HostPorts.MIC};
+            int[] defaults = {47989, 47984, 0, 48010, 47998, 47999, 48000, 47996};
+            for (int i = 0; i < keys.length; i++) {
+                EditTextPreference pref = findPreference(keys[i]);
+                if (pref == null) {
+                    continue;
+                }
+                final int fallback = defaults[i];
+                final boolean hestia = keys[i].equals(HostPorts.HESTIA_API);
+                pref.setOnBindEditTextListener(edit -> edit.setInputType(InputType.TYPE_CLASS_NUMBER));
+                pref.setSummaryProvider(p -> {
+                    String text = ((EditTextPreference) p).getText();
+                    if (text == null || text.trim().isEmpty()) {
+                        return hestia ? getString(R.string.host_port_auto_hestia)
+                                : getString(R.string.host_port_auto, fallback);
+                    }
+                    return text.trim();
+                });
+                pref.setOnPreferenceChangeListener((p, value) -> {
+                    if (HostPorts.parse((String) value) < 0) {
+                        Toast.makeText(getContext(), R.string.host_port_invalid, Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                    return true;
+                });
+            }
+            EditTextPreference wol = findPreference(HostPorts.WOL);
+            if (wol != null) {
+                wol.setSummaryProvider(p -> ((EditTextPreference) p).getText());
+                wol.setOnPreferenceChangeListener((p, value) -> {
+                    if (HostPorts.parseList((String) value) == null) {
+                        Toast.makeText(getContext(), R.string.host_ports_invalid, Toast.LENGTH_LONG).show();
+                        return false;
+                    }
+                    return true;
+                });
+            }
+        }
+
         public void initializePreferences() {
             addPreferencesFromResource(R.xml.preferences);
             PreferenceScreen screen = getPreferenceScreen();
+            setupHostPorts();
 
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
             PackageManager pm = activity.getPackageManager();

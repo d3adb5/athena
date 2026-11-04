@@ -367,6 +367,9 @@ public class MoonBridge {
     // up, to wake the host's display. Takes effect on the next connection.
     public static native void setMouseWiggleOnConnect(boolean enabled);
 
+    // Ports to use instead of the host's (0 keeps the host's). Call before startConnection().
+    public static native void setPortOverrides(int rtsp, int video, int audio, int control, int mic);
+
     public static native void sendMousePosition(short x, short y, short referenceWidth, short referenceHeight);
 
     public static native void sendMouseMoveAsMousePosition(short deltaX, short deltaY, short referenceWidth, short referenceHeight);

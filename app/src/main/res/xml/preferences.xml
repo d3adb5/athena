@@ -952,6 +952,90 @@
     </com.limelight.preferences.CollapsiblePreferenceCategory>
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
+        android:key="category_host_ports"
+        app:initialExpandedChildrenCount="1"
+        android:title="@string/category_host_ports"
+        app:iconSpaceReserved="false">
+        <Preference
+            android:key="host_ports_info"
+            android:selectable="false"
+            android:summary="@string/summary_host_ports_info"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_http"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_http"
+            android:dialogMessage="@string/dialog_port_http"
+            android:singleLine="true"
+            android:title="@string/title_port_http"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_https"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_https"
+            android:dialogMessage="@string/dialog_port_https"
+            android:singleLine="true"
+            android:title="@string/title_port_https"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_hestia_api"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_hestia_api"
+            android:dialogMessage="@string/dialog_port_hestia_api"
+            android:singleLine="true"
+            android:title="@string/title_port_hestia_api"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_rtsp"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_rtsp"
+            android:dialogMessage="@string/dialog_port_rtsp"
+            android:singleLine="true"
+            android:title="@string/title_port_rtsp"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_video"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_video"
+            android:dialogMessage="@string/dialog_port_video"
+            android:singleLine="true"
+            android:title="@string/title_port_video"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_control"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_control"
+            android:dialogMessage="@string/dialog_port_control"
+            android:singleLine="true"
+            android:title="@string/title_port_control"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_audio"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_audio"
+            android:dialogMessage="@string/dialog_port_audio"
+            android:singleLine="true"
+            android:title="@string/title_port_audio"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="port_mic"
+            android:defaultValue=""
+            android:dialogTitle="@string/title_port_mic"
+            android:dialogMessage="@string/dialog_port_mic"
+            android:singleLine="true"
+            android:title="@string/title_port_mic"
+            app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="ports_wol"
+            android:defaultValue="9, 47009"
+            android:dialogTitle="@string/title_ports_wol"
+            android:dialogMessage="@string/dialog_ports_wol"
+            android:singleLine="true"
+            android:title="@string/title_ports_wol"
+            app:iconSpaceReserved="false" />
+    </com.limelight.preferences.CollapsiblePreferenceCategory>
+
+    <com.limelight.preferences.CollapsiblePreferenceCategory
         android:key="category_advanced_settings"
         app:initialExpandedChildrenCount="1"
         android:title="@string/category_advanced_settings"

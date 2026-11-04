@@ -774,6 +774,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         // Initialize the connection
         MoonBridge.setMouseWiggleOnConnect(prefConfig.connectMouseWiggle);
+        com.limelight.preferences.HostPorts ports = com.limelight.preferences.HostPorts.get();
+        MoonBridge.setPortOverrides(ports.rtsp, ports.video, ports.audio, ports.control, ports.mic);
         streamConfig = config;
         conn = new NvConnection(getApplicationContext(),
                 new ComputerDetails.AddressTuple(host, port),

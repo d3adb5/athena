@@ -120,7 +120,7 @@ public class AddComputerManually extends AppCompatActivity {
 
                 // If a port was not specified, use the default
                 if (port == -1) {
-                    port = NvHTTP.DEFAULT_HTTP_PORT;
+                    port = HostPorts.get().http;
                 }
 
                 details.manualAddress = new ComputerDetails.AddressTuple(host, port);
