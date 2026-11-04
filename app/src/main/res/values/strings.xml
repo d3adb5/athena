@@ -39,12 +39,12 @@
 
     <!-- Network test strings -->
     <string name="nettest_title_waiting">Testing Network Connection</string>
-    <string name="nettest_text_waiting">Artemis is testing your network connection to determine if any required ports are blocked.\n\nThis may take a few seconds…</string>
+    <string name="nettest_text_waiting">Athena is testing your network connection to determine if any required ports are blocked.\n\nThis may take a few seconds…</string>
     <string name="nettest_title_done">Network Test Complete</string>
-    <string name="nettest_text_success">Your network does not appear to be blocking Artemis. If you still have trouble connecting, check your PC\'s firewall settings.\n\nIf you are trying to stream over the Internet, install the Artemis Internet Hosting Tool on your PC and run the included Internet Streaming Tester to check your PC\'s Internet connection.</string>
-    <string name="nettest_text_inconclusive">The network test could not be performed because none of Artemis\'s connection testing servers were reachable. Check your Internet connection or try again later.</string>
-    <string name="nettest_text_failure">Your device\'s current network connection seems to be blocking Artemis. Streaming over the Internet may not work while connected to this network.\n\nThe following network ports were blocked:\n</string>
-    <string name="nettest_text_blocked">Your device\'s current network connection is blocking Artemis. Streaming over the Internet may not work while connected to this network.</string>
+    <string name="nettest_text_success">Your network does not appear to be blocking Athena. If you still have trouble connecting, check your PC\'s firewall settings.\n\nIf you are trying to stream over the Internet, install the Athena Internet Hosting Tool on your PC and run the included Internet Streaming Tester to check your PC\'s Internet connection.</string>
+    <string name="nettest_text_inconclusive">The network test could not be performed because none of Athena\'s connection testing servers were reachable. Check your Internet connection or try again later.</string>
+    <string name="nettest_text_failure">Your device\'s current network connection seems to be blocking Athena. Streaming over the Internet may not work while connected to this network.\n\nThe following network ports were blocked:\n</string>
+    <string name="nettest_text_blocked">Your device\'s current network connection is blocking Athena. Streaming over the Internet may not work while connected to this network.</string>
 
     <!-- Pair messages -->
     <string name="pairing">Pairing…</string>
@@ -87,7 +87,7 @@
 	    Using remote desktop software can also cause this error. Try rebooting your machine or reinstalling GFE.
     </string>
     <string name="title_decoding_error">Video Decoder Crashed</string>
-    <string name="message_decoding_error">Artemis has crashed due to an incompatibility with this device\'s video decoder. Try adjusting the streaming settings if the crashes continue.</string>
+    <string name="message_decoding_error">Athena has crashed due to an incompatibility with this device\'s video decoder. Try adjusting the streaming settings if the crashes continue.</string>
     <string name="title_decoding_reset">Video Settings Reset</string>
     <string name="message_decoding_reset">Your device\'s video decoder continues to crash at your selected streaming settings. Your streaming settings have been reset to default.</string>
     <string name="error_usb_prohibited">USB access is prohibited by your device administrator. Check your Knox or MDM settings.</string>
@@ -282,7 +282,7 @@
     <string name="title_checkbox_xb1_driver">Xbox 360/One/NintendoPro USB gamepad driver</string>
     <string name="summary_checkbox_xb1_driver">Enables a built-in USB driver for devices without native Xbox/Nintendo Pro controller support</string>
     <string name="title_checkbox_usb_bind_all">Override native Xbox gamepad support</string>
-    <string name="summary_checkbox_usb_bind_all">Use Artemis\'s USB driver for all supported gamepads, even if native Xbox/Nintendo Pro controller support is present</string>
+    <string name="summary_checkbox_usb_bind_all">Use Athena\'s USB driver for all supported gamepads, even if native Xbox/Nintendo Pro controller support is present</string>
     <string name="title_checkbox_mouse_emulation">Mouse emulation via gamepad</string>
     <string name="summary_checkbox_mouse_emulation">Long pressing the Start button will switch the gamepad into mouse mode</string>
     <string name="title_checkbox_flip_face_buttons">Flip face buttons</string>
@@ -331,7 +331,7 @@
     <string name="title_checkbox_enable_pip">Enable Picture-in-Picture observer mode</string>
     <string name="summary_checkbox_enable_pip">Allows the stream to be viewed (but not controlled) while multitasking</string>
     <string name="title_language_list">Language</string>
-    <string name="summary_language_list">Language to use for Artemis</string>
+    <string name="summary_language_list">Language to use for Athena</string>
     <string name="title_checkbox_small_icon_mode">Use small box art</string>
     <string name="summary_checkbox_small_icon_mode">Smaller box art in the app grid allows more apps to be visible on screen</string>
 
@@ -367,10 +367,10 @@
     <string name="title_troubleshooting">Troubleshooting guide</string>
     <string name="summary_troubleshooting">View tips for diagnosing and fixing common streaming issues</string>
     <string name="title_privacy_policy">Privacy policy</string>
-    <string name="summary_privacy_policy">View Artemis\'s privacy policy</string>
+    <string name="summary_privacy_policy">View Athena\'s privacy policy</string>
     <string name="title_special_key_help">Custom Keys help</string>
     <string name="summary_special_key_help">Instructions about how to setup custom special keys</string>
-    <string name="summary_performance_link">See performance of other devices.\nPlease note, these data are managed by the community, it is not managed by Artemis and does not represent Artemis officially.</string>
+    <string name="summary_performance_link">See performance of other devices.\nPlease note, these data are managed by the community, it is not managed by Athena and does not represent Athena officially.</string>
     <string name="title_performance_link">Performance Dashboard</string>
 
     <!-- Toasts -->
@@ -504,9 +504,9 @@
     <string name="summary_share_performance_logs">Share your performance with friends or the community</string>
     <string name="title_share_performance_logs_button">Share Performance Logs</string>
     <string name="title_software_update">Software Update</string>
-    <string name="summary_software_update">Artemis Nior Version by ClassicOldSong - Visit GitHub Release to get latest version</string>
+    <string name="summary_software_update">Athena by d3adb5, an Artemis fork - Visit GitHub Releases for the latest version</string>
     <string name="title_follow_update">Follow Update</string>
-    <string name="summary_follow_update">Follow updates of Artemis with Obtainium</string>
+    <string name="summary_follow_update">Follow updates of Athena with Obtainium</string>
     <string name="title_special_key_layout">Special Key Layout</string>
     <string name="title_show_virtual_key">Display virtual keys on screen</string>
     <string name="summary_show_virtual_key">Display a layer of virtual special keys on the touchscreen.\nKey opacity is shared with the virtual gamepad above.</string>
@@ -555,7 +555,7 @@
     <string name="title_touchpad_sensitivity_y">Touchpad Sensitivity Y Axis</string>
     <string name="summary_touchpad_sensitivity_y">For mouse touchpad mode and virtual special button touchpad control;\nBoth share a sensitivity value, but the sensitivity performance may be different.\nDoes anyone use both together?</string>
     <string name="title_device_rumble">Force vibration on device</string>
-    <string name="summary_device_rumble">If you are not satisfied with the vibration of the connected gamepad, you can enable this option.\nInvalid for forced use of Artemis\'s built-in USB driver</string>
+    <string name="summary_device_rumble">If you are not satisfied with the vibration of the connected gamepad, you can enable this option.\nInvalid for forced use of Athena\'s built-in USB driver</string>
     <string name="title_clear_default_special_button">Disable default Special Keys</string>
     <string name="summary_clear_default_special_button">If you feel the built-in commands in the Back Menu are useless, you can disable them and use your imported ones.</string>
     <string name="title_trackpad_sensitivity_x">Trackpad Sensitivity X</string>
@@ -773,7 +773,7 @@
     <string name="hestia_restore_display_failed">Couldn\'t restore the display: %1$s</string>
 
     <string name="hestia_item_ready">Everything looks good: this host is ready to stream.</string>
-    <string name="hestia_item_protocol_incompatible">This Hermes speaks a different Hestia protocol (this app: v%1$d, host accepts v%2$s). Update Hermes or Hestia.</string>
+    <string name="hestia_item_protocol_incompatible">This Hermes speaks a different Hestia protocol (this app: v%1$d, host accepts v%2$s). Update Hermes or Athena.</string>
     <string name="hestia_item_api_unreachable">The Hermes API isn\'t responding. Check that Hermes is running and that its web/API port (47990 by default) isn\'t blocked by a firewall.</string>
     <string name="hestia_item_api_error">The Hermes API returned an error: %1$s</string>
     <string name="hestia_item_certificate_rejected">Hermes no longer recognises this device\'s pairing. Unpair it and pair again.</string>
@@ -829,7 +829,7 @@
     <string name="hestia_stream_info_failed">Hermes: %1$s</string>
     <string name="hestia_prepare_ok">Hermes: virtual display prepared for %1$d×%2$d at %3$d FPS.</string>
     <string name="hestia_prepare_unreachable">The Hermes API isn\'t responding, so the virtual display settings weren\'t sent. Launching with default settings.</string>
-    <string name="hestia_prepare_incompatible">This Hermes version is incompatible with Hestia. Launching with default settings.</string>
+    <string name="hestia_prepare_incompatible">This Hermes version is incompatible with Athena. Launching with default settings.</string>
     <string name="hestia_prepare_no_virtual_display">Hermes reports no virtual display support. Launching with default settings.</string>
     <string name="hestia_prepare_no_launch">Hermes: this device lacks the “Launch Apps” permission, so no virtual display was requested. Grant it in the Hermes web UI under PIN → Device Management.</string>
     <string name="hestia_prepare_fps_unsupported">Hermes doesn\'t accept %1$d FPS (supported: %2$s). Launching with default settings.</string>
