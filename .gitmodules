@@ -1,6 +1,6 @@
 [submodule "app/src/main/jni/moonlight-core/moonlight-common-c"]
 	path = app/src/main/jni/moonlight-core/moonlight-common-c
-	url = https://github.com/d3adb5/moonlight-common-c
+	url = https://github.com/d3adb5/athena-core
 	branch = athena
 [submodule "app/src/main/webrtc-apm/webrtc-audio-processing"]
 	path = app/src/main/webrtc-apm/webrtc-audio-processing

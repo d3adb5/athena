@@ -63,7 +63,7 @@ Not configurable:
   and the network test in the connection error dialog (Moonlight's test server).
 
 The stream ports reach moonlight-common-c through `LiSetPortOverrides` (our fork,
-[d3adb5/moonlight-common-c](https://github.com/d3adb5/moonlight-common-c), branch `athena`).
+[d3adb5/athena-core](https://github.com/d3adb5/athena-core), branch `athena`).
 
 ## PyroWave
 
