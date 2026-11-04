@@ -16,8 +16,9 @@ a separate client to the host, so pair Athena on its own.
 
 From Hestia:
 
-- Hermes session preparation: the virtual display is set up for this device's resolution, frame rate, bitrate and
-  HDR before launch, with the reason shown when Hermes can't.
+- Hermes session preparation: "Request isolated session" asks the host for a session of its own and sends this
+  device's resolution, frame rate, bitrate and HDR before launch, with the reason shown when Hermes can't. How it
+  isolates (Gamescope, KWin) is the host's setting; on the wire this is still `virtualDisplay=1`.
 - Hermes status in the host list, the app list and at launch (encoder, display, permissions, last session), with a
   "Restore display" action and a diagnostic report you can share from the PC menu.
 - Stream info for a few seconds after connecting: what Hermes captures, the encoder, the GPU, size, rate, codec and

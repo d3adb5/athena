@@ -150,12 +150,12 @@
     <!-- AppList activity -->
     <string name="applist_connect_msg">Connecting to PC…</string>
     <string name="applist_menu_resume">Resume Session</string>
-    <string name="applist_menu_start_vdisplay">Start in Virtual Display</string>
-    <string name="applist_menu_start_primarydisplay">Start in Primary Display</string>
+    <string name="applist_menu_start_vdisplay">Start in Isolated Session</string>
+    <string name="applist_menu_start_primarydisplay">Start Without Isolation</string>
     <string name="applist_menu_quit">Quit Session</string>
     <string name="applist_menu_quit_and_start">Quit Current Game and Start</string>
-    <string name="applist_menu_quit_and_start_vdisplay">Quit Current Game and Start in Virtual Display</string>
-    <string name="applist_menu_quit_and_start_primarydisplay">Quit Current Game and Start in Primary Display</string>
+    <string name="applist_menu_quit_and_start_vdisplay">Quit Current Game and Start in Isolated Session</string>
+    <string name="applist_menu_quit_and_start_primarydisplay">Quit Current Game and Start Without Isolation</string>
     <string name="applist_menu_cancel">Cancel</string>
     <string name="applist_menu_details">View Details</string>
     <string name="applist_menu_scut">Create Shortcut</string>
@@ -593,8 +593,8 @@
     <string name="summary_checkbox_enforce_display_mode">Force surface to use the optimal display mode.\nRequired by some systems (such as ColorOS) to set refresh rate/resolution properly.\nDo not enable on ChromeCast 4K as it might lead to bugs.</string>
     <string name="title_checkbox_ultra_low_latency">Ultra Low Latency (experimental)</string>
     <string name="summary_checkbox_ultra_low_latency">Only effective for SD8Gen2/8(s)Gen3/8Elite.</string>
-    <string name="title_checkbox_use_virtual_display">Use Virtual Display</string>
-    <string name="summary_checkbox_use_virtual_display">Use Virtual Display by default.\nVirtual Display can automatically match your client side resolution and frame rate settings, giving you a seamless streaming experience.\nRequires Apollo as host streaming software.</string>
+    <string name="title_checkbox_use_virtual_display">Request isolated session</string>
+    <string name="summary_checkbox_use_virtual_display">Ask the host to run the stream in a session of its own, matching your resolution and frame rate settings.\nThe host decides how, and whether: Hermes follows its isolation method (Gamescope or KWin).</string>
     <string name="title_checkbox_resume_without_confirm">Quick Resume</string>
     <string name="summary_checkbox_resume_without_confirm">Do not show resume menu when clicking resume button, resume the app immediately.</string>
     <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">Sticky modifier keys</string>
@@ -657,8 +657,8 @@
     <string name="game_menu_upload_clipboard">Upload Clipboard</string>
     <string name="game_dialog_title_server_cmd_empty">No Server Commands</string>
     <string name="game_dialog_message_server_cmd_empty">Please make sure you\'re using Apollo as server software and has been granted this client with "Server Command" permission.</string>
-    <string name="vdisplay_not_ready">Virtual display driver isn\'t ready on the server. Please make sure the SudoVDA driver is installed and enabled.</string>
-    <string name="vdisplay_not_supported"><![CDATA[Virtual display isn\'t supported on this server. Please use <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> as the host streaming software.]]></string>
+    <string name="vdisplay_not_ready">The host reports that its display driver isn\'t ready, so an isolated session may not start. On Windows, make sure the SudoVDA driver is installed and enabled.</string>
+    <string name="vdisplay_not_supported"><![CDATA[This host doesn\'t offer isolated sessions. Use <a href=\"https://github.com/MrOz59/hermes\">Hermes</a> or <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> as the host streaming software.]]></string>
     <string name="clipboard_sync_unsupported">This server does not support clipboard sync. Please install or upgrade your server to the latest version of Apollo.</string>
     <string name="send_clipboard_failed">Failed to send clipboard: </string>
     <string name="external_display_info">External Display connected with: %1$dx%2$d at %3$.1fHz</string>
@@ -778,7 +778,7 @@
     <string name="hestia_item_api_error">The Hermes API returned an error: %1$s</string>
     <string name="hestia_item_certificate_rejected">Hermes no longer recognises this device\'s pairing. Unpair it and pair again.</string>
     <string name="hestia_item_no_stream_permission">This device has neither the “Launch Apps” nor the “View Streams” permission, so it can\'t stream. Grant them in the Hermes web UI under PIN → Device Management.</string>
-    <string name="hestia_item_no_launch_permission">This device can\'t start apps or create a virtual display (missing the “Launch Apps” permission). Grant it in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_item_no_launch_permission">This device can\'t start apps or request an isolated session (missing the “Launch Apps” permission). Grant it in the Hermes web UI under PIN → Device Management.</string>
     <string name="hestia_item_no_list_permission">This device can\'t list apps (missing the “List Apps” permission).</string>
     <string name="hestia_item_no_input_permission">Input is blocked for: %1$s. Grant the matching input permissions in the Hermes web UI under PIN → Device Management.</string>
     <string name="hestia_item_no_view_permission">Host diagnostics are hidden because this device lacks the “View Streams” permission.</string>
@@ -827,13 +827,13 @@
     <string name="hestia_stream_info_gpu">%1$s on %2$s</string>
     <string name="hestia_stream_info_latency">\nNetwork latency %1$d ms</string>
     <string name="hestia_stream_info_failed">Hermes: %1$s</string>
-    <string name="hestia_prepare_ok">Hermes: virtual display prepared for %1$d×%2$d at %3$d FPS.</string>
-    <string name="hestia_prepare_unreachable">The Hermes API isn\'t responding, so the virtual display settings weren\'t sent. Launching with default settings.</string>
+    <string name="hestia_prepare_ok">Hermes: session prepared for %1$d×%2$d at %3$d FPS.</string>
+    <string name="hestia_prepare_unreachable">The Hermes API isn\'t responding, so the session settings weren\'t sent. Launching with default settings.</string>
     <string name="hestia_prepare_incompatible">This Hermes version is incompatible with Athena. Launching with default settings.</string>
-    <string name="hestia_prepare_no_virtual_display">Hermes reports no virtual display support. Launching with default settings.</string>
-    <string name="hestia_prepare_no_launch">Hermes: this device lacks the “Launch Apps” permission, so no virtual display was requested. Grant it in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_prepare_no_virtual_display">Hermes isn\'t offering isolated sessions to this device. Launching with default settings.</string>
+    <string name="hestia_prepare_no_launch">Hermes: this device lacks the “Launch Apps” permission, so no isolated session was requested. Grant it in the Hermes web UI under PIN → Device Management.</string>
     <string name="hestia_prepare_fps_unsupported">Hermes doesn\'t accept %1$d FPS (supported: %2$s). Launching with default settings.</string>
-    <string name="hestia_prepare_out_of_range">Hermes can\'t create a %1$d×%2$d virtual display at %3$d%% scale. Launching with default settings.</string>
+    <string name="hestia_prepare_out_of_range">Hermes can\'t prepare a %1$d×%2$d session at %3$d%% scale. Launching with default settings.</string>
     <string name="hestia_prepare_failed">Hermes didn\'t accept the session settings: %1$s. Launching with default settings.</string>
 
     <!-- Host ports -->
@@ -848,7 +848,7 @@
     <string name="title_port_https">HTTPS (TCP)</string>
     <string name="dialog_port_https">App list and launch. Blank: the port the host reports (default 47984).</string>
     <string name="title_port_hestia_api">Hermes API (TCP)</string>
-    <string name="dialog_port_hestia_api">Hermes status, virtual display and stream info, over the pinned HTTPS identity. Blank: HTTPS + 6 (default 47990).</string>
+    <string name="dialog_port_hestia_api">Hermes status, session preparation and stream info, over the pinned HTTPS identity. Blank: HTTPS + 6 (default 47990).</string>
     <string name="title_port_rtsp">RTSP (TCP)</string>
     <string name="dialog_port_rtsp">Stream setup. Blank: the port in the host\'s launch reply (default 48010).</string>
     <string name="title_port_video">Video (UDP)</string>

@@ -132,12 +132,8 @@
     <!-- AppList activity -->
     <string name="applist_connect_msg">Đang kết nối với PC…</string>
     <string name="applist_menu_resume">Tiếp tục phiên</string>
-    <string name="applist_menu_start_vdisplay">Bắt đầu trong Màn hình ảo</string>
-    <string name="applist_menu_start_primarydisplay">Bắt đầu trong Màn hình chính</string>
     <string name="applist_menu_quit">Thoát phiên</string>
     <string name="applist_menu_quit_and_start">Thoát trò chơi hiện tại và bắt đầu</string>
-    <string name="applist_menu_quit_and_start_vdisplay">Thoát trò chơi hiện tại và bắt đầu trong Màn hình ảo</string>
-    <string name="applist_menu_quit_and_start_primarydisplay">Thoát trò chơi hiện tại và bắt đầu trong Màn hình chính</string>
     <string name="applist_menu_cancel">Hủy</string>
     <string name="applist_menu_details">Xem chi tiết</string>
     <string name="applist_menu_scut">Tạo phím tắt</string>
@@ -530,8 +526,6 @@
     <string name="summary_checkbox_gamepad_enable_battery_report">Báo cáo trạng thái pin tay cầm nếu có thể.\nTắt tùy chọn này nếu bạn gặp hiện tượng giật lag với màn hình cảm ứng/touchpad/bút cảm ứng/chuột.</string>
     <string name="title_checkbox_enforce_display_mode">Bắt buộc chế độ hiển thị</string>
     <string name="summary_checkbox_enforce_display_mode">Buộc surface sử dụng chế độ hiển thị tối ưu.\nCần thiết trên một số hệ thống (ví dụ như ColorOS) để thiết lập tốc độ làm tươi/độ phân giải chính xác.\nKhông bật trên ChromeCast 4K vì có thể gây lỗi.</string>
-    <string name="title_checkbox_use_virtual_display">Sử dụng màn hình ảo</string>
-    <string name="summary_checkbox_use_virtual_display">Sử dụng màn hình ảo mặc định.\nMàn hình ảo có thể tự động khớp với độ phân giải và tốc độ khung hình của phía client, cho trải nghiệm truyền phát mượt mà.\nYêu cầu Apollo là phần mềm truyền phát trên máy chủ.</string>
     <string name="title_checkbox_resume_without_confirm">Tiếp tục nhanh</string>
 
         <string name="summary_checkbox_resume_without_confirm">Bỏ qua menu tiếp tục, mở lại ứng dụng ngay khi bấm nút.</string>
@@ -598,8 +592,6 @@
     <string name="game_dialog_title_server_cmd_empty">Không có lệnh máy chủ</string>
     <string name="game_dialog_message_server_cmd_empty">Hãy đảm bảo bạn đang dùng phần mềm máy chủ Apollo và ứng dụng này đã được cấp quyền "Lệnh máy chủ".</string>
 
-    <string name="vdisplay_not_ready">Driver hiển thị ảo trên máy chủ chưa sẵn sàng. Hãy kiểm tra xem bạn đã cài và bật driver SudoVDA chưa.</string>
-    <string name="vdisplay_not_supported"><![CDATA[Máy chủ không hỗ trợ hiển thị ảo. Vui lòng dùng phần mềm Apollo: <a href="https://github.com/ClassicOldSong/Apollo">Apollo</a> để stream.]]></string>
 
     <string name="clipboard_sync_unsupported">Máy chủ không hỗ trợ đồng bộ clipboard. Vui lòng cài hoặc nâng cấp lên phiên bản mới nhất của Apollo.</string>
     <string name="send_clipboard_failed">Gửi clipboard thất bại: </string>

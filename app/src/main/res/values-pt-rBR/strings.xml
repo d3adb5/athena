@@ -301,7 +301,7 @@
     <string name="hestia_item_api_error">A API do Hermes retornou um erro: %1$s</string>
     <string name="hestia_item_certificate_rejected">O Hermes não reconhece mais o pareamento deste dispositivo. Desfaça o pareamento e pareie novamente.</string>
     <string name="hestia_item_no_stream_permission">Este dispositivo não tem as permissões “Iniciar aplicativos” nem “Ver transmissões” e por isso não consegue transmitir. Conceda-as na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
-    <string name="hestia_item_no_launch_permission">Este dispositivo não pode iniciar apps nem criar tela virtual (falta a permissão “Iniciar aplicativos”). Conceda-a na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
+    <string name="hestia_item_no_launch_permission">Este dispositivo não pode iniciar apps nem solicitar uma sessão isolada (falta a permissão “Iniciar aplicativos”). Conceda-a na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
     <string name="hestia_item_no_list_permission">Este dispositivo não pode listar apps (falta a permissão “Lista de aplicativos”).</string>
     <string name="hestia_item_no_input_permission">Entrada bloqueada para: %1$s. Conceda as permissões de entrada correspondentes na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
     <string name="hestia_item_no_view_permission">Os diagnósticos do host estão ocultos porque este dispositivo não tem a permissão “Ver transmissões”.</string>
@@ -342,12 +342,12 @@
     <string name="hestia_clipboard_no_session">sem sessão de desktop</string>
 
     <string name="hestia_preparing_session">Preparando a sessão no Hermes…</string>
-    <string name="hestia_prepare_ok">Hermes: tela virtual preparada para %1$d×%2$d a %3$d FPS.</string>
-    <string name="hestia_prepare_unreachable">A API do Hermes não está respondendo, então as configurações da tela virtual não foram enviadas. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_ok">Hermes: sessão preparada para %1$d×%2$d a %3$d FPS.</string>
+    <string name="hestia_prepare_unreachable">A API do Hermes não está respondendo, então as configurações da sessão não foram enviadas. Iniciando com as configurações padrão.</string>
     <string name="hestia_prepare_incompatible">Esta versão do Hermes é incompatível com o Hestia. Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_no_virtual_display">O Hermes informa que não suporta tela virtual. Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_no_launch">Hermes: este dispositivo não tem a permissão “Iniciar aplicativos”, então nenhuma tela virtual foi solicitada. Conceda-a na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
+    <string name="hestia_prepare_no_virtual_display">O Hermes não está oferecendo sessões isoladas a este dispositivo. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_no_launch">Hermes: este dispositivo não tem a permissão “Iniciar aplicativos”, então nenhuma sessão isolada foi solicitada. Conceda-a na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
     <string name="hestia_prepare_fps_unsupported">O Hermes não aceita %1$d FPS (suportados: %2$s). Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_out_of_range">O Hermes não consegue criar uma tela virtual de %1$d×%2$d com escala de %3$d%%. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_out_of_range">O Hermes não consegue preparar uma sessão de %1$d×%2$d com escala de %3$d%%. Iniciando com as configurações padrão.</string>
     <string name="hestia_prepare_failed">O Hermes não aceitou as configurações da sessão: %1$s. Iniciando com as configurações padrão.</string>
 </resources>

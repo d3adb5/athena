@@ -119,12 +119,8 @@
     <string name="toast_no_logs">还没有统计过性能数据</string>
     <string name="applist_connect_msg"> 正在连接电脑…… </string>
     <string name="applist_menu_resume"> 恢复串流 </string>
-    <string name="applist_menu_start_vdisplay"> 在虚拟显示器中启动 </string>
-    <string name="applist_menu_start_primarydisplay"> 在主显示器中启动 </string>
     <string name="applist_menu_quit"> 退出串流 </string>
     <string name="applist_menu_quit_and_start"> 退出当前应用并启动 </string>
-    <string name="applist_menu_quit_and_start_vdisplay"> 退出当前应用并在虚拟显示器中启动 </string>
-    <string name="applist_menu_quit_and_start_primarydisplay"> 退出当前应用并在主显示器中启动 </string>
     <string name="applist_menu_cancel"> 取消 </string>
     <string name="applist_menu_details"> 查看详情 </string>
     <string name="applist_menu_scut"> 创建快捷方式 </string>
@@ -515,8 +511,6 @@
     <string name="summary_checkbox_enforce_display_mode">强制使用最佳显示模式。\n在某些系统(如ColorOS等)上必须启用才能正确设置刷新率/分辨率。\n请勿在ChromeCast 4K上启用此选项，可能会导致bug。</string>
     <string name="title_checkbox_ultra_low_latency">超低延迟（实验性）</string>
     <string name="summary_checkbox_ultra_low_latency">仅对高通8Gen2/8(s)Gen3/8Elite有效。</string>
-    <string name="title_checkbox_use_virtual_display">使用虚拟显示器</string>
-    <string name="summary_checkbox_use_virtual_display">默认使用虚拟显示器。\n虚拟显示器可以自动匹配设备端的分辨率与刷新率设置，提供无缝的串流体验。\n需要使用 Apollo 作为服务端串流软件。</string>
     <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">粘滞修饰键</string>
     <string name="summary_checkbox_enable_sticky_modifier_key_virtual_keyboard">在虚拟全键盘以及自定义键盘上使用粘滞修饰键。</string>
     <string name="title_checkbox_resume_without_confirm">快速恢复</string>
@@ -579,8 +573,6 @@
     <string name="game_menu_upload_clipboard">上传剪贴板</string>
     <string name="game_dialog_title_server_cmd_empty">无服务端命令</string>
     <string name="game_dialog_message_server_cmd_empty">请确保你的服务端为 Apollo，并已授予此客户端"服务端命令"权限。</string>
-    <string name="vdisplay_not_ready">服务端虚拟显示器驱动未就绪。请确保 SudoVDA 驱动已正确安装并启用。</string>
-    <string name="vdisplay_not_supported"><![CDATA[此服务端不支持虚拟显示器。请使用 <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> 作为服务端串流软件。]]></string>
     <string name="clipboard_sync_unsupported">此服务器不支持剪贴板同步，请安装或升级服务端至最新的 Apollo。</string>
     <string name="send_clipboard_failed">上传剪贴板失败：</string>
     <string name="get_clipboard_failed">获取剪贴板失败：</string>
