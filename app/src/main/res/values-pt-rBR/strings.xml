@@ -229,7 +229,7 @@
     <string name="title_privacy_policy">Política de privacidade</string>
     <string name="summary_checkbox_absolute_mouse_mode">Isso pode alterar a aceleração do mouse para se comportar mais naturalmente para uso em desktop remoto, mas é incompatível com muitos jogos.</string>
     <string name="title_checkbox_connect_mouse_wiggle">Mexer o mouse ao conectar</string>
-    <string name="summary_checkbox_connect_mouse_wiggle">Move o mouse um pixel e volta quando a transmissão começa, para acordar a tela do host. Desligue para manter o cursor escondido em sessões Gamescope, como as sessões isoladas do Hermes.</string>
+    <string name="summary_checkbox_connect_mouse_wiggle">Move o mouse um pixel e volta quando a transmissão começa, para acordar a tela do host. Desligue para manter o cursor escondido em sessões Gamescope, como as sessões isoladas do Ares.</string>
     <string name="summary_privacy_policy">Veja a política de privacidade do Moonlight</string>
     <string name="pacing_balanced_alt">Equilibrado com limite de FPS</string>
     <string name="summary_seekbar_deadzone">Nota: Alguns jogos podem impor uma zona morta maior do que o Moonlight está configurado para usar.</string>
@@ -275,35 +275,35 @@
     <string name="title_enable_commit_text">Ativar envio de texto concluído (gesto/voz)</string>
     <string name="summary_enable_commit_text">Encaminha textos com vários caracteres de teclados virtuais (digitação por gestos, sugestões, ditado por voz). Pode causar problemas em jogos que dependem de entrada tecla por tecla.</string>
 
-    <!-- Hermes / Hestia: status do host -->
-    <string name="pcview_menu_hestia_status">Status do Hermes</string>
-    <string name="hestia_badge_ok">Hermes · Pronto</string>
-    <string name="hestia_badge_warning">Hermes · Atenção</string>
-    <string name="hestia_badge_error">Hermes · Problema</string>
+    <!-- Ares / Hestia: status do host -->
+    <string name="pcview_menu_hestia_status">Status do Ares</string>
+    <string name="hestia_badge_ok">Ares · Pronto</string>
+    <string name="hestia_badge_warning">Ares · Atenção</string>
+    <string name="hestia_badge_error">Ares · Problema</string>
     <string name="hestia_banner_format">%1$s · %2$s</string>
-    <string name="hestia_banner_hint">Toque para ver os detalhes do Hermes</string>
-    <string name="hestia_dialog_title">Hermes · %1$s</string>
+    <string name="hestia_banner_hint">Toque para ver os detalhes do Ares</string>
+    <string name="hestia_dialog_title">Ares · %1$s</string>
     <string name="hestia_dialog_footer">%1$s · protocolo Hestia v%2$d · verificado %3$s</string>
     <string name="hestia_dialog_close">Fechar</string>
     <string name="hestia_dialog_refresh">Atualizar</string>
     <string name="hestia_dialog_restore_display">Restaurar tela</string>
-    <string name="hestia_checking">Verificando o Hermes…</string>
-    <string name="hestia_refresh_failed">Não foi possível contatar o host para verificar o Hermes.</string>
-    <string name="hestia_no_longer_hermes">Este host não informa mais a API do Hermes.</string>
+    <string name="hestia_checking">Verificando o Ares…</string>
+    <string name="hestia_refresh_failed">Não foi possível contatar o host para verificar o Ares.</string>
+    <string name="hestia_no_longer_hermes">Este host não informa mais a API do Ares.</string>
     <string name="hestia_restore_display_confirm">Religar o monitor físico do host? Qualquer app que ainda esteja rodando no host será fechado.</string>
     <string name="hestia_restoring_display">Restaurando a tela física…</string>
     <string name="hestia_restore_display_ok">Tela física restaurada.</string>
     <string name="hestia_restore_display_failed">Não foi possível restaurar a tela: %1$s</string>
 
     <string name="hestia_item_ready">Tudo certo: este host está pronto para transmitir.</string>
-    <string name="hestia_item_protocol_incompatible">Este Hermes usa outro protocolo Hestia (este app: v%1$d, o host aceita v%2$s). Atualize o Hermes ou o Hestia.</string>
-    <string name="hestia_item_api_unreachable">A API do Hermes não está respondendo. Verifique se o Hermes está rodando e se a porta web/API (47990 por padrão) não está bloqueada pelo firewall.</string>
-    <string name="hestia_item_api_error">A API do Hermes retornou um erro: %1$s</string>
-    <string name="hestia_item_certificate_rejected">O Hermes não reconhece mais o pareamento deste dispositivo. Desfaça o pareamento e pareie novamente.</string>
-    <string name="hestia_item_no_stream_permission">Este dispositivo não tem as permissões “Iniciar aplicativos” nem “Ver transmissões” e por isso não consegue transmitir. Conceda-as na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
-    <string name="hestia_item_no_launch_permission">Este dispositivo não pode iniciar apps nem solicitar uma sessão isolada (falta a permissão “Iniciar aplicativos”). Conceda-a na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
+    <string name="hestia_item_protocol_incompatible">Este Ares usa outro protocolo Hestia (este app: v%1$d, o host aceita v%2$s). Atualize o Ares ou o Hestia.</string>
+    <string name="hestia_item_api_unreachable">A API do Ares não está respondendo. Verifique se o Ares está rodando e se a porta web/API (47990 por padrão) não está bloqueada pelo firewall.</string>
+    <string name="hestia_item_api_error">A API do Ares retornou um erro: %1$s</string>
+    <string name="hestia_item_certificate_rejected">O Ares não reconhece mais o pareamento deste dispositivo. Desfaça o pareamento e pareie novamente.</string>
+    <string name="hestia_item_no_stream_permission">Este dispositivo não tem as permissões “Iniciar aplicativos” nem “Ver transmissões” e por isso não consegue transmitir. Conceda-as na interface web do Ares, em PIN → Gerenciamento de Dispositivos.</string>
+    <string name="hestia_item_no_launch_permission">Este dispositivo não pode iniciar apps nem solicitar uma sessão isolada (falta a permissão “Iniciar aplicativos”). Conceda-a na interface web do Ares, em PIN → Gerenciamento de Dispositivos.</string>
     <string name="hestia_item_no_list_permission">Este dispositivo não pode listar apps (falta a permissão “Lista de aplicativos”).</string>
-    <string name="hestia_item_no_input_permission">Entrada bloqueada para: %1$s. Conceda as permissões de entrada correspondentes na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
+    <string name="hestia_item_no_input_permission">Entrada bloqueada para: %1$s. Conceda as permissões de entrada correspondentes na interface web do Ares, em PIN → Gerenciamento de Dispositivos.</string>
     <string name="hestia_item_no_view_permission">Os diagnósticos do host estão ocultos porque este dispositivo não tem a permissão “Ver transmissões”.</string>
     <string name="hestia_item_diagnostics_unavailable">Não foi possível ler %1$s: %2$s</string>
     <string name="hestia_item_check">%1$s: %2$s</string>
@@ -341,13 +341,13 @@
     <string name="hestia_clipboard_xclip_missing">instale o xclip no host</string>
     <string name="hestia_clipboard_no_session">sem sessão de desktop</string>
 
-    <string name="hestia_preparing_session">Preparando a sessão no Hermes…</string>
-    <string name="hestia_prepare_ok">Hermes: sessão preparada para %1$d×%2$d a %3$d FPS.</string>
-    <string name="hestia_prepare_unreachable">A API do Hermes não está respondendo, então as configurações da sessão não foram enviadas. Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_incompatible">Esta versão do Hermes é incompatível com o Hestia. Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_no_virtual_display">O Hermes não está oferecendo sessões isoladas a este dispositivo. Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_no_launch">Hermes: este dispositivo não tem a permissão “Iniciar aplicativos”, então nenhuma sessão isolada foi solicitada. Conceda-a na interface web do Hermes, em PIN → Gerenciamento de Dispositivos.</string>
-    <string name="hestia_prepare_fps_unsupported">O Hermes não aceita %1$d FPS (suportados: %2$s). Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_out_of_range">O Hermes não consegue preparar uma sessão de %1$d×%2$d com escala de %3$d%%. Iniciando com as configurações padrão.</string>
-    <string name="hestia_prepare_failed">O Hermes não aceitou as configurações da sessão: %1$s. Iniciando com as configurações padrão.</string>
+    <string name="hestia_preparing_session">Preparando a sessão no Ares…</string>
+    <string name="hestia_prepare_ok">Ares: sessão preparada para %1$d×%2$d a %3$d FPS.</string>
+    <string name="hestia_prepare_unreachable">A API do Ares não está respondendo, então as configurações da sessão não foram enviadas. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_incompatible">Esta versão do Ares é incompatível com o Hestia. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_no_virtual_display">O Ares não está oferecendo sessões isoladas a este dispositivo. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_no_launch">Ares: este dispositivo não tem a permissão “Iniciar aplicativos”, então nenhuma sessão isolada foi solicitada. Conceda-a na interface web do Ares, em PIN → Gerenciamento de Dispositivos.</string>
+    <string name="hestia_prepare_fps_unsupported">O Ares não aceita %1$d FPS (suportados: %2$s). Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_out_of_range">O Ares não consegue preparar uma sessão de %1$d×%2$d com escala de %3$d%%. Iniciando com as configurações padrão.</string>
+    <string name="hestia_prepare_failed">O Ares não aceitou as configurações da sessão: %1$s. Iniciando com as configurações padrão.</string>
 </resources>

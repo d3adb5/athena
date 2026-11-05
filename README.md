@@ -1,6 +1,7 @@
 # Athena
 
-Athena is an Android client for [Hermes](https://github.com/MrOz59/hermes), Apollo and Sunshine. It is a fork of
+Athena is an Android client for [Ares](https://github.com/d3adb5/ares) (a fork of
+[Hermes](https://github.com/MrOz59/hermes), which it also works with), Apollo and Sunshine. It is a fork of
 [Artemis](https://github.com/ClassicOldSong/moonlight-android) (Moonlight Noir) built for the Retroid Pocket 6 and
 other Android handhelds, and carries every feature of [Hestia](https://github.com/MrOz59/hestia-android).
 
@@ -16,12 +17,12 @@ a separate client to the host, so pair Athena on its own.
 
 From Hestia:
 
-- Hermes session preparation: "Request isolated session" asks the host for a session of its own and sends this
-  device's resolution, frame rate, bitrate and HDR before launch, with the reason shown when Hermes can't. How it
+- Ares session preparation: "Request isolated session" asks the host for a session of its own and sends this
+  device's resolution, frame rate, bitrate and HDR before launch, with the reason shown when Ares can't. How it
   isolates (Gamescope, KWin) is the host's setting; on the wire this is still `virtualDisplay=1`.
-- Hermes status in the host list, the app list and at launch (encoder, display, permissions, last session), with a
+- Ares status in the host list, the app list and at launch (encoder, display, permissions, last session), with a
   "Restore display" action and a diagnostic report you can share from the PC menu.
-- Stream info for a few seconds after connecting: what Hermes captures, the encoder, the GPU, size, rate, codec and
+- Stream info for a few seconds after connecting: what Ares captures, the encoder, the GPU, size, rate, codec and
   latency.
 - Microphone streaming to hosts that support it, the mouse wiggle on connect as a setting.
 - PyroWave, an optional Vulkan wavelet codec (see below).
@@ -47,7 +48,7 @@ change takes effect on the next connection.
 |---|---|---|---|---|
 | HTTP | TCP | 47989 | Host info, pairing (plain HTTP) | 47989, for an address typed without a port |
 | HTTPS | TCP | 47984 | App list, launch, quit (TLS, pinned host certificate) | The port in the host's `serverinfo` |
-| Hermes API | TCP | 47990 | Hestia v1 API: capabilities, permissions, session prepare, status, display restore, stream info, diagnostic report (HTTPS, same pinned identity) | HTTPS + 6 |
+| Ares API | TCP | 47990 | Hestia v1 API: capabilities, permissions, session prepare, status, display restore, stream info, diagnostic report (HTTPS, same pinned identity) | HTTPS + 6 |
 | RTSP | TCP | 48010 | Stream setup | The port in the host's launch reply |
 | Video | UDP | 47998 | Video packets | The port in the host's RTSP SETUP reply |
 | Control | UDP | 47999 | ENet control stream, which also carries input | The host's RTSP SETUP reply |
@@ -105,7 +106,7 @@ Vulkan to the CPU and uploads it to OpenGL ES (no zero-copy yet), and that cost 
 stream the same game at 1080p120 with HEVC and with PyroWave and compare the decode time in the performance overlay,
 then put it in the formula.
 
-To use PyroWave: build Athena with it (below), run a Hermes built with PyroWave and `pyrowave = enabled`, turn HDR
+To use PyroWave: build Athena with it (below), run an Ares built with PyroWave and `pyrowave = enabled`, turn HDR
 off, and pick "PyroWave (Experimental, SDR LAN)" as the video codec. A host that doesn't offer it is refused before
 launch.
 

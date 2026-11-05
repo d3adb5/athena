@@ -77,8 +77,8 @@ public final class HestiaCapabilities {
             }
             JsonObject obj = element.getAsJsonObject();
             if (!isTrue(obj, "ok") || !isString(obj, "server_name")
-                    || !"Hermes".equals(obj.get("server_name").getAsString())) {
-                // Not Hermes at all: an ordinary GameStream host.
+                    || !isHermesFamily(obj.get("server_name").getAsString())) {
+                // Neither Ares nor Hermes: an ordinary GameStream host.
                 return unsupported();
             }
 
@@ -200,6 +200,11 @@ public final class HestiaCapabilities {
     /** True when the protocol handshake succeeded and v1 extensions may be used. */
     public boolean isSupported() { return supported; }
     /** True when the host identified itself as Hermes, compatible or not. */
+    /** Ares is the d3adb5 fork of Hermes; both speak the Hestia API. */
+    static boolean isHermesFamily(String serverName) {
+        return "Ares".equals(serverName) || "Hermes".equals(serverName);
+    }
+
     public boolean isHermes() { return hermes; }
     /** True for a Hermes host whose protocol range does not include this client. */
     public boolean isIncompatibleHermes() { return hermes && !supported; }

@@ -116,7 +116,7 @@
     <!-- General strings -->
     <string name="ip_hint">IP address of host PC</string>
     <string name="searching_pc">Searching for host PCs on your local network…\n\n
-        Ensure Hermes or Apollo is running on your host PC.</string>
+        Ensure Ares or Apollo is running on your host PC.</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="lost_connection">Lost connection to PC</string>
@@ -302,7 +302,7 @@
     <string name="title_checkbox_absolute_mouse_mode">Remote desktop mouse mode</string>
     <string name="summary_checkbox_absolute_mouse_mode">This can make mouse acceleration behave more naturally for remote desktop usage, but it is incompatible with many games.</string>
     <string name="title_checkbox_connect_mouse_wiggle">Wiggle the mouse on connect</string>
-    <string name="summary_checkbox_connect_mouse_wiggle">Move the mouse by one pixel and back when the stream starts, to wake the host\'s display. Turn it off to keep the cursor hidden in Gamescope sessions, such as Hermes\' isolated sessions.</string>
+    <string name="summary_checkbox_connect_mouse_wiggle">Move the mouse by one pixel and back when the stream starts, to wake the host\'s display. Turn it off to keep the cursor hidden in Gamescope sessions, such as Ares\' isolated sessions.</string>
     <string name="title_checkbox_mouse_nav_buttons">Enable forward/back mouse buttons</string>
     <string name="summary_checkbox_mouse_nav_buttons">Enabling this option may break right clicking on some buggy devices</string>
 
@@ -594,7 +594,7 @@
     <string name="title_checkbox_ultra_low_latency">Ultra Low Latency (experimental)</string>
     <string name="summary_checkbox_ultra_low_latency">Only effective for SD8Gen2/8(s)Gen3/8Elite.</string>
     <string name="title_checkbox_use_virtual_display">Request isolated session</string>
-    <string name="summary_checkbox_use_virtual_display">Ask the host to run the stream in a session of its own, matching your resolution and frame rate settings.\nThe host decides how, and whether: Hermes follows its isolation method (Gamescope or KWin).</string>
+    <string name="summary_checkbox_use_virtual_display">Ask the host to run the stream in a session of its own, matching your resolution and frame rate settings.\nThe host decides how, and whether: Ares follows its isolation method (Gamescope or KWin).</string>
     <string name="title_checkbox_resume_without_confirm">Quick Resume</string>
     <string name="summary_checkbox_resume_without_confirm">Do not show resume menu when clicking resume button, resume the app immediately.</string>
     <string name="title_checkbox_enable_sticky_modifier_key_virtual_keyboard">Sticky modifier keys</string>
@@ -658,7 +658,7 @@
     <string name="game_dialog_title_server_cmd_empty">No Server Commands</string>
     <string name="game_dialog_message_server_cmd_empty">Please make sure you\'re using Apollo as server software and has been granted this client with "Server Command" permission.</string>
     <string name="vdisplay_not_ready">The host reports that its display driver isn\'t ready, so an isolated session may not start. On Windows, make sure the SudoVDA driver is installed and enabled.</string>
-    <string name="vdisplay_not_supported"><![CDATA[This host doesn\'t offer isolated sessions. Use <a href=\"https://github.com/MrOz59/hermes\">Hermes</a> or <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> as the host streaming software.]]></string>
+    <string name="vdisplay_not_supported"><![CDATA[This host doesn\'t offer isolated sessions. Use <a href=\"https://github.com/d3adb5/ares\">Ares</a> or <a href=\"https://github.com/ClassicOldSong/Apollo\">Apollo</a> as the host streaming software.]]></string>
     <string name="clipboard_sync_unsupported">This server does not support clipboard sync. Please install or upgrade your server to the latest version of Apollo.</string>
     <string name="send_clipboard_failed">Failed to send clipboard: </string>
     <string name="external_display_info">External Display connected with: %1$dx%2$d at %3$.1fHz</string>
@@ -752,35 +752,35 @@
     <string name="rename">Rename</string>
     <string name="save">Save</string>
 
-    <!-- Hermes / Hestia host status -->
-    <string name="pcview_menu_hestia_status">Hermes status</string>
-    <string name="hestia_badge_ok">Hermes · Ready</string>
-    <string name="hestia_badge_warning">Hermes · Needs attention</string>
-    <string name="hestia_badge_error">Hermes · Problem</string>
+    <!-- Ares / Hestia host status -->
+    <string name="pcview_menu_hestia_status">Ares status</string>
+    <string name="hestia_badge_ok">Ares · Ready</string>
+    <string name="hestia_badge_warning">Ares · Needs attention</string>
+    <string name="hestia_badge_error">Ares · Problem</string>
     <string name="hestia_banner_format">%1$s · %2$s</string>
-    <string name="hestia_banner_hint">Tap for Hermes details</string>
-    <string name="hestia_dialog_title">Hermes · %1$s</string>
+    <string name="hestia_banner_hint">Tap for Ares details</string>
+    <string name="hestia_dialog_title">Ares · %1$s</string>
     <string name="hestia_dialog_footer">%1$s · Hestia protocol v%2$d · checked %3$s</string>
     <string name="hestia_dialog_close">Close</string>
     <string name="hestia_dialog_refresh">Refresh</string>
     <string name="hestia_dialog_restore_display">Restore display</string>
-    <string name="hestia_checking">Checking Hermes…</string>
-    <string name="hestia_refresh_failed">Couldn\'t reach the host to check Hermes.</string>
-    <string name="hestia_no_longer_hermes">This host no longer reports the Hermes API.</string>
+    <string name="hestia_checking">Checking Ares…</string>
+    <string name="hestia_refresh_failed">Couldn\'t reach the host to check Ares.</string>
+    <string name="hestia_no_longer_hermes">This host no longer reports the Ares API.</string>
     <string name="hestia_restore_display_confirm">Turn the host\'s physical monitor back on? Any app still running on the host will be closed.</string>
     <string name="hestia_restoring_display">Restoring the physical display…</string>
     <string name="hestia_restore_display_ok">Physical display restored.</string>
     <string name="hestia_restore_display_failed">Couldn\'t restore the display: %1$s</string>
 
     <string name="hestia_item_ready">Everything looks good: this host is ready to stream.</string>
-    <string name="hestia_item_protocol_incompatible">This Hermes speaks a different Hestia protocol (this app: v%1$d, host accepts v%2$s). Update Hermes or Athena.</string>
-    <string name="hestia_item_api_unreachable">The Hermes API isn\'t responding. Check that Hermes is running and that its web/API port (47990 by default) isn\'t blocked by a firewall.</string>
-    <string name="hestia_item_api_error">The Hermes API returned an error: %1$s</string>
-    <string name="hestia_item_certificate_rejected">Hermes no longer recognises this device\'s pairing. Unpair it and pair again.</string>
-    <string name="hestia_item_no_stream_permission">This device has neither the “Launch Apps” nor the “View Streams” permission, so it can\'t stream. Grant them in the Hermes web UI under PIN → Device Management.</string>
-    <string name="hestia_item_no_launch_permission">This device can\'t start apps or request an isolated session (missing the “Launch Apps” permission). Grant it in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_item_protocol_incompatible">This Ares speaks a different Hestia protocol (this app: v%1$d, host accepts v%2$s). Update Ares or Athena.</string>
+    <string name="hestia_item_api_unreachable">The Ares API isn\'t responding. Check that Ares is running and that its web/API port (47990 by default) isn\'t blocked by a firewall.</string>
+    <string name="hestia_item_api_error">The Ares API returned an error: %1$s</string>
+    <string name="hestia_item_certificate_rejected">Ares no longer recognises this device\'s pairing. Unpair it and pair again.</string>
+    <string name="hestia_item_no_stream_permission">This device has neither the “Launch Apps” nor the “View Streams” permission, so it can\'t stream. Grant them in the Ares web UI under PIN → Device Management.</string>
+    <string name="hestia_item_no_launch_permission">This device can\'t start apps or request an isolated session (missing the “Launch Apps” permission). Grant it in the Ares web UI under PIN → Device Management.</string>
     <string name="hestia_item_no_list_permission">This device can\'t list apps (missing the “List Apps” permission).</string>
-    <string name="hestia_item_no_input_permission">Input is blocked for: %1$s. Grant the matching input permissions in the Hermes web UI under PIN → Device Management.</string>
+    <string name="hestia_item_no_input_permission">Input is blocked for: %1$s. Grant the matching input permissions in the Ares web UI under PIN → Device Management.</string>
     <string name="hestia_item_no_view_permission">Host diagnostics are hidden because this device lacks the “View Streams” permission.</string>
     <string name="hestia_item_diagnostics_unavailable">Couldn\'t read %1$s: %2$s</string>
     <string name="hestia_item_check">%1$s: %2$s</string>
@@ -817,24 +817,24 @@
     <string name="hestia_clipboard_xclip_missing">install xclip on the host</string>
     <string name="hestia_clipboard_no_session">no desktop session</string>
 
-    <string name="hestia_preparing_session">Preparing the Hermes session…</string>
+    <string name="hestia_preparing_session">Preparing the Ares session…</string>
     <string name="pcview_menu_hestia_report">Send diagnostic report</string>
-    <string name="hestia_report_title">Hermes diagnostic report: %1$s</string>
-    <string name="hestia_report_fetching">Getting the report from Hermes…</string>
+    <string name="hestia_report_title">Ares diagnostic report: %1$s</string>
+    <string name="hestia_report_fetching">Getting the report from Ares…</string>
     <string name="hestia_report_share">Send the diagnostic report</string>
-    <string name="hestia_report_failed">Hermes did not send a report. It needs a Hermes version with diagnostic reports, and this device needs the View permission.</string>
-    <string name="hestia_stream_info">Hermes ✓ %1$s\n%2$d×%3$d at %4$d FPS · %5$s · %6$s</string>
+    <string name="hestia_report_failed">Ares did not send a report. It needs a Ares version with diagnostic reports, and this device needs the View permission.</string>
+    <string name="hestia_stream_info">Ares ✓ %1$s\n%2$d×%3$d at %4$d FPS · %5$s · %6$s</string>
     <string name="hestia_stream_info_gpu">%1$s on %2$s</string>
     <string name="hestia_stream_info_latency">\nNetwork latency %1$d ms</string>
-    <string name="hestia_stream_info_failed">Hermes: %1$s</string>
-    <string name="hestia_prepare_ok">Hermes: session prepared for %1$d×%2$d at %3$d FPS.</string>
-    <string name="hestia_prepare_unreachable">The Hermes API isn\'t responding, so the session settings weren\'t sent. Launching with default settings.</string>
-    <string name="hestia_prepare_incompatible">This Hermes version is incompatible with Athena. Launching with default settings.</string>
-    <string name="hestia_prepare_no_virtual_display">Hermes isn\'t offering isolated sessions to this device. Launching with default settings.</string>
-    <string name="hestia_prepare_no_launch">Hermes: this device lacks the “Launch Apps” permission, so no isolated session was requested. Grant it in the Hermes web UI under PIN → Device Management.</string>
-    <string name="hestia_prepare_fps_unsupported">Hermes doesn\'t accept %1$d FPS (supported: %2$s). Launching with default settings.</string>
-    <string name="hestia_prepare_out_of_range">Hermes can\'t prepare a %1$d×%2$d session at %3$d%% scale. Launching with default settings.</string>
-    <string name="hestia_prepare_failed">Hermes didn\'t accept the session settings: %1$s. Launching with default settings.</string>
+    <string name="hestia_stream_info_failed">Ares: %1$s</string>
+    <string name="hestia_prepare_ok">Ares: session prepared for %1$d×%2$d at %3$d FPS.</string>
+    <string name="hestia_prepare_unreachable">The Ares API isn\'t responding, so the session settings weren\'t sent. Launching with default settings.</string>
+    <string name="hestia_prepare_incompatible">This Ares version is incompatible with Athena. Launching with default settings.</string>
+    <string name="hestia_prepare_no_virtual_display">Ares isn\'t offering isolated sessions to this device. Launching with default settings.</string>
+    <string name="hestia_prepare_no_launch">Ares: this device lacks the “Launch Apps” permission, so no isolated session was requested. Grant it in the Ares web UI under PIN → Device Management.</string>
+    <string name="hestia_prepare_fps_unsupported">Ares doesn\'t accept %1$d FPS (supported: %2$s). Launching with default settings.</string>
+    <string name="hestia_prepare_out_of_range">Ares can\'t prepare a %1$d×%2$d session at %3$d%% scale. Launching with default settings.</string>
+    <string name="hestia_prepare_failed">Ares didn\'t accept the session settings: %1$s. Launching with default settings.</string>
 
     <!-- Host ports -->
     <string name="category_host_ports">Host ports</string>
@@ -847,8 +847,8 @@
     <string name="dialog_port_http">Pairing and host info, used when an address has no port of its own. Default 47989.</string>
     <string name="title_port_https">HTTPS (TCP)</string>
     <string name="dialog_port_https">App list and launch. Blank: the port the host reports (default 47984).</string>
-    <string name="title_port_hestia_api">Hermes API (TCP)</string>
-    <string name="dialog_port_hestia_api">Hermes status, session preparation and stream info, over the pinned HTTPS identity. Blank: HTTPS + 6 (default 47990).</string>
+    <string name="title_port_hestia_api">Ares API (TCP)</string>
+    <string name="dialog_port_hestia_api">Ares status, session preparation and stream info, over the pinned HTTPS identity. Blank: HTTPS + 6 (default 47990).</string>
     <string name="title_port_rtsp">RTSP (TCP)</string>
     <string name="dialog_port_rtsp">Stream setup. Blank: the port in the host\'s launch reply (default 48010).</string>
     <string name="title_port_video">Video (UDP)</string>

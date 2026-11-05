@@ -51,6 +51,14 @@ public class HestiaCapabilitiesTest {
                 "\"base\":\"Apollo\"", "\"base\":\"Other\"")).isSupported());
     }
 
+    @Test public void acceptsAresAndHermes() {
+        assertTrue(HestiaCapabilities.parse(VALID).isHermes());
+        HestiaCapabilities ares = HestiaCapabilities.parse(VALID.replace(
+                "\"server_name\":\"Hermes\"", "\"server_name\":\"Ares\""));
+        assertTrue(ares.isHermes());
+        assertTrue(ares.isSupported());
+    }
+
     @Test public void unavailableFeaturesDefaultToFalse() {
         HestiaCapabilities result = HestiaCapabilities.parse(
                 VALID.replace("\"virtual_display\":true,", ""));

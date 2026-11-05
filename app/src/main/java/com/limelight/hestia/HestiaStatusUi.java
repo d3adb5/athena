@@ -35,7 +35,7 @@ import java.util.Locale;
 
 /**
  * Turns a {@link HestiaHostStatus} into icons, colours and localised text,
- * and hosts the shared "Hermes status" dialog used by the host list and the
+ * and hosts the shared "Ares status" dialog used by the host list and the
  * app list. All protocol interpretation lives in HestiaHostStatus.
  */
 public final class HestiaStatusUi {
@@ -78,7 +78,7 @@ public final class HestiaStatusUi {
         return ContextCompat.getColor(context, res);
     }
 
-    /** Short label for the host grid, e.g. "Hermes · Ready". */
+    /** Short label for the host grid, e.g. "Ares · Ready". */
     public static String badgeLabel(Context context, HestiaHostStatus status) {
         switch (status.getLevel()) {
             case ERROR:
@@ -110,7 +110,7 @@ public final class HestiaStatusUi {
     }
 
     private static String versionLabel(HestiaHostStatus status) {
-        return status.getServerVersion().isEmpty() ? "Hermes" : "Hermes " + status.getServerVersion();
+        return status.getServerVersion().isEmpty() ? "Ares" : "Ares " + status.getServerVersion();
     }
 
     /** Localised explanation of one finding. */
@@ -421,7 +421,7 @@ public final class HestiaStatusUi {
                         throw new IOException("Could not create " + directory);
                     }
                     String stamp = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT).format(new Date());
-                    File file = new File(directory, "hermes-report-" + stamp + ".txt");
+                    File file = new File(directory, "ares-report-" + stamp + ".txt");
                     try (FileOutputStream out = new FileOutputStream(file)) {
                         out.write(text.getBytes(StandardCharsets.UTF_8));
                     }

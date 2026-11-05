@@ -5,7 +5,7 @@
     <string name="tv_help">Help</string>
     <string name="tv_profiles">Profiles</string>
     <string name="tv_navigation_hint">Use the D-pad to browse and OK to select. Hold OK or press Menu for more options.</string>
-    <string name="tv_help_message">Start Hermes on your PC and connect your TV to the same network. Select your PC to pair, then enter the PIN shown here in Hermes. If discovery does not find your PC, use Add PC Manually and enter its LAN address.\n\nUse the remote D-pad to browse and OK to select. Hold OK or press Menu on a selected PC or game for more options. During streaming, use a compatible gamepad or keyboard and mouse.\n\nThis APK works on phones, tablets, Android TV, Google TV, and compatible Fire TV devices. It does not run directly on Samsung Tizen or LG webOS TVs.</string>
+    <string name="tv_help_message">Start Ares on your PC and connect your TV to the same network. Select your PC to pair, then enter the PIN shown here in Ares. If discovery does not find your PC, use Add PC Manually and enter its LAN address.\n\nUse the remote D-pad to browse and OK to select. Hold OK or press Menu on a selected PC or game for more options. During streaming, use a compatible gamepad or keyboard and mouse.\n\nThis APK works on phones, tablets, Android TV, Google TV, and compatible Fire TV devices. It does not run directly on Samsung Tizen or LG webOS TVs.</string>
     <style name="TvToolbarButton" parent="Widget.AppCompat.ImageButton">
         <item name="android:layout_width">64dp</item>
         <item name="android:layout_height">48dp</item>

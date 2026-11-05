@@ -248,7 +248,7 @@ public class NvConnection {
         context.serverCodecModeSupport = (int)h.getServerCodecModeSupport(serverInfo);
         if ((context.streamConfig.getSupportedVideoFormats() & MoonBridge.VIDEO_FORMAT_MASK_PYROWAVE) != 0 &&
                 (context.serverCodecModeSupport & MoonBridge.SCM_PYROWAVE) == 0) {
-            context.connListener.displayMessage("This host does not advertise PyroWave. Enable it in a compatible Hermes build or select another codec.");
+            context.connListener.displayMessage("This host does not advertise PyroWave. Enable it in a compatible Ares build or select another codec.");
             return false;
         }
 
