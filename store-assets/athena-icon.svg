@@ -1,32 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432">
-  <!-- Athena in profile, as on a Greek coin. 108 dp adaptive canvas at 4x, inside the 66 dp safe circle.
-       One colour with cut-outs, so the monochrome layer reads too. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 432 432">
+  <!-- Athena's face from the front, in a crested helmet. 108 dp adaptive canvas at 4x, inside the 66 dp safe circle.
+       Parts are separated by gaps and features are cut out, so the monochrome layer reads too. -->
   <defs>
+    <g id="half-cuts">
+      <!-- eye and iris -->
+      <path d="M170 242 Q186 229 205 241 Q187 252 170 242 Z" fill="#000"/>
+      <circle cx="188" cy="240.5" r="6.5" fill="#fff"/>
+      <!-- brow, running into the nose -->
+      <path d="M167 228 Q188 216 208 228 Q210 248 208 266" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>
+      <!-- crest strands -->
+      <path d="M204 92 L202 112 M190 96 L186 116 M176 104 L170 122" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>
+      <!-- helmet ridge over the brow -->
+      <path d="M146 196 Q172 156 216 154" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>
+      <!-- hair waves -->
+      <path d="M146 226 Q132 250 146 272 Q156 290 146 312" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>
+    </g>
     <mask id="cuts">
       <rect width="432" height="432" fill="#fff"/>
-      <!-- eye -->
-      <path d="M234 209 Q247 200 258 209 Q246 214 234 209 Z" fill="#000"/>
-      <path d="M232 197 Q246 188 260 195" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round"/>
-      <!-- eye-hole of the pushed-back Corinthian helmet -->
-      <path d="M218 156 Q234 144 250 154 Q236 166 218 156 Z" fill="#000"/>
-      <!-- crest hairs -->
-      <path d="M244 98 L238 116 M214 90 L212 108 M184 94 L188 112 M156 108 L166 124 M132 130 L146 142 M112 160 L128 168"
-            fill="none" stroke="#000" stroke-width="5" stroke-linecap="round"/>
-      <!-- hair strands -->
-      <path d="M176 232 Q160 262 172 292 Q178 306 168 318 M196 232 Q184 256 190 284"
-            fill="none" stroke="#000" stroke-width="4.5" stroke-linecap="round"/>
+      <use xlink:href="#half-cuts"/>
+      <use xlink:href="#half-cuts" transform="translate(432) scale(-1 1)"/>
+      <path d="M216 90 L216 110" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>
+      <!-- nose tip -->
+      <path d="M206 268 Q216 276 226 268" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>
+      <!-- lips -->
+      <path d="M200 291 Q209 286 216 288.500 Q223 286 232 291 Q216 301 200 291 Z" fill="#000"/>
+      <!-- forehead ornament on the helmet -->
+      <path d="M216 128 L224 142 L216 154 L208 142 Z" fill="#000"/>
     </mask>
+    <path id="half-hair" d="M152 206 Q120 240 130 284 Q134 310 150 330 Q168 342 182 332 Q190 318 178 300 Q154 264 164 220 Z"/>
   </defs>
-  <g mask="url(#cuts)" fill="#E9C46A">
-    <!-- crest -->
-    <path d="M286 134 Q268 94 216 86 Q150 80 112 130 Q92 166 94 224 L108 220 Q112 176 138 148 Q214 92 280 140 Z"/>
-    <!-- dome and visor -->
-    <path d="M294 170 L268 172 Q214 180 176 194 Q152 202 144 228 L114 222 Q116 176 144 156 Q214 102 276 148 Q288 158 294 170 Z"/>
-    <!-- face and neck -->
-    <path d="M264 180 L264 198 L286 234 Q284 239 274 240 Q279 246 276 251 L269 254 Q276 259 272 266 Q266 270 269 278
-             Q268 294 250 296 Q238 297 230 290 Q230 314 238 336 Q218 344 204 338 Q210 296 206 262 Q204 236 212 212
-             Q222 194 264 180 Z"/>
-    <!-- hair -->
-    <path d="M202 192 Q168 200 154 232 Q142 268 158 296 Q166 314 146 330 Q176 340 192 322 Q200 296 198 262 Q196 226 208 204 Z"/>
+  <g mask="url(#cuts)">
+    <path fill="#C9973F" d="M190 316 L188 345 Q216 352 244 345 L242 316 Q216 336 190 316 Z"/>
+    <g fill="#C9973F">
+      <use xlink:href="#half-hair"/>
+      <use xlink:href="#half-hair" transform="translate(432) scale(-1 1)"/>
+    </g>
+    <path fill="#F4DFAE" d="M216 180 Q262 182 268 226 Q270 262 248 298 Q232 319 216 320 Q200 319 184 298 Q162 262 164 226 Q170 182 216 180 Z"/>
+    <path fill="#E9C46A" d="M216 84 Q248 86 268 124 Q244 113 216 113 Q188 113 164 124 Q184 86 216 84 Z"/>
+    <path fill="#E9C46A" d="M216 120 Q288 122 298 218 L270 214 Q262 176 216 174 Q170 176 162 214 L134 218 Q144 122 216 120 Z"/>
   </g>
 </svg>
