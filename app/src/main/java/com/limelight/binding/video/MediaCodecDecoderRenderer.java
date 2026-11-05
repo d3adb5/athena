@@ -38,6 +38,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.util.Range;
 import android.view.Choreographer;
+import android.view.Display;
 import android.view.Surface;
 
 public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements Choreographer.FrameCallback {
@@ -119,6 +120,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private long lastTimestampUs;
     private int lastFrameNumber;
     private int refreshRate;
+    private long keepFramesPeriodNs;
+    private long keepFramesLeadNs;
+    private long keepFramesLastTargetNs;
     private PreferenceConfiguration prefs;
 
     private float minDecodeTime = Float.MAX_VALUE;
@@ -1050,6 +1054,31 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         Choreographer.getInstance().postFrameCallback(this);
     }
 
+    // Gives each frame a vsync of its own, as early as it can be shown. SurfaceFlinger shows only the
+    // newest of the frames ready at a wake-up, so a late frame would replace the one after it. It holds
+    // back a frame whose desired present time is after the present it is composing for.
+    private void releaseToOwnVsync(int index) {
+        final long now = System.nanoTime();
+        if (keepFramesPeriodNs == 0) {
+            Display display = activity.getWindowManager().getDefaultDisplay();
+            keepFramesPeriodNs = (long) (1e9 / display.getRefreshRate());
+            // The deadline is SurfaceFlinger's lead + 1 ms. Stay just inside the lead, so a frame
+            // that makes the next wake-up is not held for the one after it.
+            keepFramesLeadNs = Math.max(0, display.getPresentationDeadlineNanos() - 1500000);
+            LimeLog.info("Keeping frames: period " + keepFramesPeriodNs + " lead " + keepFramesLeadNs);
+        }
+
+        final long earliest = now + keepFramesLeadNs;
+        // Slightly under a period, so a delay from one late frame drains away by itself.
+        long target = Math.max(earliest, keepFramesLastTargetNs + keepFramesPeriodNs - 5000);
+        if (target - earliest > keepFramesPeriodNs + 1000000) {
+            // A whole frame behind: giving one up here is what gets the latency back.
+            target = earliest;
+        }
+        keepFramesLastTargetNs = target;
+        videoDecoder.releaseOutputBuffer(index, target);
+    }
+
     private void startChoreographerThread() {
         if (prefs.framePacing != PreferenceConfiguration.FRAME_PACING_BALANCED) {
             // Not using Choreographer in this pacing mode
@@ -1086,8 +1115,18 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
                             numFramesOut++;
 
+                            if (prefs.framePacing == PreferenceConfiguration.FRAME_PACING_KEEP_FRAMES) {
+                                releaseToOwnVsync(outIndex);
+                                activeWindowVideoStats.totalFramesRendered++;
+                                while ((outIndex = videoDecoder.dequeueOutputBuffer(info, 0)) >= 0) {
+                                    numFramesOut++;
+                                    releaseToOwnVsync(outIndex);
+                                    activeWindowVideoStats.totalFramesRendered++;
+                                    presentationTimeUs = info.presentationTimeUs;
+                                }
+                            }
                             // Render the latest frame now if frame pacing isn't in balanced mode
-                            if (prefs.framePacing != PreferenceConfiguration.FRAME_PACING_BALANCED) {
+                            else if (prefs.framePacing != PreferenceConfiguration.FRAME_PACING_BALANCED) {
                                 // Get the last output buffer in the queue
                                 while ((outIndex = videoDecoder.dequeueOutputBuffer(info, 0)) >= 0) {
                                     videoDecoder.releaseOutputBuffer(lastIndex, false);

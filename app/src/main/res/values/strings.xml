@@ -403,6 +403,7 @@
     <string name="pacing_warp">Warp Drive (Experimental)</string>
     <string name="pacing_warp2">Warp 2 (Experimental)</string>
     <string name="pacing_latency">Prefer lowest latency</string>
+    <string name="pacing_keep">Low latency, keep every frame</string>
     <string name="pacing_balanced">Balanced</string>
     <string name="pacing_balanced_alt">Balanced with FPS limit</string>
     <string name="pacing_smoothness">Prefer smoothest video (may significantly increase latency)</string>

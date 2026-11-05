@@ -13,6 +13,12 @@ Athena's package is `local.retroid.athena` (`.root` for the root build, `.debug`
 beside Artemis (`com.limelight.noir`), Artemis RP (`local.retroid.artemis`) and Hestia (`com.mroz59.hestia`). Each is
 a separate client to the host, so pair Athena on its own.
 
+
+**Keeping frames at 120 fps.** The frame pacing option "Low latency, keep every frame" gives each decoded frame its own
+vsync instead of letting a late frame replace the next one. On the RP6 at 120 fps, 99% of vsyncs show a new frame instead
+of 90-93%, for about 2 ms of average latency. Its panel really runs at 119.71 Hz, so a frame still goes about once per
+3.5 s against a 120.00 fps host.
+
 ## What it adds to Artemis
 
 From Hestia:
