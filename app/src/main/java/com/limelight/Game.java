@@ -1075,7 +1075,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             return getString(R.string.hestia_prepare_failed, response.describeError());
         }
         LimeLog.info("Hestia v1 virtual display session prepared");
-        return getString(R.string.hestia_prepare_ok, width, height, fps);
+        return prefConfig.showAresSessionInfo ? getString(R.string.hestia_prepare_ok, width, height, fps) : null;
     }
 
     private void initVirtualController(){
@@ -3864,7 +3864,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
      * Say for a few seconds how Hermes serves this stream: what it captures,
      * the stream's size, rate and codec, the encoder and GPU, and the network
      * latency, so the user sees it is working as intended. Hosts that do not
-     * report it, and a stream that has already ended, show nothing.
+     * report it, and a stream that has already ended, show nothing. With the
+     * session info setting off, only a failure shows.
      */
     private void showHestiaStreamInfo() {
         if (httpConn == null || streamConfig == null) {
@@ -3887,6 +3888,8 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             String message;
             if (!info.isOk()) {
                 message = getString(R.string.hestia_stream_info_failed, info.getFailure());
+            } else if (!prefConfig.showAresSessionInfo) {
+                return;
             } else {
                 String codec;
                 int format = decoderRenderer != null ? decoderRenderer.getActiveVideoFormat() : 0;

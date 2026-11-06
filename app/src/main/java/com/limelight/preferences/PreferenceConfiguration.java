@@ -58,6 +58,7 @@ public class PreferenceConfiguration {
     private static final String RESUME_WITHOUT_CONFIRM_PREF_STRING = "checkbox_resume_without_confirm";
     private static final String VIDEO_SCALE_MODE_PREF_STRING = "list_video_scale_mode";
     private static final String SOPS_PREF_STRING = "checkbox_enable_sops";
+    private static final String SHOW_ARES_SESSION_INFO_PREF_STRING = "checkbox_show_ares_session_info";
     private static final String DISABLE_TOASTS_PREF_STRING = "checkbox_disable_warnings";
     private static final String HOST_AUDIO_PREF_STRING = "checkbox_host_audio";
     private static final String DEADZONE_PREF_STRING = "seekbar_deadzone";
@@ -292,6 +293,7 @@ public class PreferenceConfiguration {
 
     public boolean enableLatencyToast;
     public boolean enableBackMenu;
+    public boolean showAresSessionInfo;
     public List<String> internalControllers;
     public boolean enableFloatingButton;
     public boolean showOverlayZoomToggleButton;
@@ -885,6 +887,7 @@ public class PreferenceConfiguration {
         config.language = prefs.getString(LANGUAGE_PREF_STRING, DEFAULT_LANGUAGE);
 
         // Checkbox preferences
+        config.showAresSessionInfo = prefs.getBoolean(SHOW_ARES_SESSION_INFO_PREF_STRING, true);
         config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS);
         config.enforceDisplayMode = prefs.getBoolean(ENFORCE_DISPLAY_MODE_PREF_STRING, DEFAULT_ENFORCE_DISPLAY_MODE);
         config.useVirtualDisplay = prefs.getBoolean(USE_VIRTUAL_DISPLAY_PREF_STRING, DEFAULT_USE_VIRTUAL_DISPLAY);
