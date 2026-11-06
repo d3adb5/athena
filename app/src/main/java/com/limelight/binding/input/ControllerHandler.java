@@ -55,8 +55,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
 
 public class ControllerHandler implements InputManager.InputDeviceListener, UsbDriverListener {
+    private static final String CONTROLLER_TYPE_NOTICE_SHOWN_PREF = "controller_type_notice_shown";
+
 
     private static final int MAXIMUM_BUMPER_UP_DELAY_MS = 100;
 
@@ -609,6 +613,17 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         // We can't use the platform API, so we'll have to just guess based on the gamepad type.
         // If this is a PlayStation controller with a touchpad, we know it has a clickpad.
         return type == MoonBridge.LI_CTYPE_PS;
+    }
+
+    // Says what motion emulation does to the gamepad type: worth reading once, not at every stream.
+    private void showControllerTypeChangedOnce() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activityContext);
+        if (prefs.getBoolean(CONTROLLER_TYPE_NOTICE_SHOWN_PREF, false)) {
+            return;
+        }
+        prefs.edit().putBoolean(CONTROLLER_TYPE_NOTICE_SHOWN_PREF, true).apply();
+        activityContext.runOnUiThread(() -> Toast.makeText(activityContext,
+                R.string.toast_controller_type_changed, Toast.LENGTH_LONG).show());
     }
 
     private boolean isExternal(InputDevice dev) {
@@ -3322,7 +3337,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             byte reportedType;
             if (type != MoonBridge.LI_CTYPE_PS && sensorManager != null) {
                 // Override the detected controller type if we're emulating motion sensors on an Xbox controller
-                Toast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
+                showControllerTypeChangedOnce();
                 reportedType = MoonBridge.LI_CTYPE_UNKNOWN;
 
                 // Remember that we should enable the clickpad emulation combo (Select+LB) for this device
@@ -3453,9 +3468,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             }
 
             if (type != MoonBridge.LI_CTYPE_PS && (capabilities & (MoonBridge.LI_CCAP_GYRO | MoonBridge.LI_CCAP_ACCEL)) != 0) {
-                activityContext.runOnUiThread(() -> {
-                    Toast.makeText(activityContext, activityContext.getResources().getText(R.string.toast_controller_type_changed), Toast.LENGTH_LONG).show();
-                });
+                showControllerTypeChangedOnce();
             }
 
             conn.sendControllerArrivalEvent((byte)controllerNumber, getActiveControllerMask(),
