@@ -18,6 +18,7 @@ a separate client to the host, so pair Athena on its own.
 vsync, using the panel's measured period, instead of letting a late frame replace the next one. On the RP6 at 120 fps,
 98-99.9% of vsyncs show a new frame instead of 90-93%, for 2-4 ms of average latency, with no measurable change in power.
 That panel really runs at about 119.7 Hz, not 120, so against a 120.00 fps host a frame still goes about once per 3.5 s.
+Measurements and how to repeat them: [Ares, docs/latency-measurements.md](https://github.com/d3adb5/ares/blob/master/docs/latency-measurements.md).
 
 ## What it adds to Artemis
 
