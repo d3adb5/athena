@@ -11,7 +11,7 @@ public final class HestiaSessionRequest {
         FPS_UNSUPPORTED,
         /** Above the 7680x4320 host limit, or a scale factor outside 1-500%. */
         OUT_OF_RANGE,
-        /** Zero/negative sizes, bitrate, app id or missing client version. */
+        /** Zero/negative sizes or bitrate, or a missing client version. */
         INVALID,
     }
 
@@ -33,7 +33,7 @@ public final class HestiaSessionRequest {
     public static HestiaSessionRequest create(int width, int height, int fps,
             int bitrateKbps, int scaleFactor, boolean hdr, boolean virtualDisplay,
             int appId, int screenRefreshRate, String clientVersion) {
-        if (check(width, height, fps, bitrateKbps, scaleFactor, appId,
+        if (check(width, height, fps, bitrateKbps, scaleFactor,
                 screenRefreshRate, clientVersion) != Rejection.NONE) {
             return null;
         }
@@ -65,6 +65,7 @@ public final class HestiaSessionRequest {
         display.addProperty("desktop_integration", "auto");
         display.addProperty("recover_physical_monitor", false);
 
+        // Informational: a shortcut launches by UUID and has no id (-1), and the launch itself names the app.
         JsonObject app = new JsonObject();
         app.addProperty("id", Integer.toString(appId));
         app.addProperty("launch_mode", "normal");
@@ -79,9 +80,9 @@ public final class HestiaSessionRequest {
 
     /** Validate settings against the Hermes v1 session/prepare schema. */
     public static Rejection check(int width, int height, int fps, int bitrateKbps,
-            int scaleFactor, int appId, int screenRefreshRate, String clientVersion) {
+            int scaleFactor, int screenRefreshRate, String clientVersion) {
         if (width <= 0 || height <= 0 || screenRefreshRate <= 0 || bitrateKbps <= 0
-                || appId < 0 || clientVersion == null || clientVersion.isEmpty()) {
+                || clientVersion == null || clientVersion.isEmpty()) {
             return Rejection.INVALID;
         }
         if (width > 7680 || height > 4320 || scaleFactor < 1 || scaleFactor > 500) {

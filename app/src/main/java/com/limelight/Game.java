@@ -1052,7 +1052,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         }
 
         int scale = prefConfig.resolutionScaleFactor;
-        switch (HestiaSessionRequest.check(width, height, fps, bitrateKbps, scale, appId,
+        switch (HestiaSessionRequest.check(width, height, fps, bitrateKbps, scale,
                 refreshRate, BuildConfig.VERSION_NAME)) {
             case FPS_UNSUPPORTED:
                 return getString(R.string.hestia_prepare_fps_unsupported, fps,

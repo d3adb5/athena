@@ -46,17 +46,23 @@ public class HestiaSessionRequestTest {
 
     @Test public void explainsWhyARequestWasNotBuilt() {
         assertEquals(HestiaSessionRequest.Rejection.NONE,
-                HestiaSessionRequest.check(1920, 1080, 60, 20000, 100, 1, 60, "0.1"));
+                HestiaSessionRequest.check(1920, 1080, 60, 20000, 100, 60, "0.1"));
         assertEquals(HestiaSessionRequest.Rejection.FPS_UNSUPPORTED,
-                HestiaSessionRequest.check(1920, 1080, 144, 20000, 100, 1, 144, "0.1"));
+                HestiaSessionRequest.check(1920, 1080, 144, 20000, 100, 144, "0.1"));
         assertEquals(HestiaSessionRequest.Rejection.OUT_OF_RANGE,
-                HestiaSessionRequest.check(9000, 1080, 60, 20000, 100, 1, 60, "0.1"));
+                HestiaSessionRequest.check(9000, 1080, 60, 20000, 100, 60, "0.1"));
         assertEquals(HestiaSessionRequest.Rejection.OUT_OF_RANGE,
-                HestiaSessionRequest.check(1920, 1080, 60, 20000, 0, 1, 60, "0.1"));
+                HestiaSessionRequest.check(1920, 1080, 60, 20000, 0, 60, "0.1"));
         assertEquals(HestiaSessionRequest.Rejection.INVALID,
-                HestiaSessionRequest.check(1920, 1080, 60, 0, 100, 1, 60, "0.1"));
+                HestiaSessionRequest.check(1920, 1080, 60, 0, 100, 60, "0.1"));
         assertEquals(HestiaSessionRequest.Rejection.INVALID,
-                HestiaSessionRequest.check(1920, 1080, 60, 20000, 100, 1, 60, ""));
+                HestiaSessionRequest.check(1920, 1080, 60, 20000, 100, 60, ""));
         assertArrayEquals(new int[] {30, 40, 45, 60, 90, 120}, HestiaSessionRequest.supportedFps());
+    }
+
+    @Test
+    public void aShortcutWithoutAnAppIdIsStillPrepared() {
+        // ShortcutTrampoline launches by UUID and passes -1.
+        assertNotNull(HestiaSessionRequest.create(1920, 1080, 120, 20000, 100, false, true, -1, 120, "0.1"));
     }
 }
