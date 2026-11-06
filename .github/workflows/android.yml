@@ -1,0 +1,235 @@
+name: Android
+
+# Builds a signed release APK on every push and publishes it as a release, so it installs from a device's browser.
+# Same shape as Teevee and Mumla, except that this repository is public, so the signing key is a secret.
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "fastlane/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep in step with app/build.gradle and a local build.
+  NDK_VERSION: "27.0.12077973"
+  PLATFORM: "android-36"
+  BUILD_TOOLS: "35.0.0"
+  BUILD_TOOLS_EXTRA: "36.0.0"
+  RUST_VERSION: "1.96.0"
+  CARGO_NDK_VERSION: "4.1.2"
+  MESON_VERSION: "1.11.2"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # Cold, the native builds (DeepFilterNet for four ABIs, above all) take a while. They are cached.
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # The default package list would install the emulator.
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: ""
+
+      - name: Install the pinned SDK components
+        run: |
+          sdkmanager --install "platforms;${PLATFORM}" "build-tools;${BUILD_TOOLS}" \
+            "build-tools;${BUILD_TOOLS_EXTRA}" "ndk;${NDK_VERSION}" "platform-tools" >/dev/null
+
+      - name: Install the native build tools
+        run: |
+          command -v ninja >/dev/null || { sudo apt-get update; sudo apt-get install -y ninja-build; }
+          pipx install --force "meson==${MESON_VERSION}"
+          rustup toolchain install "${RUST_VERSION}" --profile minimal
+          rustup default "${RUST_VERSION}"
+          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+
+      - name: Cache cargo-ndk and Cargo's downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/cargo-ndk
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ env.RUST_VERSION }}-${{ env.CARGO_NDK_VERSION }}-${{ hashFiles('app/src/main/deepfilter/Cargo.lock') }}
+
+      - name: Install cargo-ndk
+        run: |
+          cargo ndk --version 2>/dev/null | grep -q "${CARGO_NDK_VERSION}" ||
+            cargo install cargo-ndk --version "${CARGO_NDK_VERSION}" --locked --force
+
+      - name: Record the native sources
+        id: native
+        run: |
+          echo "deepfilter=$(git rev-parse HEAD:app/src/main/deepfilter)" >> "$GITHUB_OUTPUT"
+          echo "webrtc=$(git rev-parse HEAD:app/src/main/webrtc-apm)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache DeepFilterNet
+        uses: actions/cache@v4
+        with:
+          path: app/build/deepfilter/libs
+          key: deepfilter-${{ steps.native.outputs.deepfilter }}-${{ env.RUST_VERSION }}-${{ env.NDK_VERSION }}
+
+      - name: Cache WebRTC APM
+        uses: actions/cache@v4
+        with:
+          path: app/build/webrtc-apm/libs
+          key: webrtc-apm-${{ steps.native.outputs.webrtc }}-${{ env.MESON_VERSION }}-${{ env.NDK_VERSION }}
+
+      - name: Cache PyroWave
+        id: pyrowave
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/src/main/jni/pyrowave/arm64-v8a
+            app/src/main/assets/third_party
+          key: pyrowave-${{ hashFiles('scripts/build-pyrowave-android.sh') }}-${{ env.NDK_VERSION }}
+
+      # The builds skip a library newer than its sources. A checkout makes the sources newer than a restored cache.
+      - name: Mark restored libraries as current
+        run: find app/build -name '*.so' -exec touch {} + 2>/dev/null || true
+
+      - name: Build PyroWave
+        if: steps.pyrowave.outputs.cache-hit != 'true'
+        run: bash scripts/build-pyrowave-android.sh
+
+      - name: Run the unit tests
+        run: ./gradlew testNonRoot_gameDebugUnitTest -PhestiaPyrowave=true --no-daemon --stacktrace
+
+      - name: Prepare the signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.RETROIDTOOLS_KEYSTORE }}
+          KEYSTORE_PASS: ${{ secrets.RETROIDTOOLS_KEYSTORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASS" ] || { echo "::error::The signing secrets are not set." >&2; exit 1; }
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/athena.keystore"
+          {
+            echo "signing.storeFile=$RUNNER_TEMP/athena.keystore"
+            echo "signing.storePassword=$KEYSTORE_PASS"
+            echo "signing.keyAlias=retroidtools"
+          } > local.properties
+
+      - name: Build the APK
+        run: ./gradlew assembleNonRoot_gameRelease -PhestiaPyrowave=true --no-daemon --stacktrace
+
+      - name: Name the APK after the commit
+        id: apk
+        run: |
+          set -euo pipefail
+          src=app/build/outputs/apk/nonRoot_game/release/app-nonRoot_game-release.apk
+          out="athena-${GITHUB_SHA::7}.apk"
+          cp "$src" "$out"
+          sha256sum "$out" | tee "$out.sha256"
+          echo "path=$out" >> "$GITHUB_OUTPUT"
+
+      # Android refuses an update from another signer, so a build with the wrong key must not be published.
+      - name: Verify the APK signer
+        env:
+          EXPECTED: "986e591320bd176cbdbe2f5c498080e98f3fe24088544a5f1e1886c80448d12a"
+        run: |
+          set -euo pipefail
+          apksigner="$(find "${ANDROID_HOME}/build-tools" -name apksigner | sort | tail -1)"
+          actual="$("$apksigner" verify --print-certs "${{ steps.apk.outputs.path }}" \
+            | awk '/certificate SHA-256 digest:/ {print $NF; exit}')"
+          echo "signer: $actual"
+          [ "$actual" = "$EXPECTED" ] || { echo "::error::APK signer is $actual, expected $EXPECTED." >&2; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: athena-apk
+          path: |
+            ${{ steps.apk.outputs.path }}
+            ${{ steps.apk.outputs.path }}.sha256
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Compose the release notes
+        id: notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="build-${GITHUB_SHA::7}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          prev="$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=20" --jq \
+            'map(select(.tag_name | startswith("build-"))) | sort_by(.published_at) | reverse | map(.tag_name) | .[]' \
+            | grep -vx "$tag" | head -1 || true)"
+          prev_sha=""
+          [ -n "$prev" ] && prev_sha="$(git rev-parse -q --verify "${prev}^{commit}" || true)"
+          {
+            echo "Release APK from \`${GITHUB_SHA::7}\` on \`${GITHUB_REF_NAME}\`, built $(date -u '+%Y-%m-%d %H:%M') UTC."
+            echo
+            echo "Installs over any previous build: every one is signed with the same key."
+            echo
+            if [ -n "$prev_sha" ]; then
+              echo "### Since ${prev}"
+              echo
+              git log --no-merges --pretty='- %s' "${prev_sha}..HEAD" | head -40
+            else
+              echo "### Recent changes"
+              echo
+              git log --no-merges --pretty='- %s' -10
+            fi
+          } > release-notes.md
+          cat release-notes.md
+
+      # Not a pre-release, so /releases/latest stays a stable URL to install from.
+      - name: Publish this build as a release
+        if: startsWith(github.ref, 'refs/heads/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${{ steps.notes.outputs.tag }}"
+          gh release delete "$tag" --yes --cleanup-tag || true
+          # Without --target the tag lands on the default branch's head, not on what was built.
+          gh release create "$tag" --target "${GITHUB_SHA}" \
+            "${{ steps.apk.outputs.path }}" "${{ steps.apk.outputs.path }}.sha256" \
+            --title "${GITHUB_SHA::7} (${GITHUB_REF_NAME})" --notes-file release-notes.md
+
+      # A week of builds, like the artifacts. The one just published always stays.
+      - name: Delete builds older than a week
+        if: startsWith(github.ref, 'refs/heads/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cutoff="$(date -u -d '7 days ago' +%FT%TZ)"
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --jq \
+            ".[] | select(.tag_name | startswith(\"build-\")) | select(.published_at < \"${cutoff}\") | .tag_name" |
+            while read -r old; do
+              [ "$old" = "${{ steps.notes.outputs.tag }}" ] || gh release delete "$old" --yes --cleanup-tag
+            done
+
+      - name: Publish a tagged release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            "${{ steps.apk.outputs.path }}" "${{ steps.apk.outputs.path }}.sha256" \
+            --title "${GITHUB_REF_NAME}" --generate-notes
