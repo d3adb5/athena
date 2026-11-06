@@ -44,6 +44,8 @@ import com.limelight.nvstream.input.MouseButtonPacket;
 import com.limelight.nvstream.jni.MoonBridge;
 
 public class NvConnection {
+    private static final long RESUME_RETRY_NANOS = 10_000_000_000L;
+
     // Context parameters
     private LimelightCryptoProvider cryptoProvider;
     private String uniqueId;
@@ -319,7 +321,7 @@ public class NvConnection {
         if (h.getCurrentGame(serverInfo) != 0 || (h.getCurrentGameUUID(serverInfo) != null && !h.getCurrentGameUUID(serverInfo).isEmpty())) {
             try {
                 if (h.getCurrentGame(serverInfo) == app.getAppId() || Objects.equals(h.getCurrentGameUUID(serverInfo), app.getAppUUID())) {
-                    if (!h.launchApp(context, "resume", app.getAppUUID(), app.getAppId(), context.negotiatedHdr)) {
+                    if (!resumeApp(h, context, app)) {
                         context.connListener.displayMessage("Failed to resume existing session");
                         return false;
                     }
@@ -352,6 +354,28 @@ public class NvConnection {
         }
         else {
             return launchNotRunningApp(h, context);
+        }
+    }
+
+    // Ares answers 409 until it notices a stream that ended without saying so, about 5 s: wait that out.
+    private boolean resumeApp(NvHTTP h, ConnectionContext context, NvApp app) throws IOException,
+            XmlPullParserException {
+        final long deadline = System.nanoTime() + RESUME_RETRY_NANOS;
+        while (true) {
+            try {
+                return h.launchApp(context, "resume", app.getAppUUID(), app.getAppId(), context.negotiatedHdr);
+            } catch (HostHttpResponseException e) {
+                if (e.getErrorCode() != 409 || System.nanoTime() >= deadline) {
+                    throw e;
+                }
+                LimeLog.info("The host still has this client's last stream; retrying");
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
         }
     }
 
