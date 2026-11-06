@@ -9,6 +9,9 @@ import android.view.Display;
 import com.limelight.binding.audio.DeepFilterNet;
 import com.limelight.nvstream.jni.MoonBridge;
 import com.limelight.profiles.ProfilesManager;
+import com.limelight.binding.input.InternalControllers;
+import java.util.Collections;
+import java.util.List;
 
 public class PreferenceConfiguration {
 
@@ -289,6 +292,7 @@ public class PreferenceConfiguration {
 
     public boolean enableLatencyToast;
     public boolean enableBackMenu;
+    public List<String> internalControllers;
     public boolean enableFloatingButton;
     public boolean showOverlayZoomToggleButton;
 
@@ -1032,6 +1036,9 @@ public class PreferenceConfiguration {
         config.enableBatteryReport = prefs.getBoolean(CHECKBOX_ENABLE_BATTERY_REPORT, DEFAULT_GAMEPAD_ENABLE_BATTERY_REPORT);
         config.forceQwerty = prefs.getBoolean(CHECKBOX_FORCE_QWERTY, DEFAULT_FORCE_QWERTY);
         config.backAsMeta = prefs.getBoolean(CHECKBOX_BACK_AS_META, DEFAULT_SEND_META_ON_PHYSICAL_BACK);
+        config.internalControllers = InternalControllers.entries(
+                prefs.getStringSet(InternalControllers.ADDED_PREF, Collections.emptySet()),
+                prefs.getStringSet(InternalControllers.REMOVED_PREF, Collections.emptySet()));
         config.ignoreSynthEvents = prefs.getBoolean(CHECKBOX_IGNORE_SYNTH_EVENTS, DEFAULT_IGNORE_SYNTH_EVENTS);
         config.backAsGuide = prefs.getBoolean(CHECKBOX_BACK_AS_GUIDE, DEFAULT_BACK_AS_GUIDE);
         config.smartClipboardSync = prefs.getBoolean(CHECKBOX_SMART_CLIPBOARD_SYNC, DEFAULT_SMART_CLIPBOARD_SYNC);

@@ -329,6 +329,12 @@
             android:summary="@string/summary_checkbox_usb_bind_all"
             android:title="@string/title_checkbox_usb_bind_all"
             app:iconSpaceReserved="false" />
+        <Preference
+            android:key="internal_controllers"
+            android:persistent="false"
+            android:summary="@string/summary_internal_controllers"
+            android:title="@string/title_internal_controllers"
+            app:iconSpaceReserved="false" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="checkbox_mouse_emulation"

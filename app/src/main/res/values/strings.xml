@@ -594,6 +594,14 @@
     <string name="summary_checkbox_enforce_display_mode">Force surface to use the optimal display mode.\nRequired by some systems (such as ColorOS) to set refresh rate/resolution properly.\nDo not enable on ChromeCast 4K as it might lead to bugs.</string>
     <string name="title_checkbox_ultra_low_latency">Ultra Low Latency (experimental)</string>
     <string name="summary_checkbox_ultra_low_latency">Only effective for SD8Gen2/8(s)Gen3/8Elite.</string>
+    <string name="title_internal_controllers">Built-in controllers</string>
+    <string name="summary_internal_controllers">Controllers that are part of this device. Each is player 1, and its back button opens the menu instead of reaching the game. Use Identify controller to add one by pressing a button on it, or uncheck one to remove it.</string>
+    <string name="internal_controllers_connected">%1$s (connected)</string>
+    <string name="internal_controllers_identify">Identify controller</string>
+    <string name="internal_controllers_press">Press any button on the controller.</string>
+    <string name="internal_controllers_add">Add this as a built-in controller? It will be player 1, and its back button will open the menu.</string>
+    <string name="internal_controllers_add_button">Add</string>
+    <string name="internal_controllers_already">This is already a built-in controller.</string>
     <string name="title_checkbox_vsync_double_buffer">Limit vsync to double buffering</string>
     <string name="summary_checkbox_vsync_double_buffer">Ask Ares to hold games to two swapchain images. Games with vsync on queue fewer finished frames, for lower latency. Takes effect when a game is launched.</string>
     <string name="title_checkbox_use_virtual_display">Request isolated session</string>

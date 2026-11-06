@@ -611,7 +611,7 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
         return type == MoonBridge.LI_CTYPE_PS;
     }
 
-    private static boolean isExternal(InputDevice dev) {
+    private boolean isExternal(InputDevice dev) {
         // The ASUS Tinker Board inaccurately reports Bluetooth gamepads as internal,
         // causing shouldIgnoreBack() to believe it should pass through back as a
         // navigation event for any attached gamepads.
@@ -619,17 +619,8 @@ public class ControllerHandler implements InputManager.InputDeviceListener, UsbD
             return true;
         }
 
-        String deviceName = dev.getName();
-        if (deviceName.contains("gpio") || // This is the back button on Shield portable consoles
-                deviceName.contains("joy_key") || // These are the gamepad buttons on the Archos Gamepad 2
-                deviceName.contains("keypad") || // These are gamepad buttons on the XPERIA Play
-                deviceName.equalsIgnoreCase("NVIDIA Corporation NVIDIA Controller v01.01") || // Gamepad on Shield Portable
-                deviceName.equalsIgnoreCase("NVIDIA Corporation NVIDIA Controller v01.02") || // Gamepad on Shield Portable (?)
-                deviceName.equalsIgnoreCase("GR0006") || // Gamepad on Logitech G Cloud
-                deviceName.equals("Retroid Pocket Controller") // Gamepad on Retroid Pocket handhelds (USB, but built in)
-        )
-        {
-            LimeLog.info(dev.getName()+" is internal by hardcoded mapping");
+        if (InternalControllers.isListed(dev.getName(), prefConfig.internalControllers)) {
+            LimeLog.info(dev.getName()+" is internal by the controller list");
             return false;
         }
 

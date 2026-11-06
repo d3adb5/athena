@@ -14,6 +14,10 @@ beside Artemis (`com.limelight.noir`), Artemis RP (`local.retroid.artemis`) and 
 a separate client to the host, so pair Athena on its own.
 
 
+**Built-in controllers.** Android reports many handhelds' built-in USB gamepads as external, so their back button reaches the game
+instead of opening the menu. Settings > Gamepad > Built-in controllers lists the ones Athena treats as part of the device, including
+the Retroid Pocket's and the AYN Odin's. "Identify controller" adds any other by pressing a button on it; any entry can be unchecked.
+
 **Keeping frames at 120 fps.** The default frame pacing, "Low latency, keep every frame", gives each decoded frame its own
 vsync, using the panel's measured period, instead of letting a late frame replace the next one. On the RP6 at 120 fps,
 98-99.9% of vsyncs show a new frame instead of 90-93%, for 2-4 ms of average latency, with no measurable change in power.

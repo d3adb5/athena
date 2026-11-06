@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Vibrator;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.DialogFragment;
@@ -71,6 +72,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import com.limelight.binding.input.InternalControllers;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import android.view.InputDevice;
+import android.view.KeyEvent;
 
 public class StreamSettings extends AppCompatActivity implements SearchPreferenceResultListener {
     private PreferenceConfiguration previousPrefs;
@@ -360,6 +367,125 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             config.index(R.xml.preferences);
         }
 
+        private void setupInternalControllers() {
+            Preference preference = findPreference("internal_controllers");
+            if (preference != null) {
+                preference.setOnPreferenceClickListener(p -> {
+                    showInternalControllers();
+                    return true;
+                });
+            }
+        }
+
+        private void showInternalControllers() {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+            List<String> entries = InternalControllers.entries(
+                    prefs.getStringSet(InternalControllers.ADDED_PREF, Collections.emptySet()),
+                    prefs.getStringSet(InternalControllers.REMOVED_PREF, Collections.emptySet()));
+
+            List<String> connected = new ArrayList<>();
+            for (int id : InputDevice.getDeviceIds()) {
+                InputDevice device = InputDevice.getDevice(id);
+                if (isController(device)) {
+                    connected.add(device.getName());
+                }
+            }
+
+            List<String> choices = InternalControllers.choices(entries, connected);
+            String[] labels = new String[choices.size()];
+            boolean[] checked = new boolean[choices.size()];
+            for (int i = 0; i < labels.length; i++) {
+                String choice = choices.get(i);
+                boolean present = false;
+                for (String name : connected) {
+                    present |= InternalControllers.isListed(name, Collections.singletonList(choice));
+                }
+                labels[i] = present ? getString(R.string.internal_controllers_connected, choice) : choice;
+                checked[i] = entries.contains(choice);
+            }
+
+            new AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.title_internal_controllers)
+                    .setMultiChoiceItems(labels, checked, (dialog, which, isChecked) -> checked[which] = isChecked)
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> saveInternalControllers(choices, checked))
+                    .setNeutralButton(R.string.internal_controllers_identify, (dialog, which) -> {
+                        saveInternalControllers(choices, checked);
+                        identifyController();
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        }
+
+        private void saveInternalControllers(List<String> choices, boolean[] checked) {
+            List<String> chosen = new ArrayList<>();
+            for (int i = 0; i < checked.length; i++) {
+                if (checked[i]) {
+                    chosen.add(choices.get(i));
+                }
+            }
+            saveInternalControllers(chosen);
+        }
+
+        private void saveInternalControllers(List<String> chosen) {
+            PreferenceManager.getDefaultSharedPreferences(requireContext()).edit()
+                    .putStringSet(InternalControllers.ADDED_PREF, InternalControllers.added(chosen))
+                    .putStringSet(InternalControllers.REMOVED_PREF, InternalControllers.removed(chosen))
+                    .apply();
+        }
+
+        private static boolean isController(InputDevice device) {
+            // These sources share a class bit with keyboards: the whole value has to match.
+            return device != null && !device.isVirtual() &&
+                    (device.supportsSource(InputDevice.SOURCE_GAMEPAD) || device.supportsSource(InputDevice.SOURCE_JOYSTICK));
+        }
+
+        // Any button on a controller answers, so this can only be cancelled by touch or by a key on something else.
+        private void identifyController() {
+            AlertDialog waiting = new AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.internal_controllers_identify)
+                    .setMessage(R.string.internal_controllers_press)
+                    .setNegativeButton(android.R.string.cancel, (dialog, which) -> showInternalControllers())
+                    .create();
+            waiting.setOnKeyListener((dialog, keyCode, event) -> {
+                InputDevice device = event.getDevice();
+                if (!isController(device)) {
+                    return false;
+                }
+                // On the release, so it does not reach the dialog that comes next.
+                if (event.getAction() == KeyEvent.ACTION_UP) {
+                    dialog.dismiss();
+                    confirmController(device.getName());
+                }
+                return true;
+            });
+            waiting.show();
+        }
+
+        private void confirmController(String name) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
+            List<String> entries = InternalControllers.entries(
+                    prefs.getStringSet(InternalControllers.ADDED_PREF, Collections.emptySet()),
+                    prefs.getStringSet(InternalControllers.REMOVED_PREF, Collections.emptySet()));
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
+                    .setTitle(name)
+                    .setOnCancelListener(dialog -> showInternalControllers());
+            if (InternalControllers.isListed(name, entries)) {
+                builder.setMessage(R.string.internal_controllers_already)
+                        .setPositiveButton(android.R.string.ok, (dialog, which) -> showInternalControllers());
+            }
+            else {
+                builder.setMessage(R.string.internal_controllers_add)
+                        .setPositiveButton(R.string.internal_controllers_add_button, (dialog, which) -> {
+                            List<String> chosen = new ArrayList<>(entries);
+                            chosen.add(name);
+                            saveInternalControllers(chosen);
+                            showInternalControllers();
+                        })
+                        .setNegativeButton(android.R.string.cancel, (dialog, which) -> showInternalControllers());
+            }
+            builder.show();
+        }
+
         private void setupHostPorts() {
             String[] keys = {HostPorts.HTTP, HostPorts.HTTPS, HostPorts.HESTIA_API, HostPorts.RTSP, HostPorts.VIDEO,
                     HostPorts.CONTROL, HostPorts.AUDIO, HostPorts.MIC};
@@ -405,6 +531,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             addPreferencesFromResource(R.xml.preferences);
             PreferenceScreen screen = getPreferenceScreen();
             setupHostPorts();
+            setupInternalControllers();
 
             AppCompatActivity activity = (AppCompatActivity) requireActivity();
             PackageManager pm = activity.getPackageManager();
