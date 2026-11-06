@@ -120,9 +120,12 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private long lastTimestampUs;
     private int lastFrameNumber;
     private int refreshRate;
-    private long keepFramesPeriodNs;
-    private long keepFramesLeadNs;
+    private volatile long keepFramesPeriodNs;
+    private long keepFramesLeadNs = -1;
     private long keepFramesLastTargetNs;
+    private long vsyncSampleStartNs;
+    private long vsyncSampleLastNs;
+    private long vsyncSampleCount;
     private PreferenceConfiguration prefs;
 
     private float minDecodeTime = Float.MAX_VALUE;
@@ -1007,6 +1010,11 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             return;
         }
 
+        if (prefs.framePacing == PreferenceConfiguration.FRAME_PACING_KEEP_FRAMES) {
+            samplePanelPeriod(frameTimeNanos);
+            return;
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             frameTimeNanos -= activity.getWindowManager().getDefaultDisplay().getAppVsyncOffsetNanos();
         }
@@ -1054,14 +1062,38 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         Choreographer.getInstance().postFrameCallback(this);
     }
 
+    // A panel's real period differs from what Android reports (RP6: 8.35 ms, not 8.33), and drifts. Three
+    // seconds of vsyncs give it to well under a microsecond, and sampling rarely keeps this from waking every vsync.
+    private void samplePanelPeriod(long vsyncNanos) {
+        if (vsyncSampleStartNs == 0) {
+            vsyncSampleStartNs = vsyncSampleLastNs = vsyncNanos;
+            vsyncSampleCount = 0;
+        }
+        else {
+            final double nominal = 1e9 / activity.getWindowManager().getDefaultDisplay().getRefreshRate();
+            vsyncSampleCount += Math.round((vsyncNanos - vsyncSampleLastNs) / nominal);
+            vsyncSampleLastNs = vsyncNanos;
+            if (vsyncNanos - vsyncSampleStartNs >= 3000000000L && vsyncSampleCount > 0) {
+                keepFramesPeriodNs = (vsyncNanos - vsyncSampleStartNs) / vsyncSampleCount;
+                LimeLog.info("Panel period " + keepFramesPeriodNs + " ns, " + 1e9 / keepFramesPeriodNs + " Hz");
+                vsyncSampleStartNs = 0;
+                Choreographer.getInstance().postFrameCallbackDelayed(this, 60000);
+                return;
+            }
+        }
+        Choreographer.getInstance().postFrameCallback(this);
+    }
+
     // Gives each frame a vsync of its own, as early as it can be shown. SurfaceFlinger shows only the
     // newest of the frames ready at a wake-up, so a late frame would replace the one after it. It holds
     // back a frame whose desired present time is after the present it is composing for.
     private void releaseToOwnVsync(int index) {
         final long now = System.nanoTime();
-        if (keepFramesPeriodNs == 0) {
+        if (keepFramesLeadNs < 0) {
             Display display = activity.getWindowManager().getDefaultDisplay();
-            keepFramesPeriodNs = (long) (1e9 / display.getRefreshRate());
+            if (keepFramesPeriodNs == 0) {
+                keepFramesPeriodNs = (long) (1e9 / display.getRefreshRate());
+            }
             // The deadline is SurfaceFlinger's lead + 1 ms. Stay just inside the lead, so a frame
             // that makes the next wake-up is not held for the one after it.
             keepFramesLeadNs = Math.max(0, display.getPresentationDeadlineNanos() - 1500000);
@@ -1069,8 +1101,13 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         }
 
         final long earliest = now + keepFramesLeadNs;
-        // Slightly under a period, so a delay from one late frame drains away by itself.
-        long target = Math.max(earliest, keepFramesLastTargetNs + keepFramesPeriodNs - 5000);
+        long target = keepFramesLastTargetNs + keepFramesPeriodNs;
+        // The delay from one late frame drains away by itself. Only a real delay: a small one is
+        // what keeps a frame in phase with its panel from falling back across SurfaceFlinger's wake-up.
+        if (target - earliest > 2500000) {
+            target -= 5000;
+        }
+        target = Math.max(earliest, target);
         if (target - earliest > keepFramesPeriodNs + 1000000) {
             // A whole frame behind: giving one up here is what gets the latency back.
             target = earliest;
@@ -1080,7 +1117,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     }
 
     private void startChoreographerThread() {
-        if (prefs.framePacing != PreferenceConfiguration.FRAME_PACING_BALANCED) {
+        if (prefs.framePacing != PreferenceConfiguration.FRAME_PACING_BALANCED &&
+                prefs.framePacing != PreferenceConfiguration.FRAME_PACING_KEEP_FRAMES) {
             // Not using Choreographer in this pacing mode
             return;
         }
