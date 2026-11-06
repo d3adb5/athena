@@ -190,7 +190,7 @@ public class PreferenceConfiguration {
     private static final boolean DEFAULT_ENABLE_MICROPHONE = false;
     private static final String DEFAULT_MICROPHONE_DEVICE = "0";
     private static final boolean DEFAULT_LATENCY_TOAST = false;
-    private static final String DEFAULT_FRAME_PACING = "latency";
+    private static final String DEFAULT_FRAME_PACING = "keep";
     private static final boolean DEFAULT_ABSOLUTE_MOUSE_MODE = false;
     private static final boolean DEFAULT_CONNECT_MOUSE_WIGGLE = true;
     private static final String DEFAULT_MIC_BITRATE = "96";
