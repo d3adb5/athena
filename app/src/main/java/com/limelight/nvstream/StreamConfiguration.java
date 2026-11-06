@@ -15,6 +15,7 @@ public class StreamConfiguration {
     private float refreshRate;
     private float launchRefreshRate;
     private boolean virtualDisplay;
+    private boolean vsyncDoubleBuffer;
     private int resolutionScaleFactor;
     private int clientRefreshRateX100;
     private int bitrate;
@@ -64,6 +65,11 @@ public class StreamConfiguration {
 
         public StreamConfiguration.Builder setVirtualDisplay(boolean enable) {
             config.virtualDisplay = enable;
+            return this;
+        }
+
+        public StreamConfiguration.Builder setVsyncDoubleBuffer(boolean enable) {
+            config.vsyncDoubleBuffer = enable;
             return this;
         }
 
@@ -202,6 +208,8 @@ public class StreamConfiguration {
     }
 
     public boolean getVirtualDisplay() { return virtualDisplay; }
+
+    public boolean getVsyncDoubleBuffer() { return vsyncDoubleBuffer; }
 
     public int getResolutionScaleFactor() { return resolutionScaleFactor; }
     

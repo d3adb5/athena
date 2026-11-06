@@ -76,6 +76,13 @@
 
         <CheckBoxPreference
             android:defaultValue="false"
+            android:key="checkbox_vsync_double_buffer"
+            android:summary="@string/summary_checkbox_vsync_double_buffer"
+            android:title="@string/title_checkbox_vsync_double_buffer"
+            app:iconSpaceReserved="false" />
+
+        <CheckBoxPreference
+            android:defaultValue="false"
             android:key="checkbox_auto_orientation"
             android:summary="@string/summary_auto_orientation"
             android:title="@string/title_auto_orientation"
