@@ -508,6 +508,7 @@
     <string name="title_share_performance_logs_button">Share Performance Logs</string>
     <string name="title_software_update">Software Update</string>
     <string name="summary_software_update">Athena by d3adb5, an Artemis fork - Visit GitHub Releases for the latest version</string>
+    <string name="summary_installed_version">Version %1$s</string>
     <string name="title_follow_update">Follow Update</string>
     <string name="summary_follow_update">Follow updates of Athena with Obtainium</string>
     <string name="title_special_key_layout">Special Key Layout</string>

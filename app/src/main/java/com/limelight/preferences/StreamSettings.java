@@ -1045,6 +1045,13 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 });
             }
 
+            // The installed version, which Obtainium compares with the release's tag.
+            Preference releasePref = findPreference("option_software_release");
+            if (releasePref != null) {
+                releasePref.setSummary(getString(R.string.summary_installed_version, BuildConfig.VERSION_NAME)
+                        + "\n" + releasePref.getSummary());
+            }
+
             _pref = findPreference("pref_debug_info");
             if (_pref != null) {
                 _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
