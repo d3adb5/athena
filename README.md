@@ -134,8 +134,11 @@ launch.
 - With PyroWave (arm64 only): `ANDROID_HOME=<sdk> bash scripts/build-pyrowave-android.sh`, then
   `./gradlew assembleNonRoot_gameRelease -PhestiaPyrowave=true`. Details: [docs/pyrowave.md](docs/pyrowave.md).
 - Unit tests: `./gradlew testNonRoot_gameReleaseUnitTest`
-- Nightly: every push to `master` publishes a signed APK at [releases/latest](https://github.com/d3adb5/athena/releases/latest). Builds and
-  Actions artifacts are kept for a week; each installs over the last.
+- Releases: a push to `master` whose Conventional Commits since the last release include a `fix` (patch), `feat`
+  (minor) or a breaking change (`feat!`, `BREAKING CHANGE`: major) publishes a signed APK as `vX.Y.Z` at
+  [releases/latest](https://github.com/d3adb5/athena/releases/latest) (`scripts/next-version.sh`; the first is 0.1.0).
+  The version shows in Settings > Software Update. Releases and Actions artifacts are kept for a week, tags for good;
+  each installs over the last.
 
 ## Credits
 

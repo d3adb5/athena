@@ -23,7 +23,12 @@ android {
         }
         targetSdk 34
 
-        versionName "20.3.0-beta"
+        // CI passes the release's version (VERSION_NAME, from scripts/next-version.sh), which Obtainium compares with
+        // the release's tag; any other build is named after the last release, e.g. 0.1.0-3-gabc1234.
+        versionName System.getenv("VERSION_NAME") ?: providers.exec {
+            commandLine "bash", rootProject.file("scripts/next-version.sh").path, "--describe"
+            ignoreExitValue = true
+        }.standardOutput.asText.get().trim()
         versionCode = 57
 
         // Generate native debug symbols to allow Google Play to symbolicate our native crashes
@@ -66,7 +71,7 @@ android {
 
             resValue "string",
                     "obtainium_app_url",
-                    "https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22local.retroid.athena%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fd3adb5%2Fathena%22%2C%22author%22%3A%22d3adb5%22%2C%22name%22%3A%22Athena%22%2C%22additionalSettings%22%3A%22%7B%5C%22apkFilterRegEx%5C%22%3A%5C%22nonRoot%5C%22%2C%5C%22matchGroupToUse%5C%22%3A%5C%22%241%5C%22%2C%5C%22versionExtractionRegEx%5C%22%3A%5C%22v%28.%2B%29%5C%22%7D%22%7D"
+                    "https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22local.retroid.athena%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Fd3adb5%2Fathena%22%2C%22author%22%3A%22d3adb5%22%2C%22name%22%3A%22Athena%22%2C%22additionalSettings%22%3A%22%7B%5C%22includePrereleases%5C%22%3Afalse%2C%5C%22fallbackToOlderReleases%5C%22%3Atrue%2C%5C%22filterReleaseTitlesByRegEx%5C%22%3A%5C%22%5Ev%5B0-9%5D%2B%5C%5C%5C%5C.%5B0-9%5D%2B%5C%5C%5C%5C.%5B0-9%5D%2B%24%5C%22%2C%5C%22sortMethodChoice%5C%22%3A%5C%22date%5C%22%2C%5C%22versionDetection%5C%22%3Atrue%2C%5C%22releaseDateAsVersion%5C%22%3Afalse%2C%5C%22refreshBeforeDownload%5C%22%3Atrue%2C%5C%22trackOnly%5C%22%3Afalse%7D%22%7D"
 
             applicationId "local.retroid.athena"
             dimension "root"

@@ -1,17 +1,24 @@
 name: Android
 
-# Builds a signed release APK on every push and publishes it as a release, so it installs from a device's browser.
-# Same shape as Teevee and Mumla, except that this repository is public, so the signing key is a secret.
+# Builds a signed release APK on every push to master. When the Conventional Commits since the last release call for one
+# (fix: patch, feat: minor, "!" or BREAKING CHANGE: major; scripts/next-version.sh), it is published as release vX.Y.Z
+# with that versionName, which is what Obtainium compares. A manual run can force a bump. Same shape as Teevee and
+# Mumla, except that this repository is public, so the signing key is a secret.
 
 on:
   push:
     branches: [master]
-    tags: ["v*"]
     paths-ignore:
       - "**.md"
       - "docs/**"
       - "fastlane/**"
   workflow_dispatch:
+    inputs:
+      bump:
+        description: At least this bump, even without fix/feat commits
+        type: choice
+        options: [auto, patch, minor, major]
+        default: auto
 
 permissions:
   contents: write
@@ -41,6 +48,24 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+
+      - name: Work out the version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          [ "${BUMP:-auto}" = auto ] && BUMP=""
+          next="$(bash scripts/next-version.sh $BUMP)"
+          last="$(bash scripts/next-version.sh --last)"
+          if [ "$GITHUB_REF" = refs/heads/master ] && [ -n "$next" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"; name="$next"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"; name="$(bash scripts/next-version.sh --describe)"
+          fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "last=$last" >> "$GITHUB_OUTPUT"
+          echo "versionName: $name (last release: ${last:-none})"
 
       - uses: actions/setup-java@v4
         with:
@@ -134,14 +159,16 @@ jobs:
           } > local.properties
 
       - name: Build the APK
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
         run: ./gradlew assembleNonRoot_gameRelease -PhestiaPyrowave=true --no-daemon --stacktrace
 
-      - name: Name the APK after the commit
+      - name: Name the APK after the version
         id: apk
         run: |
           set -euo pipefail
           src=app/build/outputs/apk/nonRoot_game/release/app-nonRoot_game-release.apk
-          out="athena-${GITHUB_SHA::7}.apk"
+          out="athena-${{ steps.version.outputs.name }}.apk"
           cp "$src" "$out"
           sha256sum "$out" | tee "$out.sha256"
           echo "path=$out" >> "$GITHUB_OUTPUT"
@@ -168,27 +195,20 @@ jobs:
           retention-days: 7
 
       - name: Compose the release notes
-        id: notes
+        if: steps.version.outputs.release == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          LAST: ${{ steps.version.outputs.last }}
         run: |
           set -euo pipefail
-          tag="build-${GITHUB_SHA::7}"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          prev="$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=20" --jq \
-            'map(select(.tag_name | startswith("build-"))) | sort_by(.published_at) | reverse | map(.tag_name) | .[]' \
-            | grep -vx "$tag" | head -1 || true)"
-          prev_sha=""
-          [ -n "$prev" ] && prev_sha="$(git rev-parse -q --verify "${prev}^{commit}" || true)"
           {
-            echo "Release APK from \`${GITHUB_SHA::7}\` on \`${GITHUB_REF_NAME}\`, built $(date -u '+%Y-%m-%d %H:%M') UTC."
+            echo "Athena ${{ steps.version.outputs.name }}, from \`${GITHUB_SHA::7}\`, built $(date -u '+%Y-%m-%d %H:%M') UTC."
             echo
             echo "Installs over any previous build: every one is signed with the same key."
             echo
-            if [ -n "$prev_sha" ]; then
-              echo "### Since ${prev}"
+            if [ -n "$LAST" ]; then
+              echo "### Since ${LAST}"
               echo
-              git log --no-merges --pretty='- %s' "${prev_sha}..HEAD" | head -40
+              git log --no-merges --pretty='- %s' "${LAST}..HEAD" | head -40
             else
               echo "### Recent changes"
               echo
@@ -197,39 +217,35 @@ jobs:
           } > release-notes.md
           cat release-notes.md
 
-      # Not a pre-release, so /releases/latest stays a stable URL to install from.
-      - name: Publish this build as a release
-        if: startsWith(github.ref, 'refs/heads/')
+      # Not a pre-release, so /releases/latest stays a stable URL to install from. The title is the tag: Obtainium keeps
+      # only releases titled vX.Y.Z, which leaves out the old build-<sha> ones.
+      - name: Publish the release
+        if: steps.version.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag="${{ steps.notes.outputs.tag }}"
-          gh release delete "$tag" --yes --cleanup-tag || true
+          tag="v${{ steps.version.outputs.name }}"
           # Without --target the tag lands on the default branch's head, not on what was built.
           gh release create "$tag" --target "${GITHUB_SHA}" \
             "${{ steps.apk.outputs.path }}" "${{ steps.apk.outputs.path }}.sha256" \
-            --title "${GITHUB_SHA::7} (${GITHUB_REF_NAME})" --notes-file release-notes.md
+            --title "$tag" --notes-file release-notes.md
 
-      # A week of builds, like the artifacts. The one just published always stays.
-      - name: Delete builds older than a week
-        if: startsWith(github.ref, 'refs/heads/')
+      # A week of releases, like the artifacts; the newest always stays. Version tags stay too: the next version is
+      # counted from them.
+      - name: Delete releases older than a week
+        if: steps.version.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           cutoff="$(date -u -d '7 days ago' +%FT%TZ)"
           gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" --jq \
-            ".[] | select(.tag_name | startswith(\"build-\")) | select(.published_at < \"${cutoff}\") | .tag_name" |
+            ".[] | select(.published_at < \"${cutoff}\") | .tag_name" |
             while read -r old; do
-              [ "$old" = "${{ steps.notes.outputs.tag }}" ] || gh release delete "$old" --yes --cleanup-tag
+              case "$old" in
+                "v${{ steps.version.outputs.name }}") ;;
+                build-*) gh release delete "$old" --yes --cleanup-tag ;;
+                *) gh release delete "$old" --yes ;;
+              esac
             done
-
-      - name: Publish a tagged release
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            "${{ steps.apk.outputs.path }}" "${{ steps.apk.outputs.path }}.sha256" \
-            --title "${GITHUB_REF_NAME}" --generate-notes
