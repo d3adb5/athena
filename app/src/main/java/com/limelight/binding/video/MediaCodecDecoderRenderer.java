@@ -754,8 +754,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
         // We need some sort of recovery, so quiesce all threads before starting that
         synchronized (codecRecoveryMonitor) {
-            if (choreographerHandlerThread == null) {
-                // If we have no choreographer thread, we can just mark that as quiesced right now.
+            if (choreographerHandlerThread == null || prefs.framePacing == PreferenceConfiguration.FRAME_PACING_KEEP_FRAMES) {
+                // Without a choreographer thread, or one that only samples vsyncs (keep frames) and stops
+                // after it, nothing would mark it quiesced: it never touches the codec, so mark it now.
                 codecRecoveryThreadQuiescedFlags |= CR_FLAG_CHOREOGRAPHER;
             }
 
