@@ -746,7 +746,18 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
             chosenFrameRate *= prefConfig.framePacingWarpFactor;
         }
 
+        // The panel's HDR luminance, so the host does not master for a brighter display than this one.
+        float[] hdrLuminance = {0, 0, 0};
+        if (willStreamHdr && !onExternelDisplay && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Display.HdrCapabilities hdrCaps = currentDisplay.getHdrCapabilities();
+            if (hdrCaps != null) {
+                hdrLuminance = new float[] {hdrCaps.getDesiredMaxLuminance(), hdrCaps.getDesiredMaxAverageLuminance(),
+                        hdrCaps.getDesiredMinLuminance()};
+            }
+        }
+
         StreamConfiguration config = new StreamConfiguration.Builder()
+                .setHdrDisplayLuminance(hdrLuminance[0], hdrLuminance[1], hdrLuminance[2])
                 .setResolution(
                         displayWidth,
                         displayHeight

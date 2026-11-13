@@ -1,5 +1,6 @@
 package com.limelight.nvstream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -28,5 +29,20 @@ public class StreamConfigurationTest {
                 .build();
 
         assertTrue(config.getEnableMicrophone());
+    }
+
+    @Test
+    public void hdrDisplayDataSaysNothingByDefault() {
+        assertEquals("0x0x0x0x0x0x0x0x0x0x0", new StreamConfiguration.Builder().build().getHdrDisplayData());
+    }
+
+    @Test
+    public void hdrDisplayDataCarriesThePanelsLuminance() {
+        // The RP6: 420 nits peak, 210.16 average, 0.323 minimum (0.0001 cd/m2 units).
+        StreamConfiguration config = new StreamConfiguration.Builder()
+                .setHdrDisplayLuminance(420f, 210.1615f, 0.323f)
+                .build();
+        assertEquals("0x0x0x0x0x0x0x0x420x3230x210", config.getHdrDisplayData());
+        assertEquals("0x0x0x0x0x0x0x0x65535x0x0", StreamConfiguration.hdrDisplayData(1e6f, Float.NaN, -1f));
     }
 }

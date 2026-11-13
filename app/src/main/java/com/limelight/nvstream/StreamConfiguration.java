@@ -16,6 +16,7 @@ public class StreamConfiguration {
     private float launchRefreshRate;
     private boolean virtualDisplay;
     private boolean vsyncDoubleBuffer;
+    private String hdrDisplayData = hdrDisplayData(0, 0, 0);
     private int resolutionScaleFactor;
     private int clientRefreshRateX100;
     private int bitrate;
@@ -70,6 +71,12 @@ public class StreamConfiguration {
 
         public StreamConfiguration.Builder setVsyncDoubleBuffer(boolean enable) {
             config.vsyncDoubleBuffer = enable;
+            return this;
+        }
+
+        // The panel's HDR luminance (Display.HdrCapabilities), so the host masters for it.
+        public StreamConfiguration.Builder setHdrDisplayLuminance(float maxNits, float maxAverageNits, float minNits) {
+            config.hdrDisplayData = hdrDisplayData(maxNits, maxAverageNits, minNits);
             return this;
         }
 
@@ -210,6 +217,19 @@ public class StreamConfiguration {
     public boolean getVirtualDisplay() { return virtualDisplay; }
 
     public boolean getVsyncDoubleBuffer() { return vsyncDoubleBuffer; }
+
+    public String getHdrDisplayData() { return hdrDisplayData; }
+
+    /**
+     * GameStream's clientHdrCapDisplayData, NVAPI's display data: primaries and white point (unknown here, 0),
+     * then max luminance (cd/m2), min luminance (0.0001 cd/m2) and max frame average (cd/m2), joined by 'x'.
+     */
+    static String hdrDisplayData(float maxNits, float maxAverageNits, float minNits) {
+        final int max = Math.round(Math.max(0, Math.min(maxNits, 65535)));
+        final int min = Math.round(Math.max(0, Math.min(minNits * 10000, 65535)));
+        final int average = Math.round(Math.max(0, Math.min(maxAverageNits, 65535)));
+        return "0x0x0x0x0x0x0x0x" + max + "x" + min + "x" + average;
+    }
 
     public int getResolutionScaleFactor() { return resolutionScaleFactor; }
     
