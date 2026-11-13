@@ -527,6 +527,34 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             }
         }
 
+        // A luminance override: its summary names what Android reports when it is left empty.
+        private void setUpHdrNits(String key, float detected) {
+            EditTextPreference pref = findPreference(key);
+            if (pref == null) {
+                return;
+            }
+            pref.setOnBindEditTextListener(edit -> edit.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL));
+            pref.setSummaryProvider(p -> {
+                final float nits = PreferenceConfiguration.parseNits(((EditTextPreference) p).getText());
+                if (nits > 0) {
+                    return getString(R.string.summary_hdr_nits_custom, formatNits(nits));
+                }
+                return detected > 0 ? getString(R.string.summary_hdr_nits_auto, formatNits(detected))
+                        : getString(R.string.summary_hdr_nits_unknown);
+            });
+            pref.setOnPreferenceChangeListener((p, value) -> {
+                if (PreferenceConfiguration.parseNits((String) value) < 0) {
+                    Toast.makeText(getContext(), R.string.hdr_nits_invalid, Toast.LENGTH_LONG).show();
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        private static String formatNits(float nits) {
+            return nits >= 10 ? String.valueOf(Math.round(nits)) : String.format(java.util.Locale.ROOT, "%.3f", nits);
+        }
+
         public void initializePreferences() {
             addPreferencesFromResource(R.xml.preferences);
             PreferenceScreen screen = getPreferenceScreen();
@@ -834,6 +862,10 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 PreferenceCategory category =
                         (PreferenceCategory) findPreference("category_video_settings");
                 category.removePreference(findPreference("checkbox_enable_hdr"));
+                for (String key : new String[] {PreferenceConfiguration.HDR_MAX_NITS_PREF_STRING,
+                        PreferenceConfiguration.HDR_AVERAGE_NITS_PREF_STRING, PreferenceConfiguration.HDR_MIN_NITS_PREF_STRING}) {
+                    category.removePreference(findPreference(key));
+                }
             }
             else {
                 Display.HdrCapabilities hdrCaps = display.getHdrCapabilities();
@@ -855,6 +887,10 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                     PreferenceCategory category =
                             (PreferenceCategory) findPreference("category_video_settings");
                     category.removePreference(findPreference("checkbox_enable_hdr"));
+                    for (String key : new String[] {PreferenceConfiguration.HDR_MAX_NITS_PREF_STRING,
+                            PreferenceConfiguration.HDR_AVERAGE_NITS_PREF_STRING, PreferenceConfiguration.HDR_MIN_NITS_PREF_STRING}) {
+                        category.removePreference(findPreference(key));
+                    }
                 }
                 else if (PreferenceConfiguration.isShieldAtvFirmwareWithBrokenHdr()) {
                     LimeLog.info("Disabling HDR toggle on old broken SHIELD TV firmware");
@@ -864,6 +900,11 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                     hdrPref.setEnabled(false);
                     hdrPref.setChecked(false);
                     hdrPref.setSummary("Update the firmware on your NVIDIA SHIELD Android TV to enable HDR");
+                }
+                else {
+                    setUpHdrNits(PreferenceConfiguration.HDR_MAX_NITS_PREF_STRING, hdrCaps.getDesiredMaxLuminance());
+                    setUpHdrNits(PreferenceConfiguration.HDR_AVERAGE_NITS_PREF_STRING, hdrCaps.getDesiredMaxAverageLuminance());
+                    setUpHdrNits(PreferenceConfiguration.HDR_MIN_NITS_PREF_STRING, hdrCaps.getDesiredMinLuminance());
                 }
             }
 

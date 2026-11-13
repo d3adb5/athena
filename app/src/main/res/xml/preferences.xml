@@ -168,6 +168,33 @@
             android:title="@string/title_enable_hdr"
             app:iconSpaceReserved="false" />
 
+        <EditTextPreference
+            android:dependency="checkbox_enable_hdr"
+            android:dialogMessage="@string/dialog_hdr_nits"
+            android:dialogTitle="@string/title_hdr_max_nits"
+            android:key="edit_hdr_max_nits"
+            android:singleLine="true"
+            android:title="@string/title_hdr_max_nits"
+            app:iconSpaceReserved="false" />
+
+        <EditTextPreference
+            android:dependency="checkbox_enable_hdr"
+            android:dialogMessage="@string/dialog_hdr_nits"
+            android:dialogTitle="@string/title_hdr_average_nits"
+            android:key="edit_hdr_average_nits"
+            android:singleLine="true"
+            android:title="@string/title_hdr_average_nits"
+            app:iconSpaceReserved="false" />
+
+        <EditTextPreference
+            android:dependency="checkbox_enable_hdr"
+            android:dialogMessage="@string/dialog_hdr_nits"
+            android:dialogTitle="@string/title_hdr_min_nits"
+            android:key="edit_hdr_min_nits"
+            android:singleLine="true"
+            android:title="@string/title_hdr_min_nits"
+            app:iconSpaceReserved="false" />
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="checkbox_enable_fullexdisplay"

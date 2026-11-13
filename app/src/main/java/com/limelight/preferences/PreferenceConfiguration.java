@@ -77,6 +77,9 @@ public class PreferenceConfiguration {
     private static final String SHOW_GUIDE_BUTTON_PREF_STRING = "checkbox_show_guide_button";
     private static final String LEGACY_DISABLE_FRAME_DROP_PREF_STRING = "checkbox_disable_frame_drop";
     private static final String ENABLE_HDR_PREF_STRING = "checkbox_enable_hdr";
+    public static final String HDR_MAX_NITS_PREF_STRING = "edit_hdr_max_nits";
+    public static final String HDR_AVERAGE_NITS_PREF_STRING = "edit_hdr_average_nits";
+    public static final String HDR_MIN_NITS_PREF_STRING = "edit_hdr_min_nits";
     private static final String ENABLE_PIP_PREF_STRING = "checkbox_enable_pip";
     private static final String ENABLE_PERF_OVERLAY_STRING = "checkbox_enable_perf_overlay";
     private static final String ENABLE_PERF_LOGGING = "checkbox_enable_perf_logging";
@@ -281,6 +284,8 @@ public class PreferenceConfiguration {
     public boolean onlyL3R3;
     public boolean showGuideButton;
     public boolean enableHdr;
+    // The display's HDR luminance in nits, overriding Android's; 0 = what Android reports.
+    public float hdrMaxNits, hdrAverageNits, hdrMinNits;
     public boolean enablePip;
     public boolean enablePerfOverlay;
     public boolean enablePerfLogging;
@@ -706,6 +711,24 @@ public class PreferenceConfiguration {
 //        prefs.edit().putString(LANGUAGE_PREF_STRING, DEFAULT_LANGUAGE).apply();
 //    }
 
+    /** A luminance setting: its nits, 0 for empty (use Android's), -1 for anything but a positive number. */
+    public static float parseNits(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return 0;
+        }
+        try {
+            final float nits = Float.parseFloat(text.trim());
+            return nits > 0 && nits < 65536 ? nits : -1;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** A setting's nits where set, else what the display reported. */
+    public static float hdrNits(float setting, float detected) {
+        return setting > 0 ? setting : detected;
+    }
+
     public static boolean isShieldAtvFirmwareWithBrokenHdr() {
         // This particular Shield TV firmware crashes when using HDR
         // https://www.nvidia.com/en-us/geforce/forums/notifications/comment/155192/
@@ -927,6 +950,9 @@ public class PreferenceConfiguration {
         config.onlyL3R3 = prefs.getBoolean(ONLY_L3_R3_PREF_STRING, ONLY_L3_R3_DEFAULT);
         config.showGuideButton = prefs.getBoolean(SHOW_GUIDE_BUTTON_PREF_STRING, SHOW_GUIDE_BUTTON_DEFAULT);
         config.enableHdr = prefs.getBoolean(ENABLE_HDR_PREF_STRING, DEFAULT_ENABLE_HDR) && !isShieldAtvFirmwareWithBrokenHdr();
+        config.hdrMaxNits = parseNits(prefs.getString(HDR_MAX_NITS_PREF_STRING, ""));
+        config.hdrAverageNits = parseNits(prefs.getString(HDR_AVERAGE_NITS_PREF_STRING, ""));
+        config.hdrMinNits = parseNits(prefs.getString(HDR_MIN_NITS_PREF_STRING, ""));
         config.enablePip = prefs.getBoolean(ENABLE_PIP_PREF_STRING, DEFAULT_ENABLE_PIP);
         config.enablePerfOverlay = prefs.getBoolean(ENABLE_PERF_OVERLAY_STRING, DEFAULT_ENABLE_PERF_OVERLAY);
         config.enablePerfLogging = prefs.getBoolean(ENABLE_PERF_LOGGING, DEFAULT_ENABLE_PERF_LOGGING);

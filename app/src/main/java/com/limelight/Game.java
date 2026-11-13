@@ -755,6 +755,13 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                         hdrCaps.getDesiredMinLuminance()};
             }
         }
+        if (willStreamHdr) {
+            // Android's figures can be off (the RP6 reports 420 nits for a 550-nit panel): the settings win.
+            hdrLuminance = new float[] {
+                    PreferenceConfiguration.hdrNits(prefConfig.hdrMaxNits, hdrLuminance[0]),
+                    PreferenceConfiguration.hdrNits(prefConfig.hdrAverageNits, hdrLuminance[1]),
+                    PreferenceConfiguration.hdrNits(prefConfig.hdrMinNits, hdrLuminance[2])};
+        }
 
         StreamConfiguration config = new StreamConfiguration.Builder()
                 .setHdrDisplayLuminance(hdrLuminance[0], hdrLuminance[1], hdrLuminance[2])

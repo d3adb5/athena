@@ -355,6 +355,14 @@
     <string name="title_video_format">Change codec settings</string>
     <string name="summary_video_format">Newer codecs can lower video bandwidth requirements if your device supports them. Codec selections may be ignored if not supported by the host software or GPU.</string>
     <string name="title_enable_hdr">Enable HDR (Experimental)</string>
+    <string name="title_hdr_max_nits">HDR peak brightness</string>
+    <string name="title_hdr_average_nits">HDR average brightness</string>
+    <string name="title_hdr_min_nits">HDR black level</string>
+    <string name="dialog_hdr_nits">In nits. Leave empty to use what Android reports for this display. The host masters HDR for these values, so the display does not tone map it down.</string>
+    <string name="summary_hdr_nits_auto">Auto: %1$s nits (from Android)</string>
+    <string name="summary_hdr_nits_unknown">Auto: Android reports nothing</string>
+    <string name="summary_hdr_nits_custom">%1$s nits</string>
+    <string name="hdr_nits_invalid">Enter a number of nits above 0, or leave it empty</string>
     <string name="summary_enable_hdr">Stream HDR when the game and PC GPU support it. HDR requires a GPU with HEVC Main 10 encoding support.</string>
     <string name="title_full_range">Force full range video (Experimental)</string>
     <string name="summary_full_range">This will cause loss of detail in light and dark areas if your device doesn\'t properly display full range video content.</string>

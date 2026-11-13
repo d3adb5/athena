@@ -104,4 +104,26 @@ public class PreferenceConfigurationTest {
         assertEquals(30f, config.micDeepFilter.maxDbErbThresh, 0f);
         assertEquals(20f, config.micDeepFilter.maxDbDfThresh, 0f);
     }
+
+    @Test
+    public void hdrNitsAreAndroidsUnlessSet() {
+        assertEquals(0f, PreferenceConfiguration.parseNits(""), 0f);
+        assertEquals(0f, PreferenceConfiguration.parseNits(null), 0f);
+        assertEquals(550f, PreferenceConfiguration.parseNits(" 550 "), 0f);
+        assertEquals(0.05f, PreferenceConfiguration.parseNits("0.05"), 0f);
+        for (String bad : new String[] {"0", "-3", "abc", "70000"}) {
+            assertEquals(bad, -1f, PreferenceConfiguration.parseNits(bad), 0f);
+        }
+        assertEquals(550f, PreferenceConfiguration.hdrNits(550f, 420f), 0f);
+        assertEquals(420f, PreferenceConfiguration.hdrNits(0f, 420f), 0f);
+        assertEquals(420f, PreferenceConfiguration.hdrNits(-1f, 420f), 0f);
+    }
+
+    @Test
+    public void hdrNitsSettingsAreRead() {
+        prefs.edit().putString(PreferenceConfiguration.HDR_MAX_NITS_PREF_STRING, "550").commit();
+        PreferenceConfiguration config = PreferenceConfiguration.readPreferences(context);
+        assertEquals(550f, config.hdrMaxNits, 0f);
+        assertEquals(0f, config.hdrAverageNits, 0f);
+    }
 }
