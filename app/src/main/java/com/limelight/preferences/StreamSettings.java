@@ -62,6 +62,7 @@ import com.limelight.binding.input.virtual_controller.keyboard.KeyBoardControlle
 import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.FileUriUtils;
+import com.limelight.utils.SteamLibrarySync;
 import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.UiHelper;
 import org.json.JSONObject;
@@ -185,6 +186,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         private static final int READ_REQUEST_CODE = 1001;
         private static final int READ_REQUEST_SPECIAL_CODE = 1002;
         private static final int RECORD_AUDIO_PERMISSION_REQUEST_CODE = 1003;
+        private static final int STEAM_LIBRARY_FOLDER_REQUEST_CODE = 1004;
 
         private int nativeResolutionStartIndex = Integer.MAX_VALUE;
         private boolean nativeFramerateShown = false;
@@ -994,6 +996,27 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 });
             }
 
+            _pref = findPreference(SteamLibrarySync.FOLDER_PREF);
+            if (_pref != null) {
+                updateSteamLibraryFolderSummary(_pref);
+                _pref.setOnPreferenceClickListener(preference -> {
+                    if (SteamLibrarySync.folder(requireContext()) == null) {
+                        pickSteamLibraryFolder();
+                        return true;
+                    }
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle(R.string.title_steam_library_folder)
+                            .setPositiveButton(R.string.steam_library_folder_change, (d, w) -> pickSteamLibraryFolder())
+                            .setNegativeButton(R.string.steam_library_folder_stop, (d, w) -> {
+                                getPrefs().edit().remove(SteamLibrarySync.FOLDER_PREF).apply();
+                                updateSteamLibraryFolderSummary(preference);
+                                Toast.makeText(getActivity(), R.string.steam_library_folder_stopped, Toast.LENGTH_SHORT).show();
+                            })
+                            .show();
+                    return true;
+                });
+            }
+
             _pref = findPreference("import_special_button_file");
             if (_pref != null) {
                 _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -1440,9 +1463,36 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             super.onDestroy();
         }
 
+        private void pickSteamLibraryFolder() {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+            startActivityForResult(intent, STEAM_LIBRARY_FOLDER_REQUEST_CODE);
+        }
+
+        private void updateSteamLibraryFolderSummary(Preference preference) {
+            Uri folder = SteamLibrarySync.folder(requireContext());
+            preference.setSummary(folder == null ? getString(R.string.summary_steam_library_folder) :
+                    getString(R.string.summary_steam_library_folder_set, Uri.decode(folder.getLastPathSegment())));
+        }
+
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
             super.onActivityResult(requestCode, resultCode, data);
+            if (requestCode == STEAM_LIBRARY_FOLDER_REQUEST_CODE) {
+                if (resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+                    Uri tree = data.getData();
+                    requireContext().getContentResolver().takePersistableUriPermission(tree,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    getPrefs().edit().putString(SteamLibrarySync.FOLDER_PREF, tree.toString()).apply();
+                    SteamLibrarySync.syncAllAsync(requireContext());
+                    Preference preference = findPreference(SteamLibrarySync.FOLDER_PREF);
+                    if (preference != null) {
+                        updateSteamLibraryFolderSummary(preference);
+                    }
+                }
+                return;
+            }
             if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK && data.getData() != null) {
                 try {
                     Uri uri = data.getData();

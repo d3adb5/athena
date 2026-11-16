@@ -27,6 +27,7 @@ import com.limelight.nvstream.mdns.MdnsDiscoveryListener;
 import com.limelight.utils.CacheHelper;
 import com.limelight.utils.NetHelper;
 import com.limelight.utils.ServerHelper;
+import com.limelight.utils.SteamLibrarySync;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -975,6 +976,10 @@ public class ComputerManagerService extends Service {
                                 // Reset empty count if it wasn't empty this time
                                 if (!list.isEmpty()) {
                                     emptyAppListResponses = 0;
+                                }
+
+                                if (!appList.equals(computer.rawAppList)) {
+                                    SteamLibrarySync.syncAsync(ComputerManagerService.this, computer, appList);
                                 }
 
                                 // Update the computer

@@ -578,6 +578,17 @@
             android:summary="@string/summary_checkbox_host_audio"
             android:title="@string/title_checkbox_host_audio"
             app:iconSpaceReserved="false" />
+        <Preference
+            android:key="steam_library_folder"
+            android:summary="@string/summary_steam_library_folder"
+            android:title="@string/title_steam_library_folder"
+            app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="checkbox_show_steam_library_apps"
+            android:summary="@string/summary_checkbox_show_steam_library_apps"
+            android:title="@string/title_checkbox_show_steam_library_apps"
+            app:iconSpaceReserved="false" />
     </com.limelight.preferences.CollapsiblePreferenceCategory>
 
     <com.limelight.preferences.CollapsiblePreferenceCategory

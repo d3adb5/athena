@@ -346,6 +346,14 @@
     <string name="summary_unlock_fps">Streaming at 90 or 120 FPS may reduce latency on high-end devices but can cause lag or instability on devices that can\'t support it</string>
     <string name="title_checkbox_reduce_refresh_rate">Allow refresh rate reduction</string>
     <string name="summary_checkbox_reduce_refresh_rate">Lower display refresh rates can save power at the expense of some additional video latency</string>
+    <string name="title_steam_library_folder">Steam library shortcuts folder</string>
+    <string name="summary_steam_library_folder">Ares hosts with the Steam library on send every Steam game; Athena keeps one .art file per game here (e.g. ROMs/moonlight for Cocoon), refreshed when it loads the host\'s app list. Not set.</string>
+    <string name="summary_steam_library_folder_set">Files go to %1$s, refreshed when Athena loads a host\'s app list. Tap to change or stop.</string>
+    <string name="title_checkbox_show_steam_library_apps">Show Steam library games in the app list</string>
+    <string name="summary_checkbox_show_steam_library_apps">Ares\' Steam library entries are for launcher shortcuts; off keeps them out of the host\'s grid.</string>
+    <string name="steam_library_folder_stopped">Steam library shortcuts off; the files stay</string>
+    <string name="steam_library_folder_change">Change folder</string>
+    <string name="steam_library_folder_stop">Stop</string>
     <string name="title_checkbox_show_ares_session_info">Show Ares session info</string>
     <string name="summary_checkbox_show_ares_session_info">When a stream starts, say how Ares prepared and serves it: capture, size, codec, encoder and latency. Failures always show.</string>
     <string name="title_checkbox_disable_warnings">Disable warning messages</string>

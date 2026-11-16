@@ -2,6 +2,7 @@ package com.limelight;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import androidx.preference.PreferenceManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -714,7 +716,16 @@ public class AppView extends AppCompatActivity implements AdapterFragmentCallbac
         });
     }
 
-    private void updateUiWithAppList(final List<NvApp> appList) {
+    private void updateUiWithAppList(final List<NvApp> fullAppList) {
+        // Ares' Steam library games are for launcher shortcuts; the grid shows them only on request.
+        final List<NvApp> appList = new ArrayList<>();
+        boolean showSteamLibrary = PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean("checkbox_show_steam_library_apps", false);
+        for (NvApp app : fullAppList) {
+            if (showSteamLibrary || !app.isSteamLibraryGame()) {
+                appList.add(app);
+            }
+        }
         AppView.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {

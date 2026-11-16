@@ -10,6 +10,8 @@ public class NvApp {
     private int appIndex;
     private boolean initialized;
     private boolean hdrSupported;
+    // Ares: a Steam game of the host's library, run through its Steam.
+    private String steamAppId;
     
     public NvApp() {}
     
@@ -25,6 +27,18 @@ public class NvApp {
         this.initialized = true;
     }
     
+    public void setSteamAppId(String steamAppId) {
+        this.steamAppId = steamAppId;
+    }
+
+    public String getSteamAppId() {
+        return steamAppId;
+    }
+
+    public boolean isSteamLibraryGame() {
+        return steamAppId != null && !steamAppId.isEmpty();
+    }
+
     public void setAppName(String appName) {
         this.appName = appName;
     }
