@@ -10,6 +10,7 @@ import android.provider.DocumentsContract;
 import androidx.preference.PreferenceManager;
 
 import com.limelight.LimeLog;
+import com.limelight.binding.PlatformBinding;
 import com.limelight.computers.ComputerDatabaseManager;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
@@ -50,6 +51,33 @@ public final class SteamLibrarySync {
         }
         final String uuid = computer.uuid, name = computer.name;
         EXECUTOR.execute(() -> sync(app, uuid, name, rawAppList, false));
+    }
+
+    /**
+     * As a stream starts, from any launch path (a frontend's shortcut never opens the app grid): the host's current
+     * app list, so games installed or uninstalled since show up. Ares rescans its library on this request.
+     */
+    public static void refreshAsync(Context context, ComputerDetails computer, String uniqueId) {
+        final Context app = context.getApplicationContext();
+        if (folder(app) == null || computer.uuid == null) {
+            return;
+        }
+        final String uuid = computer.uuid, name = computer.name;
+        final NvHTTP http;
+        try {
+            http = new NvHTTP(ServerHelper.getCurrentAddressFromComputer(computer), computer.httpsPort, uniqueId,
+                    computer.serverCert, PlatformBinding.getCryptoProvider(app));
+        } catch (Exception e) {
+            LimeLog.warning("Steam library: no address for " + name + ": " + e);
+            return;
+        }
+        EXECUTOR.execute(() -> {
+            try {
+                sync(app, uuid, name, http.getAppListRaw(), false);
+            } catch (Exception e) {
+                LimeLog.warning("Steam library: app list from " + name + " failed: " + e);
+            }
+        });
     }
 
     /** Every paired host, from its cached app list (a newly picked folder). */

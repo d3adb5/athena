@@ -102,6 +102,7 @@ public class ServerHelper {
             gameIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
         if(gameIntent == null) gameIntent = new Intent(parent, Game.class);
+        SteamLibrarySync.refreshAsync(parent, computer, managerBinder.getUniqueId());
         gameIntent.putExtra(Game.EXTRA_HOST, computer.activeAddress.address);
         gameIntent.putExtra(Game.EXTRA_PORT, computer.activeAddress.port);
         gameIntent.putExtra(Game.EXTRA_HTTPS_PORT, computer.httpsPort);
