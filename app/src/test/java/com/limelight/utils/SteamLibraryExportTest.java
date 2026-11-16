@@ -48,6 +48,19 @@ public class SteamLibraryExportTest {
     }
 
     @Test
+    public void nonSteamGamesHaveNoSteamAppIdLine() throws Exception {
+        String list = APPLIST.replace("</root>", "<App><AppTitle>Mario Kart 8 Deluxe</AppTitle>" +
+                "<UUID>5354454D-0000-4000-8000-0000B88D6D7B</UUID><IDX>4</IDX><ID>13</ID>" +
+                "<SteamAppId>3099517051</SteamAppId><SteamShortcut>1</SteamShortcut></App></root>");
+        List<NvApp> apps = NvHTTP.getAppListByReader(new StringReader(list));
+        assertTrue(apps.get(3).isSteamShortcut());
+        assertFalse(apps.get(1).isSteamShortcut());
+        String kart = SteamLibraryExport.files("H", "h", apps).get("Mario Kart 8 Deluxe.art");
+        assertFalse(kart.contains("[steamappid]"));
+        assertTrue(kart.contains("[app_uuid] 5354454D-0000-4000-8000-0000B88D6D7B\n"));
+    }
+
+    @Test
     public void namesCollidingTitlesApart() {
         List<NvApp> apps = new ArrayList<>();
         for (String id : new String[] {"1", "2"}) {

@@ -888,6 +888,8 @@ public class NvHTTP {
                     app.setHdrSupported(xpp.getText().equals("1"));
                 } else if (currentTag.peek().equals("SteamAppId")) {
                     app.setSteamAppId(xpp.getText().trim());
+                } else if (currentTag.peek().equals("SteamShortcut")) {
+                    app.setSteamShortcut(xpp.getText().trim().equals("1"));
                 }
                 break;
             }

@@ -37,10 +37,13 @@ public final class SteamLibraryExport {
         return files;
     }
 
-    /** [steamappid] first: launchers match the first app id line, and no [app_id] (Ares' id) at all. */
+    /**
+     * [steamappid] first: launchers match the first app id line, and no [app_id] (Ares' id) at all. None for a non-Steam
+     * game: its shortcut id would fetch some other app's artwork, so launchers scrape it by name.
+     */
     static String contents(String hostUuid, String hostName, NvApp app) {
         return "# Athena: a Steam game through Ares\n" +
-                "[steamappid] " + app.getSteamAppId() + "\n" +
+                (app.isSteamShortcut() ? "" : "[steamappid] " + app.getSteamAppId() + "\n") +
                 "[host_uuid] " + hostUuid + "\n" +
                 "[host_name] " + oneLine(hostName) + "\n" +
                 "[app_uuid] " + app.getAppUUID() + "\n" +

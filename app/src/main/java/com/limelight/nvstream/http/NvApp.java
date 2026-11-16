@@ -12,6 +12,8 @@ public class NvApp {
     private boolean hdrSupported;
     // Ares: a Steam game of the host's library, run through its Steam.
     private String steamAppId;
+    // A non-Steam game added to the host's Steam: its id is a shortcut's, unknown to Steam's store.
+    private boolean steamShortcut;
     
     public NvApp() {}
     
@@ -33,6 +35,14 @@ public class NvApp {
 
     public String getSteamAppId() {
         return steamAppId;
+    }
+
+    public void setSteamShortcut(boolean steamShortcut) {
+        this.steamShortcut = steamShortcut;
+    }
+
+    public boolean isSteamShortcut() {
+        return steamShortcut;
     }
 
     public boolean isSteamLibraryGame() {
