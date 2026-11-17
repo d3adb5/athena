@@ -25,6 +25,23 @@
         <item name="android:windowBackground">#1A1A1A</item>
     </style>
 
+    <style name="LaunchBaseTheme" parent="AppBaseTheme" />
+
+    <!--
+        ShortcutTrampoline: no window of its own. Android slides every new task in with its own animation, which an
+        app cannot replace; an invisible first step leaves one transition, from the frontend to the black launch screen.
+    -->
+    <style name="LaunchTheme" parent="LaunchBaseTheme">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
     <style name="StreamBaseTheme" parent="AppBaseTheme">
         <!-- Transparent streaming background to avoid extra overdraw -->
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -32,6 +49,10 @@
 
     <!-- Stream activity theme -->
     <style name="StreamTheme" parent="StreamBaseTheme">
+        <!-- Full screen from the theme, not only from onCreate: the status bar never shows on the way in. -->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>

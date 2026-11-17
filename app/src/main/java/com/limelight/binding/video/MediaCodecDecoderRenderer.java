@@ -123,6 +123,18 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private volatile long keepFramesPeriodNs;
     private long keepFramesLeadNs = -1;
     private final KeepPacer keepPacer = new KeepPacer();
+    private volatile Runnable pictureListener;
+    private volatile int pictureListenerBytes;
+
+    /** Runs {@code listener} once, on the decoder's thread, when a frame of at least {@code bytes} arrives. */
+    public void whenPictureArrives(int bytes, Runnable listener) {
+        if (pyroWaveRenderer != null) {
+            listener.run(); // its frames don't pass through here
+            return;
+        }
+        pictureListenerBytes = bytes;
+        pictureListener = listener;
+    }
     // The low-latency keys of the format the decoder accepted, for the log and the detailed overlay.
     private String decoderOptions = "";
     private long vsyncSampleStartNs;
@@ -1504,6 +1516,12 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         if (stopping) {
             // Don't bother if we're stopping
             return MoonBridge.DR_OK;
+        }
+
+        Runnable arrived = pictureListener;
+        if (arrived != null && decodeUnitType == MoonBridge.BUFFER_TYPE_PICDATA && decodeUnitLength >= pictureListenerBytes) {
+            pictureListener = null;
+            arrived.run();
         }
 
         if (lastFrameNumber == 0) {

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ draws a starting window with the app's icon: black and no icon for a launch into a stream. -->
+    <style name="LaunchBaseTheme" parent="AppBaseTheme">
+        <item name="android:windowSplashScreenBackground">#FF000000</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/launch_no_icon</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#FF000000</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+    <style name="StreamBaseTheme" parent="AppBaseTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowSplashScreenBackground">#FF000000</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/launch_no_icon</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#FF000000</item>
+    </style>
+</resources>

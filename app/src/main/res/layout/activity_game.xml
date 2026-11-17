@@ -117,4 +117,8 @@
         android:visibility="gone"
         android:elevation="9999dp" />
 
+    <include
+        layout="@layout/launch_curtain"
+        android:visibility="gone" />
+
 </merge>

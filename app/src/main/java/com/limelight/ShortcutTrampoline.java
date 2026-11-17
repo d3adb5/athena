@@ -146,17 +146,18 @@ public class ShortcutTrampoline extends AppCompatActivity {
                                             // Launch game if provided app ID, otherwise launch app view
                                             if (app != null) {
                                                 if (details.runningGameId == 0 || details.runningGameId == app.getAppId() || Objects.equals(details.runningGameUUID, app.getAppUUID())) {
-                                                    intentStack.add(ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, prefConfig.useVirtualDisplay));
+                                                    intentStack.add(quiet(ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, prefConfig.useVirtualDisplay)));
 
                                                     // Close this activity
                                                     finish();
 
-                                                    // Now start the activities
+                                                    // Now start the activities; the stream takes over the black launch screen in place
                                                     startActivities(intentStack.toArray(new Intent[]{}));
+                                                    overridePendingTransition(0, 0);
                                                 } else {
                                                     // Create the start intent immediately, so we can safely unbind the managerBinder
                                                     // below before we return.
-                                                    final Intent startIntent = ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, prefConfig.useVirtualDisplay);
+                                                    final Intent startIntent = quiet(ServerHelper.createStartIntent(ShortcutTrampoline.this, app, details, managerBinder, prefConfig.useVirtualDisplay));
 
                                                     UiHelper.displayQuitConfirmationDialog(ShortcutTrampoline.this, new Runnable() {
                                                         @Override
@@ -350,6 +351,11 @@ public class ShortcutTrampoline extends AppCompatActivity {
         return artData;
     }
 
+    // A stream started from a shortcut shows the launch screen instead of the connection dialogs, without a transition.
+    private static Intent quiet(Intent start) {
+        return start.putExtra(Game.EXTRA_QUIET_LAUNCH, true).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -504,8 +510,8 @@ public class ShortcutTrampoline extends AppCompatActivity {
         bindService(new Intent(this, ComputerManagerService.class), serviceConnection,
                 Service.BIND_AUTO_CREATE);
 
-        blockingLoadSpinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.conn_establishing_title),
-                getResources().getString(R.string.applist_connect_msg), true);
+        // No "Establishing connection" box and no window (LaunchTheme): the frontend stays until the stream's black
+        // launch screen takes over. Errors still come as dialogs.
     }
 
     @Override

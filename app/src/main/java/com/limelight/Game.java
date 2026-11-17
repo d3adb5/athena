@@ -189,6 +189,21 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
     public NvConnection conn;
     private SpinnerDialog spinner;
+    public static final String EXTRA_QUIET_LAUNCH = "QuietLaunch";
+    // A host that hides Steam sends a blank picture (a few hundred bytes a frame) until the game's window is up.
+    private static final int LAUNCH_PICTURE_BYTES = 6000;
+    private static final long LAUNCH_CURTAIN_MAX_MS = 45000;
+    private boolean quietLaunch;
+
+    // Runs on any thread; the launch screen goes once a real picture came, the stream failed, or after a while.
+    private void liftLaunchCurtain() {
+        runOnUiThread(() -> {
+            View curtain = findViewById(R.id.launchCurtain);
+            if (curtain != null && curtain.getVisibility() == View.VISIBLE) {
+                curtain.animate().alpha(0f).setDuration(150).withEndAction(() -> curtain.setVisibility(View.GONE));
+            }
+        });
+    }
     private boolean displayedFailureDialog = false;
     private boolean connecting = false;
     public boolean connected = false;
@@ -376,9 +391,14 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
 
         clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 
-        // Start the spinner
-        spinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.conn_establishing_title),
-                getResources().getString(R.string.conn_establishing_msg), true);
+        // Start the spinner; a launch from a shortcut shows the black launch screen until the game's picture instead
+        quietLaunch = getIntent().getBooleanExtra(EXTRA_QUIET_LAUNCH, false);
+        if (quietLaunch) {
+            findViewById(R.id.launchCurtain).setVisibility(View.VISIBLE);
+        } else {
+            spinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.conn_establishing_title),
+                    getResources().getString(R.string.conn_establishing_msg), true);
+        }
 
         // Read the stream preferences
         prefConfig = PreferenceConfiguration.readPreferences(this);
@@ -3633,7 +3653,9 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         final int portTestResult = MoonBridge.testClientConnectivity(ServerHelper.CONNECTION_TEST_SERVER, 443, portFlags);
 
         if (errorCode == 0 && portFlags != 0 && (portTestResult == MoonBridge.ML_TEST_RESULT_INCONCLUSIVE || portTestResult == 0)) {
-            spinner.setMessage(getResources().getString(R.string.unlocking_or_starting));
+            if (spinner != null) {
+                spinner.setMessage(getResources().getString(R.string.unlocking_or_starting));
+            }
             return true;
         }
 
@@ -3822,6 +3844,10 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                 if (spinner != null) {
                     spinner.dismiss();
                     spinner = null;
+                }
+                if (quietLaunch) {
+                    decoderRenderer.whenPictureArrives(LAUNCH_PICTURE_BYTES, Game.this::liftLaunchCurtain);
+                    new Handler(Looper.getMainLooper()).postDelayed(Game.this::liftLaunchCurtain, LAUNCH_CURTAIN_MAX_MS);
                 }
 
                 connected = true;

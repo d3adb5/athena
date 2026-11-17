@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A thin arc with a fading tail, as on Steam's loading screen: 2.5dp of a 132dp ring. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:innerRadiusRatio="2.08"
+    android:shape="ring"
+    android:thicknessRatio="53"
+    android:useLevel="false">
+    <gradient
+        android:centerColor="#00FFFFFF"
+        android:endColor="#F2FFFFFF"
+        android:startColor="#00FFFFFF"
+        android:type="sweep" />
+</shape>
