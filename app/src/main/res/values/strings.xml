@@ -418,6 +418,8 @@
 
     <string name="title_frame_pacing">Video frame pacing</string>
     <string name="summary_frame_pacing">Specify how to balance video latency and smoothness</string>
+    <string name="title_launch_animation">Logo while a game loads</string>
+    <string name="summary_launch_animation">A game started from a shortcut or a frontend shows Athena\'s logo with a turning arc on black until its picture arrives. Off: the black alone.</string>
     <string name="title_decoder_speed">Decoder speed</string>
     <string name="summary_decoder_speed">How fast the video decoder is clocked, where it takes a rate (Qualcomm). Maximum is lowest latency; a multiple of the frame rate may save power. Watch the overlay\'s decode time when changing it.</string>
     <string name="decoder_speed_max">Maximum (default)</string>

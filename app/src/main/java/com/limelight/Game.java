@@ -395,6 +395,11 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
         quietLaunch = getIntent().getBooleanExtra(EXTRA_QUIET_LAUNCH, false);
         if (quietLaunch) {
             findViewById(R.id.launchCurtain).setVisibility(View.VISIBLE);
+            // "Logo while a game loads" off: the black alone.
+            if (!com.limelight.profiles.ProfilesManager.getInstance().getOverlayingSharedPreferences(this).getBoolean("checkbox_launch_animation", true)) {
+                findViewById(R.id.launchCurtainRing).setVisibility(View.GONE);
+                findViewById(R.id.launchCurtainLogo).setVisibility(View.GONE);
+            }
         } else {
             spinner = SpinnerDialog.displayDialog(this, getResources().getString(R.string.conn_establishing_title),
                     getResources().getString(R.string.conn_establishing_msg), true);
