@@ -254,6 +254,8 @@ public class PreferenceConfiguration {
     public float fps;
 //    public String customBitrate;
     public boolean enableUltraLowLatency;
+    // "Decoder speed": 0 = maximum (KEY_OPERATING_RATE 32767), else that many times the frame rate.
+    public int decoderSpeed;
     public String customResolution;
     public String customRefreshRate;
     public int meteredBitrate;
@@ -916,6 +918,11 @@ public class PreferenceConfiguration {
         config.useVirtualDisplay = prefs.getBoolean(USE_VIRTUAL_DISPLAY_PREF_STRING, DEFAULT_USE_VIRTUAL_DISPLAY);
         config.vsyncDoubleBuffer = prefs.getBoolean(VSYNC_DOUBLE_BUFFER_PREF_STRING, DEFAULT_VSYNC_DOUBLE_BUFFER);
         config.enableUltraLowLatency = prefs.getBoolean(ENABLE_ULTRA_LOW_LATENCY_PREF_STRING, DEFAULT_ENABLE_ULTRA_LOW_LATENCY);
+        try {
+            config.decoderSpeed = Integer.parseInt(prefs.getString("list_decoder_speed", "0"));
+        } catch (NumberFormatException e) {
+            config.decoderSpeed = 0;
+        }
         config.enableSops = prefs.getBoolean(SOPS_PREF_STRING, DEFAULT_SOPS);
         config.playHostAudio = prefs.getBoolean(HOST_AUDIO_PREF_STRING, DEFAULT_HOST_AUDIO);
         config.smallIconMode = prefs.getBoolean(SMALL_ICONS_PREF_STRING, getDefaultSmallMode(context));

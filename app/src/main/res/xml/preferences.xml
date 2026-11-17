@@ -60,6 +60,15 @@
             android:title="@string/title_frame_pacing"
             app:iconSpaceReserved="false" />
 
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/decoder_speed_names"
+            android:entryValues="@array/decoder_speed_values"
+            android:key="list_decoder_speed"
+            android:summary="@string/summary_decoder_speed"
+            android:title="@string/title_decoder_speed"
+            app:iconSpaceReserved="false" />
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="checkbox_ultra_low_latency"

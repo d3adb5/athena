@@ -418,6 +418,13 @@
 
     <string name="title_frame_pacing">Video frame pacing</string>
     <string name="summary_frame_pacing">Specify how to balance video latency and smoothness</string>
+    <string name="title_decoder_speed">Decoder speed</string>
+    <string name="summary_decoder_speed">How fast the video decoder is clocked, where it takes a rate (Qualcomm). Maximum is lowest latency; a multiple of the frame rate may save power. Watch the overlay\'s decode time when changing it.</string>
+    <string name="decoder_speed_max">Maximum (default)</string>
+    <string name="decoder_speed_4x">4x the frame rate</string>
+    <string name="decoder_speed_2x">2x the frame rate</string>
+    <string name="decoder_speed_match">Match the frame rate</string>
+    <string name="perf_overlay_decoder_options">Decoder options: %1$s</string>
     <string name="pacing_warp">Warp Drive (Experimental)</string>
     <string name="pacing_warp2">Warp 2 (Experimental)</string>
     <string name="pacing_latency">Prefer lowest latency</string>

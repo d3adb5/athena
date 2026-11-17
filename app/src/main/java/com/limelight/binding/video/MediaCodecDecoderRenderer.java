@@ -122,7 +122,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     private int refreshRate;
     private volatile long keepFramesPeriodNs;
     private long keepFramesLeadNs = -1;
-    private long keepFramesLastTargetNs;
+    private final KeepPacer keepPacer = new KeepPacer();
+    // The low-latency keys of the format the decoder accepted, for the log and the detailed overlay.
+    private String decoderOptions = "";
     private long vsyncSampleStartNs;
     private long vsyncSampleLastNs;
     private long vsyncSampleCount;
@@ -695,7 +697,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
             MediaFormat mediaFormat = createBaseMediaFormat(mimeType);
             // This will try low latency options until we find one that works (or we give up).
-            boolean newFormat = MediaCodecHelper.setDecoderLowLatencyOptions(mediaFormat, selectedDecoderInfo, prefs.enableUltraLowLatency, tryNumber);
+            boolean newFormat = MediaCodecHelper.setDecoderLowLatencyOptions(mediaFormat, selectedDecoderInfo, prefs.enableUltraLowLatency, tryNumber,
+                    KeepPacer.operatingRate(prefs.decoderSpeed, refreshRate));
             //todo 色彩格式
 //            MediaCodecInfo.CodecCapabilities codecCapabilities = selectedDecoderInfo.getCapabilitiesForType(mimeType);
 //            int[] colorFormats=codecCapabilities.colorFormats;
@@ -705,6 +708,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             // Throw the underlying codec exception on the last attempt if the caller requested it
             if (tryConfigureDecoder(selectedDecoderInfo, mediaFormat, !newFormat && throwOnCodecError)) {
                 // Success!
+                decoderOptions = MediaCodecHelper.describeLowLatencyOptions(mediaFormat, tryNumber);
+                LimeLog.info("Decoder accepted: " + decoderOptions);
                 break;
             }
 
@@ -1097,24 +1102,11 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             }
             // The deadline is SurfaceFlinger's lead + 1 ms. Stay just inside the lead, so a frame
             // that makes the next wake-up is not held for the one after it.
-            keepFramesLeadNs = Math.max(0, display.getPresentationDeadlineNanos() - 1500000);
+            keepFramesLeadNs = KeepPacer.leadFor(display.getPresentationDeadlineNanos());
             LimeLog.info("Keeping frames: period " + keepFramesPeriodNs + " lead " + keepFramesLeadNs);
         }
 
-        final long earliest = now + keepFramesLeadNs;
-        long target = keepFramesLastTargetNs + keepFramesPeriodNs;
-        // The delay from one late frame drains away by itself. Only a real delay: a small one is
-        // what keeps a frame in phase with its panel from falling back across SurfaceFlinger's wake-up.
-        if (target - earliest > 2500000) {
-            target -= 5000;
-        }
-        target = Math.max(earliest, target);
-        if (target - earliest > keepFramesPeriodNs + 1000000) {
-            // A whole frame behind: giving one up here is what gets the latency back.
-            target = earliest;
-        }
-        keepFramesLastTargetNs = target;
-        videoDecoder.releaseOutputBuffer(index, target);
+        videoDecoder.releaseOutputBuffer(index, keepPacer.target(now, keepFramesPeriodNs, keepFramesLeadNs));
     }
 
     private void startChoreographerThread() {
@@ -1585,6 +1577,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                 }else{
                     sb.append(context.getString(R.string.perf_overlay_streamdetails, initialWidth + "x" + initialHeight, fps.totalFps)).append('\n');
                     sb.append(context.getString(R.string.perf_overlay_decoder, decoder)).append('\n');
+                    sb.append(context.getString(R.string.perf_overlay_decoder_options, decoderOptions)).append('\n');
                     sb.append(context.getString(R.string.perf_overlay_incomingfps, fps.receivedFps)).append('\n');
                     sb.append(context.getString(R.string.perf_overlay_renderingfps, fps.renderedFps)).append('\n');
                     sb.append(context.getString(R.string.perf_overlay_netdrops,

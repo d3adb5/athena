@@ -492,7 +492,39 @@ public class MediaCodecHelper {
                 !isAdreno620;
     }
 
+    // Every key setDecoderLowLatencyOptions may set, with the short name the overlay shows.
+    private static final String[][] LOW_LATENCY_KEYS = {
+            {"low-latency", "low-latency"},
+            {"vdec-lowlatency", "vdec"},
+            {MediaFormat.KEY_OPERATING_RATE, "rate"},
+            {MediaFormat.KEY_PRIORITY, "priority"},
+            {"vendor.qti-ext-dec-picture-order.enable", "picture-order"},
+            {"vendor.qti-ext-dec-low-latency.enable", "qti-low-latency"},
+            {"vendor.qti-ext-output-sw-fence-enable.value", "sw-fence"},
+            {"vendor.qti-ext-output-fence.enable", "fence"},
+            {"vendor.qti-ext-output-fence.fence_type", "fence-type"},
+            {"vendor.hisi-ext-low-latency-video-dec.video-scene-for-low-latency-req", "hisi"},
+            {"vendor.rtc-ext-dec-low-latency.enable", "rtc"},
+            {"vendor.low-latency.enable", "aml"},
+    };
+
+    /** What the decoder was configured with: "try 0: low-latency=1 rate=32767 ...". A later try means it refused keys. */
+    public static String describeLowLatencyOptions(MediaFormat format, int tryNumber) {
+        StringBuilder sb = new StringBuilder("try ").append(tryNumber).append(':');
+        for (String[] key : LOW_LATENCY_KEYS) {
+            if (format.containsKey(key[0])) {
+                sb.append(' ').append(key[1]).append('=').append(format.getInteger(key[0]));
+            }
+        }
+        return sb.toString();
+    }
+
     public static boolean setDecoderLowLatencyOptions(MediaFormat videoFormat, MediaCodecInfo decoderInfo, boolean ultraLowLatency, int tryNumber) {
+        return setDecoderLowLatencyOptions(videoFormat, decoderInfo, ultraLowLatency, tryNumber, Short.MAX_VALUE);
+    }
+
+    /** @param operatingRate KEY_OPERATING_RATE where the decoder takes one: Short.MAX_VALUE, or a multiple of the frame rate */
+    public static boolean setDecoderLowLatencyOptions(MediaFormat videoFormat, MediaCodecInfo decoderInfo, boolean ultraLowLatency, int tryNumber, int operatingRate) {
         // Options here should be tried in the order of most to least risky. The decoder will use
         // the first MediaFormat that doesn't fail in configure().
 
@@ -533,7 +565,7 @@ public class MediaCodecHelper {
 
         if (tryNumber < 3) {
             if (MediaCodecHelper.decoderSupportsMaxOperatingRate(decoderInfo.getName())) {
-                videoFormat.setInteger(MediaFormat.KEY_OPERATING_RATE, Short.MAX_VALUE);
+                videoFormat.setInteger(MediaFormat.KEY_OPERATING_RATE, operatingRate);
                 setNewOption = true;
             }
             else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
