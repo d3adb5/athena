@@ -24,8 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Keeps one .art file per Steam library game of each host in the folder the user picked
@@ -34,7 +35,9 @@ import java.util.concurrent.Executors;
 public final class SteamLibrarySync {
     public static final String FOLDER_PREF = "steam_library_folder";
     private static final String STATE = "steam_library_export";
-    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
+    /** After a stream: Ares parks its session as the client leaves, then reloads its library (at most every 10 s). */
+    private static final long[] AFTER_STREAM_S = {3, 15};
 
     private SteamLibrarySync() {}
 
@@ -71,13 +74,26 @@ public final class SteamLibrarySync {
             LimeLog.warning("Steam library: no address for " + name + ": " + e);
             return;
         }
-        EXECUTOR.execute(() -> {
-            try {
-                sync(app, uuid, name, http.getAppListRaw(), false);
-            } catch (Exception e) {
-                LimeLog.warning("Steam library: app list from " + name + " failed: " + e);
-            }
-        });
+        EXECUTOR.execute(() -> fetch(app, uuid, name, http));
+    }
+
+    /** As a stream ends (disconnect or quit): games installed during it show up without another launch. */
+    public static void refreshAfterStream(Context context, String uuid, String name, NvHTTP http) {
+        final Context app = context.getApplicationContext();
+        if (folder(app) == null || uuid == null || http == null) {
+            return;
+        }
+        for (long delay : AFTER_STREAM_S) {
+            EXECUTOR.schedule(() -> fetch(app, uuid, name, http), delay, TimeUnit.SECONDS);
+        }
+    }
+
+    private static void fetch(Context app, String uuid, String name, NvHTTP http) {
+        try {
+            sync(app, uuid, name, http.getAppListRaw(), false);
+        } catch (Exception e) {
+            LimeLog.warning("Steam library: app list from " + name + " failed: " + e);
+        }
     }
 
     /** Every paired host, from its cached app list (a newly picked folder). */

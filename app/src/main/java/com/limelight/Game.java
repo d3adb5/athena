@@ -57,6 +57,7 @@ import com.limelight.utils.MouseModeOption;
 import com.limelight.utils.PanZoomHandler;
 import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.ServerHelper;
+import com.limelight.utils.SteamLibrarySync;
 import com.limelight.utils.ShortcutHelper;
 import com.limelight.utils.SpinnerDialog;
 import com.limelight.utils.UiHelper;
@@ -3599,6 +3600,7 @@ public class Game extends AppCompatActivity implements SurfaceHolder.Callback,
                             Game.this.runOnUiThread(() -> Toast.makeText(Game.this, e.getMessage(), Toast.LENGTH_LONG).show());
                         }
                     }
+                    SteamLibrarySync.refreshAfterStream(Game.this, getIntent().getStringExtra(EXTRA_PC_UUID), pcName, httpConn);
                 }
             }.start();
         }

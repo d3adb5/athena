@@ -263,7 +263,12 @@ public class ServerHelper {
                     parent,
                     httpConn,
                     app.getAppName(),
-                    onComplete,
+                    () -> {
+                        SteamLibrarySync.refreshAfterStream(parent, computer.uuid, computer.name, httpConn);
+                        if (onComplete != null) {
+                            onComplete.run();
+                        }
+                    },
                     null
             );
         } catch (Exception e) {
