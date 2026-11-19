@@ -2,6 +2,7 @@ package com.limelight.utils;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -38,6 +39,9 @@ public final class SteamLibrarySync {
     private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
     /** After a stream: Ares parks its session as the client leaves, then reloads its library (at most every 10 s). */
     private static final long[] AFTER_STREAM_S = {3, 15};
+    /** Cocoon with the d3adb5 Morphe patch rescans and scrapes the platform of this folder (nothing without it). */
+    private static final String COCOON = "rip.moth.cocoonshell";
+    private static final String COCOON_LIBRARY_CHANGED = "net.d3adb5.cocoon.action.LIBRARY_CHANGED";
 
     private SteamLibrarySync() {}
 
@@ -145,11 +149,14 @@ public final class SteamLibrarySync {
         try {
             Uri parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree));
             Map<String, Uri> existing = children(resolver, tree);
-            int written = 0, removed = 0;
+            int written = 0, created = 0, removed = 0;
             for (Map.Entry<String, String> file : files.entrySet()) {
                 Uri document = existing.get(file.getKey());
                 if (document == null) {
                     document = DocumentsContract.createDocument(resolver, parent, "application/octet-stream", file.getKey());
+                    if (document != null) {
+                        created++;
+                    }
                 }
                 if (document == null) {
                     continue;
@@ -170,10 +177,22 @@ public final class SteamLibrarySync {
                     .putString("sig:" + hostUuid, signature)
                     .putStringSet("files:" + hostUuid, new HashSet<>(files.keySet()))
                     .apply();
-            LimeLog.info("Steam library: " + written + " files for " + hostName + ", " + removed + " removed");
+            LimeLog.info("Steam library: " + written + " files for " + hostName + ", " + created + " new, "
+                    + removed + " removed");
+            if (created > 0) {
+                notifyCocoon(context, tree);
+            }
         } catch (Exception e) {
             LimeLog.warning("Steam library: export to " + tree + " failed: " + e);
         }
+    }
+
+    /** New games for the frontend: an explicit broadcast, ignored unless the patched Cocoon is installed. */
+    private static void notifyCocoon(Context context, Uri tree) {
+        context.sendBroadcast(new Intent(COCOON_LIBRARY_CHANGED)
+                .setPackage(COCOON)
+                .putExtra("folder", tree.toString())
+                .putExtra("source", "Athena"));
     }
 
     private static Map<String, Uri> children(ContentResolver resolver, Uri tree) {

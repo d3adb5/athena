@@ -24,6 +24,11 @@
     <!-- Direct mDNS is also a fallback when native discovery stalls on Android 14+. -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
+    <!-- Steam library shortcuts tell the patched Cocoon about new games (package visibility, API 30+). -->
+    <queries>
+        <package android:name="rip.moth.cocoonshell" />
+    </queries>
+
     <uses-feature
         android:name="android.hardware.touchscreen"
         android:required="false" />
