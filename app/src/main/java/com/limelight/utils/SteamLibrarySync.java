@@ -40,7 +40,8 @@ public final class SteamLibrarySync {
     /** After a stream: Ares parks its session as the client leaves, then reloads its library (at most every 10 s). */
     private static final long[] AFTER_STREAM_S = {3, 15};
     /** Cocoon with the d3adb5 Morphe patch rescans and scrapes the platform of this folder (nothing without it). */
-    private static final String COCOON = "rip.moth.cocoonshell";
+    // Cocoon Imago (the patched Cocoon beside the official one), and the patched Cocoon of older installs.
+    private static final String[] COCOONS = {"rip.moth.cocoonshell.imago", "rip.moth.cocoonshell"};
     private static final String COCOON_LIBRARY_CHANGED = "net.d3adb5.cocoon.action.LIBRARY_CHANGED";
 
     private SteamLibrarySync() {}
@@ -189,10 +190,12 @@ public final class SteamLibrarySync {
 
     /** New games for the frontend: an explicit broadcast, ignored unless the patched Cocoon is installed. */
     private static void notifyCocoon(Context context, Uri tree) {
-        context.sendBroadcast(new Intent(COCOON_LIBRARY_CHANGED)
-                .setPackage(COCOON)
-                .putExtra("folder", tree.toString())
-                .putExtra("source", "Athena"));
+        for (String cocoon : COCOONS) {
+            context.sendBroadcast(new Intent(COCOON_LIBRARY_CHANGED)
+                    .setPackage(cocoon)
+                    .putExtra("folder", tree.toString())
+                    .putExtra("source", "Athena"));
+        }
     }
 
     private static Map<String, Uri> children(ContentResolver resolver, Uri tree) {

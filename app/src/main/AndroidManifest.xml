@@ -26,6 +26,7 @@
 
     <!-- Steam library shortcuts tell the patched Cocoon about new games (package visibility, API 30+). -->
     <queries>
+        <package android:name="rip.moth.cocoonshell.imago" />
         <package android:name="rip.moth.cocoonshell" />
     </queries>
 
