@@ -192,6 +192,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         private static final int READ_REQUEST_CODE = 1001;
         private static final int READ_REQUEST_SPECIAL_CODE = 1002;
         private static final int RECORD_AUDIO_PERMISSION_REQUEST_CODE = 1003;
+        private static final int LOCATION_PERMISSION_REQUEST_CODE = 1005;
         private static final int STEAM_LIBRARY_FOLDER_REQUEST_CODE = 1004;
 
         private int nativeResolutionStartIndex = Integer.MAX_VALUE;
@@ -203,6 +204,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         private ListPreference microphoneDevicePreference;
         private MicrophonePreviewPreference microphonePreviewPreference;
         private boolean pendingMicrophoneEnableAfterPermission;
+        private EditTextPreference homeWifiPref;
 
         public SettingsFragment(PreferenceConfiguration prefCfg) {
             prevPrefConfig = prefCfg;
@@ -1456,6 +1458,7 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         public void onResume() {
             super.onResume();
             refreshMicrophonePreview();
+            refreshHomeWifiSummary();
         }
 
         @Override
@@ -1525,6 +1528,35 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             games.setEntryValues(ids.toArray(new CharSequence[0]));
             games.setEnabled(!installed.isEmpty() && !ids.isEmpty());
             games.setVisible(!installed.isEmpty());
+
+            homeWifiPref = findPreference(LocalFallbackHelper.PREF_HOME_WIFI);
+            if (homeWifiPref != null) {
+                homeWifiPref.setVisible(!installed.isEmpty());
+                homeWifiPref.setOnBindEditTextListener(edit -> {
+                    edit.setSingleLine(true);
+                    // Typing on a handheld is slow: offer the Wi-Fi this device is on.
+                    if (edit.getText().length() == 0) {
+                        String current = currentSsid();
+                        if (current != null) {
+                            edit.setText(current);
+                            edit.setSelection(current.length());
+                        }
+                    }
+                });
+                homeWifiPref.setOnPreferenceChangeListener((p, value) -> {
+                    if (!((String) value).trim().isEmpty()) {
+                        requestLocationForWifiName();
+                    }
+                    return true;
+                });
+                refreshHomeWifiSummary();
+            }
+            emulator.setOnPreferenceChangeListener((p, value) -> {
+                if (!LocalEmulator.OFF.equals(value) && !LocalFallbackHelper.homeWifi(requireContext()).isEmpty()) {
+                    requestLocationForWifiName();
+                }
+                return true;
+            });
             games.setSummaryProvider(p -> {
                 if (ids.isEmpty()) {
                     return getString(R.string.summary_local_fallback_games_empty);
@@ -1538,6 +1570,53 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 }
                 return picked.isEmpty() ? getString(R.string.summary_local_fallback_games_none)
                         : android.text.TextUtils.join(", ", picked);
+            });
+        }
+
+        // The setting is one step from where it's asked; nothing is granted behind the user's back.
+        private void requestLocationForWifiName() {
+            if (!LocalFallbackHelper.hasLocationPermission(requireContext())) {
+                requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+            }
+        }
+
+        @SuppressWarnings("deprecation")
+        private String currentSsid() {
+            if (!LocalFallbackHelper.hasLocationPermission(requireContext())) {
+                return null;
+            }
+            try {
+                android.net.wifi.WifiManager wm = (android.net.wifi.WifiManager)
+                        requireContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                String ssid = wm == null || wm.getConnectionInfo() == null ? null : wm.getConnectionInfo().getSSID();
+                if (ssid == null || ssid.equals("<unknown ssid>")) {
+                    return null;
+                }
+                return ssid.length() >= 2 && ssid.startsWith("\"") && ssid.endsWith("\"")
+                        ? ssid.substring(1, ssid.length() - 1) : ssid;
+            } catch (RuntimeException e) {
+                return null;
+            }
+        }
+
+        private void refreshHomeWifiSummary() {
+            if (homeWifiPref == null) {
+                return;
+            }
+            homeWifiPref.setSummaryProvider(p -> {
+                String name = ((EditTextPreference) p).getText();
+                name = name == null ? "" : name.trim();
+                if (name.isEmpty()) {
+                    return getString(R.string.summary_local_fallback_home_wifi_empty);
+                }
+                if (!LocalFallbackHelper.hasLocationPermission(requireContext())) {
+                    return getString(R.string.summary_local_fallback_home_wifi_no_permission, name);
+                }
+                if (!LocalFallbackHelper.locationOn(requireContext())) {
+                    return getString(R.string.summary_local_fallback_home_wifi_location_off, name);
+                }
+                return getString(R.string.summary_local_fallback_home_wifi_set, name);
             });
         }
 
@@ -1613,6 +1692,11 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
         @Override
         public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+                refreshHomeWifiSummary();
+                return;
+            }
 
             if (requestCode != RECORD_AUDIO_PERMISSION_REQUEST_CODE) {
                 return;

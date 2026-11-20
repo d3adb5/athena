@@ -610,6 +610,10 @@
             android:key="list_local_fallback"
             android:title="@string/title_local_fallback"
             app:iconSpaceReserved="false" />
+        <EditTextPreference
+            android:key="local_fallback_home_wifi"
+            android:title="@string/title_local_fallback_home_wifi"
+            app:iconSpaceReserved="false" />
         <MultiSelectListPreference
             android:key="local_fallback_games"
             android:title="@string/title_local_fallback_games"

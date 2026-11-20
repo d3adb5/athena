@@ -5,15 +5,16 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 
-import static com.limelight.fallback.LocalFallback.Network.AWAY;
-import static com.limelight.fallback.LocalFallback.Network.HOME;
-import static com.limelight.fallback.LocalFallback.Network.NONE;
-import static com.limelight.fallback.LocalFallback.Network.UNKNOWN;
+import static com.limelight.fallback.LocalFallback.Place.AWAY;
+import static com.limelight.fallback.LocalFallback.Place.HOME;
+import static com.limelight.fallback.LocalFallback.Place.NOT_SET;
+import static com.limelight.fallback.LocalFallback.Place.NO_NETWORK;
+import static com.limelight.fallback.LocalFallback.Place.UNREADABLE;
+import static com.limelight.fallback.LocalFallback.Step.AS_BEFORE;
 import static com.limelight.fallback.LocalFallback.Step.ASK;
 import static com.limelight.fallback.LocalFallback.Step.FALL_BACK;
-import static com.limelight.fallback.LocalFallback.Step.KEEP_TRYING;
+import static com.limelight.fallback.LocalFallback.Step.NOT_INSTALLED;
 import static com.limelight.fallback.LocalFallback.Step.WAIT_FOR_NETWORK;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,75 +22,73 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class LocalFallbackTest {
-    private static final List<String> HOST = Collections.singletonList("192.168.1.237");
+    private static final String HOME_WIFI = "Flint MLO";
 
     @Test
-    public void sameSubnetIsHome() {
-        assertEquals(HOME, LocalFallback.classify(Collections.singletonList("192.168.1.122/24"), HOST));
+    public void homeWifiByExactNameWithoutQuotes() {
+        assertEquals(HOME, LocalFallback.place(HOME_WIFI, "\"Flint MLO\"", true, true));
+        assertEquals(HOME, LocalFallback.place(" Flint MLO ", "\"Flint MLO\"", true, true));
+        assertEquals(AWAY, LocalFallback.place(HOME_WIFI, "\"flint mlo\"", true, true));
+        assertEquals(AWAY, LocalFallback.place(HOME_WIFI, "\"Hotel\"", true, true));
     }
 
     @Test
-    public void otherSubnetIsAway() {
-        assertEquals(AWAY, LocalFallback.classify(Collections.singletonList("10.0.0.5/24"), HOST));
+    public void noNameSetCantTell() {
+        assertEquals(NOT_SET, LocalFallback.place("", "\"Hotel\"", true, true));
+        assertEquals(NOT_SET, LocalFallback.place(null, null, false, false));
+        assertEquals(AS_BEFORE, LocalFallback.onOffline(NOT_SET, true, true, true));
+        assertEquals(AS_BEFORE, LocalFallback.onOffline(NOT_SET, false, true, true));
     }
 
     @Test
-    public void anyNetworkHoldingTheHostIsHome() {
-        assertEquals(HOME, LocalFallback.classify(Arrays.asList("100.64.1.2/32", "192.168.1.9/24"), HOST));
+    public void hiddenNameIsUnreadable() {
+        assertEquals(UNREADABLE, LocalFallback.place(HOME_WIFI, "<unknown ssid>", true, true));
+        assertEquals(UNREADABLE, LocalFallback.place(HOME_WIFI, null, true, true));
     }
 
     @Test
-    public void prefixDecidesNotTheFirstOctets() {
-        assertEquals(AWAY, LocalFallback.classify(Collections.singletonList("192.168.1.10/30"), HOST));
-        assertEquals(HOME, LocalFallback.classify(Collections.singletonList("192.168.7.10/16"), HOST));
+    public void withoutWifi() {
+        assertEquals(AWAY, LocalFallback.place(HOME_WIFI, null, false, true));
+        assertEquals(NO_NETWORK, LocalFallback.place(HOME_WIFI, null, false, false));
     }
 
     @Test
-    public void noAddressIsNoNetwork() {
-        assertEquals(NONE, LocalFallback.classify(Collections.<String>emptyList(), HOST));
-        assertEquals(NONE, LocalFallback.classify(Arrays.asList("127.0.0.1/8", "169.254.3.4/16"), HOST));
-        assertEquals(NONE, LocalFallback.classify(Collections.singletonList("garbage"), HOST));
+    public void homeIsAlwaysAsBefore() {
+        assertEquals(AS_BEFORE, LocalFallback.onOffline(HOME, true, true, false));
+        assertEquals(AS_BEFORE, LocalFallback.onOffline(HOME, false, true, true));
     }
 
     @Test
-    public void hostnamesCantBeCompared() {
-        assertEquals(UNKNOWN, LocalFallback.classify(Collections.singletonList("10.0.0.5/24"),
-                Arrays.asList("gilgamesh.local", null, "fe80::1")));
-        assertEquals(HOME, LocalFallback.classify(Collections.singletonList("192.168.1.5/24"),
-                Arrays.asList("gilgamesh.local", "192.168.1.237")));
+    public void awayCountsDownOrSaysNotInstalled() {
+        assertEquals(FALL_BACK, LocalFallback.onOffline(AWAY, true, true, false));
+        assertEquals(NOT_INSTALLED, LocalFallback.onOffline(AWAY, false, true, false));
     }
 
     @Test
-    public void ipv4ParsesOnlyLiterals() {
-        assertEquals(0xC0A801EDL, LocalFallback.ipv4("192.168.1.237"));
-        assertEquals(-1, LocalFallback.ipv4("192.168.1"));
-        assertEquals(-1, LocalFallback.ipv4("192.168.1.256"));
-        assertEquals(-1, LocalFallback.ipv4("1.2.3.x"));
-        assertEquals(-1, LocalFallback.ipv4("1..2.3"));
-    }
-
-    @Test
-    public void awayFallsBackAtOnceWithoutWaking() {
-        assertEquals(FALL_BACK, LocalFallback.onOffline(AWAY, true, false, 10));
-    }
-
-    @Test
-    public void homeKeepsWakingThenOnlyAsks() {
-        assertEquals(KEEP_TRYING, LocalFallback.onOffline(HOME, true, false, 3));
-        assertEquals(ASK, LocalFallback.onOffline(HOME, true, true, 0));
-        assertEquals(KEEP_TRYING, LocalFallback.onOffline(UNKNOWN, true, false, 1));
-        assertEquals(ASK, LocalFallback.onOffline(UNKNOWN, true, false, 0));
+    public void unreadableNeverStartsByItself() {
+        assertEquals(ASK, LocalFallback.onOffline(UNREADABLE, true, true, true));
+        assertEquals(AS_BEFORE, LocalFallback.onOffline(UNREADABLE, false, true, true));
     }
 
     @Test
     public void wifiConnectingIsWaitedForOnce() {
-        assertEquals(WAIT_FOR_NETWORK, LocalFallback.onOffline(NONE, true, false, 10));
-        assertEquals(FALL_BACK, LocalFallback.onOffline(NONE, true, true, 10));
+        assertEquals(WAIT_FOR_NETWORK, LocalFallback.onOffline(NO_NETWORK, true, true, false));
+        assertEquals(FALL_BACK, LocalFallback.onOffline(NO_NETWORK, true, true, true));
+        assertEquals(NOT_INSTALLED, LocalFallback.onOffline(NO_NETWORK, false, true, true));
     }
 
     @Test
-    public void wifiOffFallsBackAtOnce() {
-        assertEquals(FALL_BACK, LocalFallback.onOffline(NONE, false, false, 10));
+    public void wifiOffIsAwayAtOnce() {
+        assertEquals(FALL_BACK, LocalFallback.onOffline(NO_NETWORK, true, false, false));
+        assertEquals(NOT_INSTALLED, LocalFallback.onOffline(NO_NETWORK, false, false, false));
+    }
+
+    @Test
+    public void ssidQuotesStripped() {
+        assertEquals("a", LocalFallback.ssidName("\"a\""));
+        assertEquals("0a1b", LocalFallback.ssidName("0a1b"));
+        assertNull(LocalFallback.ssidName("<unknown ssid>"));
+        assertNull(LocalFallback.ssidName(""));
     }
 
     @Test

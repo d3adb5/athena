@@ -1,5 +1,6 @@
 package com.limelight.fallback;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -8,15 +9,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.LinkAddress;
-import android.net.LinkProperties;
 import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import com.limelight.LimeLog;
@@ -28,7 +32,6 @@ import com.limelight.nvstream.http.NvHTTP;
 import com.limelight.utils.CacheHelper;
 
 import java.io.StringReader;
-import java.net.Inet4Address;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,11 +40,12 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeMap;
 
-/** The Android side of LocalFallback: settings, installed emulators, the device's networks, the notice. */
+/** The Android side of LocalFallback: settings, installed emulators, the Wi-Fi name, the notice. */
 public final class LocalFallbackHelper {
     public static final String PREF_EMULATOR = "list_local_fallback";
     public static final String PREF_GAMES = "local_fallback_games";
-    private static final String PROP_FORCE_NETWORK = "debug.athena.fallback_net";
+    public static final String PREF_HOME_WIFI = "local_fallback_home_wifi";
+    private static final String PROP_FORCE_PLACE = "debug.athena.fallback_net";
 
     private LocalFallbackHelper() {}
 
@@ -88,37 +92,76 @@ public final class LocalFallbackHelper {
         }
     }
 
-    public static LocalFallback.Network network(Context context, ComputerDetails computer) {
-        List<String> device = new ArrayList<>();
+    /** The fallback is on (an emulator is chosen, installed or not): off keeps Athena as it was. */
+    public static boolean isOn(Context context) {
+        return !LocalEmulator.OFF.equals(prefs(context).getString(PREF_EMULATOR, LocalEmulator.OFF));
+    }
+
+    public static String homeWifi(Context context) {
+        String name = prefs(context).getString(PREF_HOME_WIFI, "");
+        return name == null ? "" : name.trim();
+    }
+
+    public static boolean hasLocationPermission(Context context) {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static boolean locationOn(Context context) {
+        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        if (lm == null) {
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return lm.isLocationEnabled();
+        }
+        return lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER) || lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    /** Why Android hides the Wi-Fi name, as the notice says it, or null when nothing on Athena's side explains it. */
+    public static String unreadableReason(Context context) {
+        if (!hasLocationPermission(context)) {
+            return context.getString(R.string.local_fallback_reason_no_permission);
+        }
+        if (!locationOn(context)) {
+            return context.getString(R.string.local_fallback_reason_location_off);
+        }
+        return context.getString(R.string.local_fallback_reason_unreadable);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static LocalFallback.Place place(Context context) {
+        boolean wifi = false, any = false;
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (cm != null) {
             for (Network n : cm.getAllNetworks()) {
-                LinkProperties lp = cm.getLinkProperties(n);
-                if (lp == null) {
+                NetworkCapabilities caps = cm.getNetworkCapabilities(n);
+                if (caps == null) {
                     continue;
                 }
-                for (LinkAddress la : lp.getLinkAddresses()) {
-                    if (la.getAddress() instanceof Inet4Address) {
-                        device.add(la.getAddress().getHostAddress() + "/" + la.getPrefixLength());
-                    }
-                }
+                any = true;
+                wifi |= caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
             }
         }
-        List<String> host = new ArrayList<>();
-        if (computer.localAddress != null) {
-            host.add(computer.localAddress.address);
+        String ssid = null;
+        if (wifi) {
+            try {
+                WifiManager wm = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                WifiInfo info = wm == null ? null : wm.getConnectionInfo();
+                ssid = info == null ? null : info.getSSID();
+            } catch (RuntimeException e) {
+                ssid = null;
+            }
         }
-        if (computer.manualAddress != null) {
-            host.add(computer.manualAddress.address);
-        }
-        LocalFallback.Network result = LocalFallback.classify(device, host);
-        LocalFallback.Network forced = forcedNetwork();
+        LocalFallback.Place place = LocalFallback.place(homeWifi(context), ssid, wifi, any);
+        LocalFallback.Place forced = forcedPlace();
         if (forced != null) {
-            LimeLog.warning("Local fallback: network forced to " + forced + " by " + PROP_FORCE_NETWORK);
-            result = forced;
+            LimeLog.warning("Local fallback: Wi-Fi check forced to " + forced + " by " + PROP_FORCE_PLACE);
+            place = forced;
         }
-        LimeLog.info("Local fallback: network " + result + " (device " + device + ", host " + host + ")");
-        return result;
+        // The SSID is the user's own home name or a place: never logged.
+        LimeLog.info("Local fallback: " + place + " (wifi " + wifi + ", network " + any + ")");
+        return place;
     }
 
     /** Steam app id -> name of every Steam library game in the cached app lists of all hosts, by name. */
@@ -207,6 +250,18 @@ public final class LocalFallbackHelper {
         }.run();
     }
 
+    /** Away, and the game can't be played here: names the host and the game instead of the usual error. */
+    public static void showNotInstalled(Activity activity, String host, String game, String reason, Runnable retry,
+                                        Runnable done) {
+        new AlertDialog.Builder(activity)
+                .setTitle(R.string.conn_error_title)
+                .setMessage(activity.getString(R.string.local_fallback_not_installed, host, game, reason))
+                .setPositiveButton(android.R.string.ok, (d, w) -> done.run())
+                .setNeutralButton(R.string.local_fallback_retry, (d, w) -> retry.run())
+                .setOnCancelListener(d -> done.run())
+                .show();
+    }
+
     private static void launch(Context context, LocalEmulator emulator, String steamAppId, String game, String reason) {
         LimeLog.info("Local fallback: " + game + " (" + steamAppId + ") in " + emulator.label + ": " + reason);
         try {
@@ -219,13 +274,13 @@ public final class LocalFallbackHelper {
         }
     }
 
-    // For tests on a device at home: adb shell setprop debug.athena.fallback_net away (empty to clear).
-    private static LocalFallback.Network forcedNetwork() {
+    // For tests: adb shell setprop debug.athena.fallback_net away|home (empty to clear).
+    private static LocalFallback.Place forcedPlace() {
         try {
             String value = (String) Class.forName("android.os.SystemProperties")
-                    .getMethod("get", String.class).invoke(null, PROP_FORCE_NETWORK);
+                    .getMethod("get", String.class).invoke(null, PROP_FORCE_PLACE);
             return value == null || value.isEmpty() ? null
-                    : LocalFallback.Network.valueOf(value.toUpperCase(Locale.ROOT));
+                    : LocalFallback.Place.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
             return null;
         }
