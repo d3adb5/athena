@@ -48,11 +48,12 @@ Its own:
 - Microphone echo cancellation, noise suppression (Standard or DeepFilterNet3) and gain control; a microphone
   quality setting (24-128 kbps). It never captures from `UNPROCESSED`, which the RP6 routes to an unwired mic.
 - Settings > Host ports (below).
-- Local fallback for Steam library shortcuts (Settings > Host settings > Play locally when the host doesn't answer):
-  when a shortcut's host is unreachable, the chosen games start in DroidDeck or GameNative by their Steam app id.
-  Off the host's network a notice names the reason and counts down 5 s (Play, Stream, Cancel); on its network
-  (host asleep, Ares restarting) Athena wakes it as before and then only asks; Wi-Fi still connecting gets 20 s.
-  A host that answers never falls back, whatever its launch does. Without an emulator installed the setting says so.
+- Local fallback for Steam library shortcuts (Settings > Host settings > Play locally when away from home, Home
+  Wi-Fi name, Games installed locally): on the home Wi-Fi shortcuts behave as before. Elsewhere (another Wi-Fi, no
+  network, Wi-Fi off; Wi-Fi still connecting gets 20 s), a host that doesn't answer brings a notice naming the
+  reason that counts down 5 s to the game in DroidDeck or GameNative (Play, Stream, Cancel), or says the game isn't
+  installed locally. The Wi-Fi name needs the location permission; when Android hides it the notice only asks. No
+  name set: nothing plays locally. A host that answers never falls back. Without an emulator the setting says so.
 
 ## Ports and protocols
 
