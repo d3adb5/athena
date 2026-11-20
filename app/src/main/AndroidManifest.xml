@@ -28,6 +28,8 @@
     <queries>
         <package android:name="rip.moth.cocoonshell.imago" />
         <package android:name="rip.moth.cocoonshell" />
+        <package android:name="com.droiddeck.launcher" />
+        <package android:name="app.gamenative" />
     </queries>
 
     <uses-feature

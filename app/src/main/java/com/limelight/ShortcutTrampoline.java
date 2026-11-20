@@ -11,12 +11,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.limelight.computers.ComputerDatabaseManager;
 import com.limelight.computers.ComputerManagerListener;
 import com.limelight.computers.ComputerManagerService;
+import com.limelight.fallback.LocalEmulator;
+import com.limelight.fallback.LocalFallback;
+import com.limelight.fallback.LocalFallbackHelper;
 import com.limelight.nvstream.http.ComputerDetails;
 import com.limelight.nvstream.http.NvApp;
 import com.limelight.nvstream.http.NvHTTP;
@@ -56,7 +60,16 @@ public class ShortcutTrampoline extends AppCompatActivity {
 
     private ComputerManagerService.ComputerManagerBinder managerBinder;
 
+    // Local fallback: set only when the emulator is installed and this Steam game is chosen for it.
+    private LocalEmulator fallbackEmulator;
+    private String fallbackId;
+    private String fallbackGame;
+    private volatile boolean waitingForNetwork;
+    private boolean waitedForNetwork;
+    private volatile boolean fallbackShown;
+
     private static final String TAG = "ShortcutTrampoline";
+    private static final String KEY_STEAM_APP_ID = "steamappid";
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder binder) {
@@ -105,6 +118,15 @@ public class ShortcutTrampoline extends AppCompatActivity {
                             // Don't care about other computers
                             if (!details.uuid.equalsIgnoreCase(uuidString)) {
                                 return;
+                            }
+
+                            if (fallbackEmulator != null && details.state != ComputerDetails.State.ONLINE) {
+                                if (waitingForNetwork || fallbackShown) {
+                                    return;
+                                }
+                                if (details.state == ComputerDetails.State.OFFLINE && onOfflineWithFallback(details)) {
+                                    return;
+                                }
                             }
 
                             // Try to wake the target PC if it's not online (up to some retry limit)
@@ -205,6 +227,11 @@ public class ShortcutTrampoline extends AppCompatActivity {
                                             }
                                             
                                         }
+                                        else if (details.state == ComputerDetails.State.OFFLINE && fallbackEmulator != null) {
+                                            // Wake-on-LAN couldn't be sent: still offer the local game, never by itself
+                                            showFallback(LocalFallback.Step.ASK, LocalFallbackHelper.network(
+                                                    ShortcutTrampoline.this, details));
+                                        }
                                         else if (details.state == ComputerDetails.State.OFFLINE) {
                                             // Computer offline - display an error dialog
                                             Dialog.displayDialog(ShortcutTrampoline.this,
@@ -239,6 +266,75 @@ public class ShortcutTrampoline extends AppCompatActivity {
             managerBinder = null;
         }
     };
+
+    // Called on a poll thread with the host offline; true when the fallback took over this update.
+    private boolean onOfflineWithFallback(ComputerDetails details) {
+        LocalFallback.Network network = LocalFallbackHelper.network(this, details);
+        LocalFallback.Step step = LocalFallback.onOffline(network, LocalFallbackHelper.wifiEnabled(this),
+                waitedForNetwork, details.macAddress != null ? wakeHostTries : 0);
+        LimeLog.info("Local fallback: host offline, " + step);
+        switch (step) {
+            case KEEP_TRYING:
+                return false;
+            case WAIT_FOR_NETWORK:
+                waitForNetwork(details);
+                return true;
+            default:
+                fallbackShown = true;
+                runOnUiThread(() -> showFallback(step, network));
+                return true;
+        }
+    }
+
+    // Wi-Fi is on but not connected (waking from sleep): give it time, then poll the host afresh.
+    private void waitForNetwork(ComputerDetails details) {
+        waitingForNetwork = true;
+        runOnUiThread(() -> Toast.makeText(this, getString(R.string.local_fallback_waiting, details.name),
+                Toast.LENGTH_SHORT).show());
+        new Thread(() -> {
+            long end = android.os.SystemClock.elapsedRealtime() + LocalFallback.NETWORK_WAIT_MS;
+            while (android.os.SystemClock.elapsedRealtime() < end && managerBinder != null
+                    && LocalFallbackHelper.network(this, details) == LocalFallback.Network.NONE) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            waitedForNetwork = true;
+            waitingForNetwork = false;
+            ComputerManagerService.ComputerManagerBinder binder = managerBinder;
+            if (binder != null) {
+                binder.invalidateStateForComputer(details.uuid);
+            }
+        }, "LocalFallbackWait").start();
+    }
+
+    private void showFallback(LocalFallback.Step step, LocalFallback.Network network) {
+        fallbackShown = true;
+        if (managerBinder != null) {
+            managerBinder.stopPolling();
+            unbindService(serviceConnection);
+            managerBinder = null;
+        }
+        if (isFinishing()) {
+            return;
+        }
+        int reason;
+        switch (network) {
+            case NONE: reason = R.string.local_fallback_reason_no_network; break;
+            case AWAY: reason = R.string.local_fallback_reason_away; break;
+            case HOME: reason = R.string.local_fallback_reason_home; break;
+            default: reason = R.string.local_fallback_reason_unknown; break;
+        }
+        String host = computer != null && computer.name != null ? computer.name : getString(R.string.local_fallback_host);
+        final Intent again = new Intent(getIntent());
+        LocalFallbackHelper.showNotice(this, fallbackEmulator, fallbackId, fallbackGame, host, getString(reason),
+                step == LocalFallback.Step.FALL_BACK, () -> {
+                    finish();
+                    startActivity(again);
+                }, this::finish);
+    }
 
     protected boolean validateHostInput(String hostUUID, String hostName) {
         // Validate PC UUID/Name
@@ -375,6 +471,7 @@ public class ShortcutTrampoline extends AppCompatActivity {
         String appName = null;
         String appUUID = null;
         String appIDStr = null;
+        String steamAppId = null;
 
         if (Intent.ACTION_VIEW.equals(action) && dataUri != null) {
             Map<String, String> artData = parseArtFileData(dataUri);
@@ -385,6 +482,7 @@ public class ShortcutTrampoline extends AppCompatActivity {
                 appName = artData.get(ShortcutHelper.KEY_APP_NAME);
                 appUUID = artData.get(ShortcutHelper.KEY_APP_UUID);
                 appIDStr = artData.get(ShortcutHelper.KEY_APP_ID);
+                steamAppId = artData.get(KEY_STEAM_APP_ID);
             }
         }
 
@@ -504,6 +602,14 @@ public class ShortcutTrampoline extends AppCompatActivity {
                     return;
                 }
             }
+        }
+
+        LocalEmulator emulator = LocalFallbackHelper.chosen(this);
+        fallbackId = emulator == null ? null
+                : LocalFallback.localId(steamAppId, LocalFallbackHelper.chosenGames(this));
+        if (fallbackId != null) {
+            fallbackEmulator = emulator;
+            fallbackGame = appName != null && !appName.isEmpty() ? appName : fallbackId;
         }
 
         // Bind to the computer manager service

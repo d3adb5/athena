@@ -24,6 +24,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
+import androidx.preference.MultiSelectListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
@@ -63,6 +64,8 @@ import com.limelight.binding.video.MediaCodecHelper;
 import com.limelight.utils.Dialog;
 import com.limelight.utils.FileUriUtils;
 import com.limelight.utils.SteamLibrarySync;
+import com.limelight.fallback.LocalEmulator;
+import com.limelight.fallback.LocalFallbackHelper;
 import com.limelight.utils.PerformanceDataTracker;
 import com.limelight.utils.UiHelper;
 import org.json.JSONObject;
@@ -76,7 +79,10 @@ import java.util.Map;
 import com.limelight.binding.input.InternalControllers;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 
@@ -1017,6 +1023,8 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
                 });
             }
 
+            setUpLocalFallback();
+
             _pref = findPreference("import_special_button_file");
             if (_pref != null) {
                 _pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -1468,6 +1476,69 @@ public class StreamSettings extends AppCompatActivity implements SearchPreferenc
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
             startActivityForResult(intent, STEAM_LIBRARY_FOLDER_REQUEST_CODE);
+        }
+
+        // Only installed emulators are offered; with none the setting says how to set it up and does nothing.
+        private void setUpLocalFallback() {
+            ListPreference emulator = findPreference(LocalFallbackHelper.PREF_EMULATOR);
+            MultiSelectListPreference games = findPreference(LocalFallbackHelper.PREF_GAMES);
+            if (emulator == null || games == null) {
+                return;
+            }
+            List<LocalEmulator> installed = LocalFallbackHelper.installed(requireContext());
+            List<String> labels = new ArrayList<>(), keys = new ArrayList<>();
+            labels.add(getString(R.string.local_fallback_off));
+            keys.add(LocalEmulator.OFF);
+            for (LocalEmulator e : installed) {
+                labels.add(e.label);
+                keys.add(e.key);
+            }
+            emulator.setEntries(labels.toArray(new CharSequence[0]));
+            emulator.setEntryValues(keys.toArray(new CharSequence[0]));
+            if (!keys.contains(emulator.getValue())) {
+                emulator.setValue(LocalEmulator.OFF);
+            }
+            emulator.setEnabled(!installed.isEmpty());
+            emulator.setSummaryProvider(p -> {
+                if (installed.isEmpty()) {
+                    return getString(R.string.summary_local_fallback_none);
+                }
+                LocalEmulator e = LocalEmulator.fromKey(((ListPreference) p).getValue());
+                return e == null ? getString(R.string.summary_local_fallback_off)
+                        : getString(R.string.summary_local_fallback_on, e.label);
+            });
+
+            TreeMap<String, String> steam = LocalFallbackHelper.steamGames(requireContext());
+            Set<String> chosen = new HashSet<>(games.getValues());
+            List<String> names = new ArrayList<>(), ids = new ArrayList<>();
+            for (Map.Entry<String, String> g : steam.entrySet()) {
+                names.add(g.getKey().substring(0, g.getKey().indexOf('\u0000')));
+                ids.add(g.getValue());
+            }
+            for (String id : chosen) {
+                if (!ids.contains(id)) {
+                    names.add(id);
+                    ids.add(id);
+                }
+            }
+            games.setEntries(names.toArray(new CharSequence[0]));
+            games.setEntryValues(ids.toArray(new CharSequence[0]));
+            games.setEnabled(!installed.isEmpty() && !ids.isEmpty());
+            games.setVisible(!installed.isEmpty());
+            games.setSummaryProvider(p -> {
+                if (ids.isEmpty()) {
+                    return getString(R.string.summary_local_fallback_games_empty);
+                }
+                List<String> picked = new ArrayList<>();
+                Set<String> values = ((MultiSelectListPreference) p).getValues();
+                for (int i = 0; i < ids.size(); i++) {
+                    if (values.contains(ids.get(i))) {
+                        picked.add(names.get(i));
+                    }
+                }
+                return picked.isEmpty() ? getString(R.string.summary_local_fallback_games_none)
+                        : android.text.TextUtils.join(", ", picked);
+            });
         }
 
         private void updateSteamLibraryFolderSummary(Preference preference) {

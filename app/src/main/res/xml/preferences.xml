@@ -605,6 +605,15 @@
             android:summary="@string/summary_checkbox_show_steam_library_apps"
             android:title="@string/title_checkbox_show_steam_library_apps"
             app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="off"
+            android:key="list_local_fallback"
+            android:title="@string/title_local_fallback"
+            app:iconSpaceReserved="false" />
+        <MultiSelectListPreference
+            android:key="local_fallback_games"
+            android:title="@string/title_local_fallback_games"
+            app:iconSpaceReserved="false" />
     </com.limelight.preferences.CollapsiblePreferenceCategory>
 
     <com.limelight.preferences.CollapsiblePreferenceCategory
