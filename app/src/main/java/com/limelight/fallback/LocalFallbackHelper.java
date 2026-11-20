@@ -41,6 +41,7 @@ import java.util.TreeMap;
 public final class LocalFallbackHelper {
     public static final String PREF_EMULATOR = "list_local_fallback";
     public static final String PREF_GAMES = "local_fallback_games";
+    private static final String PROP_FORCE_NETWORK = "debug.athena.fallback_net";
 
     private LocalFallbackHelper() {}
 
@@ -111,6 +112,11 @@ public final class LocalFallbackHelper {
             host.add(computer.manualAddress.address);
         }
         LocalFallback.Network result = LocalFallback.classify(device, host);
+        LocalFallback.Network forced = forcedNetwork();
+        if (forced != null) {
+            LimeLog.warning("Local fallback: network forced to " + forced + " by " + PROP_FORCE_NETWORK);
+            result = forced;
+        }
         LimeLog.info("Local fallback: network " + result + " (device " + device + ", host " + host + ")");
         return result;
     }
@@ -210,6 +216,18 @@ public final class LocalFallbackHelper {
         } catch (ActivityNotFoundException e) {
             Toast.makeText(context, context.getString(R.string.local_fallback_missing, emulator.label),
                     Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // For tests on a device at home: adb shell setprop debug.athena.fallback_net away (empty to clear).
+    private static LocalFallback.Network forcedNetwork() {
+        try {
+            String value = (String) Class.forName("android.os.SystemProperties")
+                    .getMethod("get", String.class).invoke(null, PROP_FORCE_NETWORK);
+            return value == null || value.isEmpty() ? null
+                    : LocalFallback.Network.valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (Exception e) {
+            return null;
         }
     }
 
